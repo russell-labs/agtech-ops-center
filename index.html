@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgTech Founder Ops Center</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text: #0f172a;
+    --text-muted: #64748b; --text-faint: #94a3b8; --green: #16a34a;
+    --green-light: #dcfce7; --green-mid: #bbf7d0; --green-dark: #15803d;
+    --sidebar-bg: #ffffff; --hover: #f1f5f9; --accent-bg: #f0fdf4;
+  }
+  html.dark {
+    --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f1f5f9;
+    --text-muted: #94a3b8; --text-faint: #475569; --green: #22c55e;
+    --green-light: #14532d; --green-mid: #166534; --green-dark: #16a34a;
+    --sidebar-bg: #1e293b; --hover: #334155; --accent-bg: #14532d;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 14px; transition: background .2s, color .2s; }
+
+  /* ── SIDEBAR ── */
+  #sidebar { width: 224px; min-width: 224px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; transition: width .2s, min-width .2s; }
+  #sidebar.collapsed { width: 0; min-width: 0; overflow: hidden; }
+  .sidebar-brand { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--green); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; flex-shrink: 0; }
+  .logo-text { font-weight: 800; color: var(--green); font-size: 14px; line-height: 1.2; }
+  .logo-sub { font-size: 10px; font-weight: 500; color: var(--text-muted); }
+  .sidebar-tagline { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .sidebar-how { padding: 8px 12px; }
+  .how-btn { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 12px; background: none; border: none; cursor: pointer; width: 100%; padding: 6px 8px; border-radius: 6px; }
+  .how-btn:hover { background: var(--hover); color: var(--text); }
+  .sidebar-section { padding: 10px 12px 4px; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text-faint); text-transform: uppercase; margin-bottom: 3px; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px; cursor: pointer; color: var(--text-muted); font-size: 12.5px; margin: 1px 0; border: none; background: none; width: 100%; text-align: left; transition: all .15s; }
+  .nav-item:hover { background: var(--hover); color: var(--text); }
+  .nav-item.active { background: var(--green-light); color: var(--green); font-weight: 600; }
+  .nav-icon { font-size: 13px; flex-shrink: 0; }
+  .region-wrap { padding: 8px 12px; }
+  .region-lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text-faint); text-transform: uppercase; margin-bottom: 5px; }
+  .region-select { width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; }
+  .sidebar-footer { padding: 12px; margin-top: auto; border-top: 1px solid var(--border); }
+  .book-btn { width: 100%; padding: 9px 12px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .book-btn:hover { background: var(--green-dark); }
+
+  /* ── MAIN ── */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; }
+  .toggle-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px; padding: 4px 6px; border-radius: 5px; }
+  .toggle-btn:hover { background: var(--hover); }
+  .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+  .theme-btn { padding: 5px 10px; background: var(--hover); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted); }
+  .signin-btn { padding: 6px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text); }
+  .signin-btn:hover { background: var(--hover); }
+  #page { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* ── GENERIC ── */
+  .page-hdr { margin-bottom: 22px; }
+  .page-hdr h1 { font-size: 21px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+  .page-hdr p { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .card h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .card .sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  @media(max-width:900px){.grid4{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr 1fr}}
+
+  /* ── STAT CARDS ── */
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: box-shadow .2s, border-color .2s; }
+  .stat-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.1); border-color: var(--green); }
+  .stat-val { font-size: 24px; font-weight: 800; color: var(--green); margin-bottom: 3px; }
+  .stat-lbl { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .stat-src { font-size: 11px; color: var(--text-faint); }
+  .expand-hint { font-size: 10px; color: var(--green); margin-top: 8px; }
+  /* stat-detail now lives inside modal, not inline */
+  .stat-modal-body h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .stat-modal-body p, .stat-modal-body li { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .stat-modal-body ul { padding-left: 16px; margin-top: 5px; }
+  .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .mini-item { background: var(--hover); border: 1px solid var(--green-mid); border-radius: 6px; padding: 8px 10px; }
+  .mini-item strong { display: block; font-size: 11px; color: var(--green); font-weight: 700; }
+  .mini-item span { font-size: 11px; color: var(--text-muted); }
+
+  /* ── ACCORDION ── */
+  .acc { margin-bottom: 10px; }
+  .acc-hdr { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: background .15s; }
+  .acc-hdr:hover { background: var(--hover); }
+  .acc-hdr.open { border-radius: 8px 8px 0 0; background: var(--hover); }
+  .acc-left { display: flex; align-items: center; gap: 10px; }
+  .acc-icon { font-size: 15px; }
+  .acc-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .acc-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .acc-right { display: flex; align-items: center; gap: 8px; }
+  .acc-count { font-size: 11px; color: var(--text-faint); }
+  .acc-chev { font-size: 11px; color: var(--text-faint); transition: transform .2s; }
+  .acc-hdr.open .acc-chev { transform: rotate(180deg); }
+  .acc-body { border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; display: none; }
+  .acc-body.open { display: block; }
+  .acc-item { padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  .acc-item:last-child { border-bottom: none; }
+  .acc-item-title { font-size: 12.5px; font-weight: 600; color: #2563eb; margin-bottom: 3px; }
+  html.dark .acc-item-title { color: #60a5fa; }
+  .acc-item-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── TABS ── */
+  .tabs-nav { display: flex; gap: 2px; background: var(--hover); padding: 4px; border-radius: 8px; margin-bottom: 14px; overflow-x: auto; }
+  .tab-btn { padding: 6px 13px; border-radius: 6px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-muted); white-space: nowrap; transition: all .15s; }
+  .tab-btn.active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── BADGES ── */
+  .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .b-green { background: var(--green-light); color: var(--green); }
+  .b-blue { background: #dbeafe; color: #1d4ed8; }
+  .b-purple { background: #ede9fe; color: #7c3aed; }
+  .b-orange { background: #ffedd5; color: #c2410c; }
+  .b-yellow { background: #fef9c3; color: #92400e; }
+  html.dark .b-blue { background: #1e3a5f; color: #93c5fd; }
+  html.dark .b-purple { background: #2e1b4e; color: #c4b5fd; }
+  html.dark .b-orange { background: #431407; color: #fb923c; }
+  html.dark .b-yellow { background: #422006; color: #fcd34d; }
+
+  /* ── HOTSPOTS ── */
+  .hotspot-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  @media(max-width:900px){.hotspot-grid{grid-template-columns:1fr 1fr}}
+  .hotspot { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px; }
+  .hotspot .name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .hotspot .desc { font-size: 11px; color: var(--text-muted); margin-bottom: 7px; line-height: 1.4; }
+
+  /* ── INVEST TABLE ── */
+  .inv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .inv-table th { text-align: left; padding: 7px 10px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); border-bottom: 1px solid var(--border); }
+  .inv-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  .inv-table tr:last-child td { border-bottom: none; }
+
+  /* ── VC GRID ── */
+  .vc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+  .vc-item { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 11px; }
+  .vc-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .vc-focus { font-size: 11px; color: var(--text-muted); }
+
+  /* ── TRENDS ── */
+  .trend-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  @media(max-width:900px){.trend-grid{grid-template-columns:1fr 1fr}}
+  .trend-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .trend-item h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .trend-item p { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
+
+  /* ── JOURNEY ── */
+  .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-bottom: 16px; }
+  .entry-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 15px; }
+  .entry-path { font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+  .entry-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .entry-card p,.entry-card li { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .entry-card ul { padding-left: 15px; }
+  .stage-detail { padding: 14px 16px; }
+  .stage-focus { font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+  .stage-detail p,.stage-detail li { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .stage-detail ul { padding-left: 15px; margin: 6px 0 10px; }
+  .funding-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 10px; }
+  .funding-box { background: var(--accent-bg); border: 1px solid var(--green-mid); border-radius: 7px; padding: 10px; text-align: center; }
+  .funding-box .amt { font-size: 13px; font-weight: 700; color: var(--green); }
+  .funding-box .stg { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .milestone-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .milestone { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 14px; }
+  .milestone h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .milestone p,.milestone li { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .milestone ul { padding-left: 15px; margin-top: 6px; }
+  .prog-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px; margin-bottom: 10px; }
+  .prog-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .prog-sub { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: 6px; }
+  .prog-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* ── DOCUMENTS ── */
+  .doc-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-row h4 { font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .doc-row p { font-size: 11px; color: var(--text-muted); }
+  .dl-btn { padding: 5px 12px; background: var(--accent-bg); color: var(--green); border: 1px solid var(--green-mid); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .dl-btn:hover { background: var(--green-light); }
+
+  /* ── MEDIA ── */
+  .media-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px; margin-bottom: 10px; }
+  .media-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .media-card .mc-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
+  .person-row { display: flex; gap: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px; margin-bottom: 10px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .person-info h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .person-role { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: 5px; }
+  .person-info p { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 6px; }
+  .person-link { font-size: 11px; color: #2563eb; cursor: pointer; }
+
+  /* ── ECOSYSTEM ── */
+  .eco-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 14px; }
+  .eco-card h4 { font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 10px; }
+  .eco-stat .v { font-size: 14px; font-weight: 700; color: var(--text); }
+  .eco-stat .l { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .sup-tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: #dbeafe; color: #1d4ed8; display: inline-block; margin: 2px; }
+  html.dark .sup-tag { background: #1e3a5f; color: #93c5fd; }
+  .market-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .market-card h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .market-card p { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
+  .tech-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: var(--hover); color: var(--text-muted); display: inline-block; margin: 2px; }
+  .market-val { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 7px; }
+
+  /* ── SEGMENTS ── */
+  .seg-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  @media(max-width:900px){.seg-grid{grid-template-columns:1fr 1fr}}
+  .seg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 15px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  .seg-card:hover { border-color: var(--green); box-shadow: 0 2px 10px rgba(22,163,74,.1); }
+  .seg-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .seg-card p { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px; }
+  .growth-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; color: var(--green); background: var(--green-light); border: 1px solid var(--green-mid); padding: 3px 10px; border-radius: 20px; }
+  .seg-expand { font-size: 10px; color: var(--green); margin-left: 6px; transition: transform .2s; display: inline-block; }
+  .seg-detail { display: none; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 11px; }
+  .seg-detail.open { display: block; }
+  .seg-detail h5 { font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; margin: 8px 0 4px; }
+  .seg-detail p, .seg-detail li { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .seg-detail ul { padding-left: 14px; margin: 3px 0; }
+  .seg-co-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .seg-co { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--hover); color: var(--text-muted); display: inline-block; }
+
+  /* ── CROPS ── */
+  .crop-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+  .crop-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+  .crop-stat .v { font-size: 18px; font-weight: 800; color: var(--green); }
+  .crop-stat .l { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .crop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .crop-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .crop-hdr { padding: 13px 15px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .crop-hdr:hover { background: var(--hover); }
+  .crop-hdr h4 { font-size: 13px; font-weight: 700; color: var(--text); }
+  .crop-body { padding: 13px 15px; display: none; }
+  .crop-body.open { display: block; }
+  .crop-item { padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .crop-item:last-child { border-bottom: none; }
+  .crop-item h5 { font-size: 12px; font-weight: 700; color: #2563eb; margin-bottom: 3px; }
+  html.dark .crop-item h5 { color: #60a5fa; }
+  .crop-item p { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+  /* ── RESOURCES ── */
+  .res-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 13px; margin-bottom: 10px; }
+  .res-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .res-sub { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: 6px; }
+  .res-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .event-row { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .event-row h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .event-row .date { font-size: 12px; color: var(--text-muted); }
+  .event-btn { padding: 5px 13px; background: var(--green); color: #fff; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+  /* ── MODAL ── */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 12px; padding: 22px; max-width: 460px; width: 92%; box-shadow: 0 20px 60px rgba(0,0,0,.2); position: relative; }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .modal p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+  .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-faint); }
+  .form-input { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); font-size: 13px; margin-bottom: 8px; display: block; }
+
+  /* ── OPP GRID ── */
+  .opp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opp-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .opp-item .opp-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #ede9fe; color: #7c3aed; display: inline-block; margin-bottom: 5px; }
+  html.dark .opp-item .opp-tag { background: #2e1b4e; color: #c4b5fd; }
+  .opp-item h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .opp-item p { font-size: 11px; color: var(--text-muted); }
+
+  /* ── FEEDBACK FAB ── */
+  .fab { position: fixed; bottom: 18px; right: 18px; background: #ea580c; color: #fff; border: none; border-radius: 24px; padding: 9px 15px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(234,88,12,.3); z-index: 99; }
+
+  /* ── TOAST ── */
+  #toast { position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%) translateY(8px); background: #1e293b; color: #f1f5f9; padding: 10px 20px; border-radius: 9px; font-size: 13px; z-index: 997; box-shadow: 0 4px 18px rgba(0,0,0,.35); white-space: nowrap; opacity: 0; transition: opacity .22s, transform .22s; pointer-events: none; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; }
+  html.dark #toast { background: #f1f5f9; color: #0f172a; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── SOURCE CITATIONS ── */
+  .src-row { font-size: 11px; color: var(--text-faint); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .src-row a { color: var(--text-faint); text-decoration: underline; text-underline-offset: 2px; }
+  .src-row a:hover { color: var(--text-muted); }
+
+  /* ── CANADA BANNER ── */
+  .ca-banner { background: var(--accent-bg); border: 1px solid var(--green-mid); border-radius: 8px; padding: 9px 14px; margin-bottom: 18px; font-size: 12px; color: var(--green-dark); display: flex; align-items: center; gap: 8px; }
+  html.dark .ca-banner { color: var(--green); }
+
+  /* ── ADMIN PANEL ── */
+  .admin-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .admin-stat .av { font-size: 28px; font-weight: 800; color: var(--green); }
+  .admin-stat .al { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .admin-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .admin-table th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); border-bottom: 2px solid var(--border); background: var(--hover); }
+  .admin-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: middle; }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .admin-table tr:hover td { background: var(--hover); }
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 90px; padding: 0 4px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .bar-fill { width: 100%; background: var(--green); border-radius: 3px 3px 0 0; min-height: 3px; transition: height .3s; }
+  .bar-label { font-size: 9px; color: var(--text-faint); white-space: nowrap; }
+  .bar-count { font-size: 9px; color: var(--green); font-weight: 700; }
+  .method-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+  .admin-lock { text-align: center; padding: 60px 20px; }
+  .admin-lock h2 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .admin-lock p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* ── FEEDBACK TEXTAREA ── */
+  .form-textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); font-size: 13px; margin-bottom: 8px; display: block; resize: vertical; font-family: inherit; }
+  .form-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); font-size: 13px; margin-bottom: 8px; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🌾</div>
+      <div>
+        <div class="logo-text">Global AgTech</div>
+        <div class="logo-sub">Founder Dashboard</div>
+      </div>
+    </div>
+    <div class="sidebar-tagline">Tools, data, and insights for agricultural technology founders worldwide.</div>
+  </div>
+  <div class="sidebar-how">
+    <button class="how-btn" onclick="openModal('how-modal')">ℹ️ How to Use This Resource</button>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">Global Resources</div>
+    <button class="nav-item active" onclick="go('overview',this)"><span class="nav-icon">🌐</span> Global AgTech Overview</button>
+    <button class="nav-item" onclick="go('journey',this)"><span class="nav-icon">🚀</span> Founder's Journey</button>
+    <button class="nav-item" onclick="go('glossary',this)"><span class="nav-icon">📖</span> AgTech Glossary</button>
+    <button class="nav-item" onclick="go('documents',this)"><span class="nav-icon">📄</span> Documents</button>
+    <button class="nav-item" onclick="go('media',this)"><span class="nav-icon">📡</span> AgTech Media &amp; Influencers</button>
+  </div>
+  <div class="region-wrap">
+    <div class="region-lbl">Region-Specific Data</div>
+    <select class="region-select" id="region-select" onchange="updateRegion(this.value)">
+      <option value="ca">🇨🇦 Canada</option>
+      <optgroup label="── Coming Soon ──">
+        <option disabled>🇺🇸 United States</option>
+        <option disabled>🇳🇱 Netherlands</option>
+        <option disabled>🇮🇱 Israel</option>
+        <option disabled>🇧🇷 Brazil</option>
+        <option disabled>🇦🇺 Australia</option>
+        <option disabled>🇸🇬 Singapore</option>
+        <option disabled>🇪🇺 European Union</option>
+      </optgroup>
+    </select>
+  </div>
+  <div class="sidebar-section">
+    <button class="nav-item" onclick="go('ecosystem',this)"><span class="nav-icon">📍</span> Ecosystem Overview</button>
+    <button class="nav-item" onclick="go('segments',this)"><span class="nav-icon">📊</span> Industry Segments</button>
+    <button class="nav-item" onclick="go('crops',this)"><span class="nav-icon">🌱</span> Crops</button>
+    <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
+  </div>
+  <div class="sidebar-footer">
+    <button class="book-btn" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
+    <button style="width:100%;margin-top:8px;padding:7px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px" onclick="goAdmin()">🔐 Admin Panel</button>
+  </div>
+</aside>
+
+<div id="main">
+  <div class="topbar">
+    <button class="toggle-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">☰</button>
+    <div class="topbar-title">Global AgTech Founder Dashboard</div>
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+    <button class="signin-btn" id="topbar-user-btn" onclick="openModal('signin-modal')">→ Sign In</button>
+  </div>
+  <div id="page"></div>
+</div>
+
+<button class="fab" onclick="openModal('feedback-modal')">🎯 Your Feedback is Critical!</button>
+
+<!-- HOW TO USE MODAL -->
+<div class="overlay" id="how-modal" onclick="if(event.target===this)closeModal('how-modal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('how-modal')">✕</button>
+    <h3>How to Use This Resource</h3>
+    <p>This Operations Center is designed for AgTech founders navigating the agricultural technology landscape.</p>
+    <p><strong>Global Resources</strong> — Core content available for all regions: market overview, founder guidance, glossary, templates, and media.</p>
+    <p><strong>Region-Specific Data</strong> — Select your country from the dropdown to see localized ecosystem data, industry segments, crops, and support programs. Currently Canada-focused with more regions coming.</p>
+    <p>Click any card or accordion header to expand detailed information. Content is maintained and updated by Russell and the team.</p>
+  </div>
+</div>
+
+<!-- SIGN IN MODAL -->
+<div class="overlay" id="signin-modal" onclick="if(event.target===this)closeModal('signin-modal')">
+  <div class="modal" style="max-width:360px">
+    <button class="modal-close" onclick="closeModal('signin-modal')">✕</button>
+    <h3>Sign In</h3>
+    <p style="margin-bottom:16px">Sign in to your AgTech founder dashboard</p>
+    <button onclick="signIn('google')" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);margin-bottom:12px">🔵 Continue with Google</button>
+    <div style="text-align:center;font-size:11px;color:var(--text-faint);margin-bottom:12px">OR CONTINUE WITH EMAIL</div>
+    <input type="email" id="signin-email" placeholder="Email address" class="form-input">
+    <input type="password" id="signin-pass" placeholder="Password" class="form-input">
+    <button onclick="signIn('email')" style="width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Sign In →</button>
+    <p style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)">Don't have an account? <span onclick="signIn('signup')" style="color:var(--green);cursor:pointer;font-weight:600">Sign up free</span></p>
+  </div>
+</div>
+
+<!-- SEGMENT DETAIL MODAL -->
+<div class="overlay" id="seg-modal" onclick="if(event.target===this)closeModal('seg-modal')">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="closeModal('seg-modal')">✕</button>
+    <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <div style="font-size:16px;font-weight:800;color:var(--text)" id="segm-title"></div>
+      <div id="segm-growth" style="margin-top:5px"></div>
+    </div>
+    <div id="segm-body"></div>
+  </div>
+</div>
+
+<!-- STAT DETAIL MODAL -->
+<div class="overlay" id="stat-modal" onclick="if(event.target===this)closeModal('stat-modal')">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="closeModal('stat-modal')">✕</button>
+    <div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="font-size:30px;font-weight:800;color:var(--green);line-height:1" id="smd-val"></div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin:5px 0 2px" id="smd-lbl"></div>
+      <div style="font-size:11px;color:var(--text-faint)" id="smd-src"></div>
+    </div>
+    <div class="stat-modal-body" id="smd-body"></div>
+  </div>
+</div>
+
+<!-- BOOK A CALL MODAL -->
+<div class="overlay" id="book-modal" onclick="if(event.target===this)closeModal('book-modal')">
+  <div class="modal" style="max-width:390px">
+    <button class="modal-close" onclick="closeModal('book-modal')">✕</button>
+    <h3>📞 Book a Call with Russell</h3>
+    <p>Schedule a 30-minute discovery call to discuss your AgTech venture, funding strategy, or how this platform can support your journey.</p>
+    <p style="margin-top:10px;font-size:12px;color:var(--text-muted)">What we can cover:</p>
+    <ul style="font-size:12px;color:var(--text-muted);padding-left:16px;margin:6px 0 14px;line-height:1.7">
+      <li>Your startup stage and next steps</li>
+      <li>Canadian AgTech funding opportunities</li>
+      <li>Accelerator and program fit</li>
+      <li>Platform feedback and feature requests</li>
+    </ul>
+    <button onclick="toast('📅 Opening booking calendar...');closeModal('book-modal')" style="width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">📅 Open Booking Calendar</button>
+    <p style="text-align:center;font-size:11px;color:var(--text-muted)">Or email directly: <strong>russellcolevop@gmail.com</strong></p>
+  </div>
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div class="overlay" id="feedback-modal" onclick="if(event.target===this)closeModal('feedback-modal')">
+  <div class="modal" style="max-width:410px">
+    <button class="modal-close" onclick="closeModal('feedback-modal')">✕</button>
+    <h3>🎯 Share Your Feedback</h3>
+    <p style="margin-bottom:14px">Your input directly shapes the AgTech Founder Ops Center. Feedback is sent to Russell.</p>
+    <select class="form-select" id="fb-type">
+      <option value="General Feedback">Select feedback type...</option>
+      <option>Overall experience</option>
+      <option>Missing content or data</option>
+      <option>Content is outdated</option>
+      <option>Technical issue / broken feature</option>
+      <option>Feature request</option>
+      <option>Other</option>
+    </select>
+    <textarea class="form-textarea" rows="4" id="fb-msg" placeholder="Tell us what you think, what's missing, or what could be better..."></textarea>
+    <div id="fb-email-wrap" style="margin-bottom:8px">
+      <input type="email" id="fb-email" placeholder="Your email (so Russell can follow up)" class="form-input" style="margin-bottom:0">
+    </div>
+    <button onclick="submitFeedback()" style="width:100%;padding:10px;background:#ea580c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📧 Send Feedback to Russell</button>
+    <p style="font-size:10px;color:var(--text-faint);text-align:center;margin-top:8px">Opens your email client with feedback pre-filled · Sent to russellcolevop@gmail.com</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── LINKS REGISTRY ────────────────────────────────────────────────
+const LINKS = {
+  // Media Outlets
+  'AgFunderNews':'https://agfundernews.com','PrecisionAg':'https://precisionag.com',
+  'Modern Farmer':'https://modernfarmer.com','Successful Farming':'https://agriculture.com',
+  'Agri-Pulse':'https://agri-pulse.com','Western Producer':'https://producer.com',
+  'Greenhouse Canada':'https://greenhousecanada.com','The Packer':'https://thepacker.com',
+  'American Farm Bureau':'https://fb.org',
+  // Podcasts
+  'Future of Agriculture':'https://www.futureofag.com',
+  'AgTech...So What?':'https://www.agthenic.com/podcast',
+  'FarmBits':'https://fbn.com/resources/podcast/farmbits',
+  'Vertical Farming Podcast':'https://verticalfarming.net/podcast',
+  'Groundbreakers':'https://www.syngenta.com/en/innovation-agriculture/groundbreakers-podcast',
+  'AgFunder Network':'https://www.youtube.com/@AgFunder',
+  // Thought Leaders (verified LinkedIn URLs)
+  'Vonnie Estes':'https://www.linkedin.com/in/vonnieestes/',
+  'Louisa Burwood-Taylor':'https://www.linkedin.com/in/louisa-burwood-taylor/',
+  'Sarah Nolet':'https://www.linkedin.com/in/svnolet/',
+  'Rob Trice':'https://www.linkedin.com/in/robtrice/',
+  'David Friedberg':'https://theproductionboard.com',
+  'Walt Duflock':'https://www.linkedin.com/in/waltduflock/',
+  'Michael Gilbert':'https://www.semios.com',
+  'Kimberly Zerkel':'https://www.linkedin.com/in/kimberlyzerkel/',
+  'John Cornelius':'https://www.linkedin.com/in/johncornelius/',
+  // Accelerators & Programs
+  'SVG Ventures | THRIVE':'https://svgventures.com/thrive',
+  'Creative Destruction Lab (CDL)':'https://creativedestructionlab.com',
+  'Cultivator (Canada)':'https://cultivator.ca',
+  'Techstars Farm to Fork':'https://www.techstars.com/accelerators/farm-to-fork',
+  'Yield Lab':'https://theyieldlab.com',
+  'Rabobank–FoodBytes!':'https://www.rabobank.com/en/about-rabobank/food-agribusiness/foodbytes.html',
+  'Ag in Motion Innovation Showcase':'https://aginmotion.ca',
+  'FCC Young Farmer Award':'https://www.fcc-fac.ca/en/knowledge/young-farmers',
+  'Founder Institute':'https://fi.co',
+  'North Forge':'https://northforge.ca',
+  'Bioenterprise':'https://bioenterprise.ca',
+  // Grants & Funding
+  'Sustainable CAP':'https://agriculture.canada.ca/en/sustainable-canadian-agricultural-partnership',
+  'AgriInnovate':'https://agriculture.canada.ca/en/agricultural-programs-and-services/agri-innovate-program',
+  'Protein Industries Canada':'https://proteinindustries.com',
+  'SDTC':'https://nrc.canada.ca/en/support-technology-innovation',  // SDTC wound down 2024 → NRC IRAP
+  'Farm Credit Canada':'https://www.fcc-fac.ca',
+  'BDC Capital':'https://www.bdc.ca/en/bdc-capital',
+  // Industry Networks & Research
+  'CFIN (Canadian Food Innovation Network)':'https://cfin-rcai.ca',
+  'Pan-Canadian Smart Farm Network':'https://agriculture.canada.ca/en/sector/research-innovation/smart-farm-network',
+  'SVG Ventures THRIVE':'https://svgventures.com',
+  'Olds College Smart Farm':'https://www.oldscollege.ca/academics/programs/agriculture/smart-farm',
+  'University of Saskatchewan':'https://www.usask.ca',
+  'Glacier Farm':'https://aginmotion.ca/glacier-farm',
+  'Assiniboine Community College':'https://assiniboine.net',
+  'Agriculture and Agri-Food Canada (AAFC)':'https://agriculture.canada.ca',
+  'University of Guelph':'https://www.uoguelph.ca',
+  // Events
+  'Ag in Motion 2026':'https://aginmotion.ca',
+  'GrowCanada 2026':'https://growcanadaconference.ca',
+  // VC Firms
+  'Anterra Capital':'https://anterracapital.com',
+  'S2G Ventures':'https://s2gventures.com',
+  'Finistere Ventures':'https://finistereventures.com',
+  'AgFunder':'https://agfunder.com',
+  'Omnivore':'https://omnivore.vc',
+  'Cultivian Sandbox':'https://cultivian.com',
+  'Lewis & Clark AgriFood':'https://lewisandclarkagrifood.com',
+  'Pontifax AgriFood':'https://www.pontifaxagrifood.com',
+  'Fall Line Capital':'https://falllinecap.com',
+  'Advantage Capital':'https://www.advantagecap.com',
+  'Ajax Venture Partners':'https://www.ajaxvp.com',
+  'Astanor Ventures':'https://astanor.com',
+  // Canadian Companies (Segments)
+  'Deveron':'https://deveron.com','Semios':'https://semios.com',
+  'BinSentry':'https://binsentry.com','Farmers Edge':'https://farmersedge.ca',
+  '4AG Robotics':'https://4agrobotics.com','Vive Crop Protection':'https://vivecropprotection.com',
+  'GoodLeaf Farms':'https://goodleaffarms.com','Milk Moovement':'https://milkmoovement.com',
+  'Merit Functional Foods':'https://meritfunctionalfoods.com',
+  'Mucci Farms':'https://muccifarms.com','Entosystem':'https://entosystem.com',
+};
+
+// Helper: wrap text in a link if URL exists
+function lnk(text, url){
+  if(!url) return text;
+  return `<a href="${url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--green)">${text}&nbsp;<span style="font-size:9px;opacity:.7">🔗</span></a>`;
+}
+
+// ── THEME ─────────────────────────────────────────────────────────
+function toggleTheme(){
+  const dark = document.documentElement.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = dark ? '☀️ Light' : '🌙 Dark';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg, dur=2800){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ── PERSON LINK ───────────────────────────────────────────────────
+function personLink(name, platform){
+  toast('🔗 ' + name + ' — profile available in the full app');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+let currentPage = 'overview';
+function go(page, btn){
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  render(page);
+  document.getElementById('page').scrollTop = 0;
+}
+function updateRegion(v){
+  if(v !== 'ca'){
+    document.getElementById('region-select').value = 'ca';
+    toast('🇨🇦 Other regions coming soon — Canada data is live now');
+    return;
+  }
+  render(currentPage);
+}
+
+// ── ACCORDION ────────────────────────────────────────────────────
+function acc(id, title, subtitle, content, icon='📄', count=''){
+  return `<div class="acc">
+    <div class="acc-hdr" onclick="toggleAcc('${id}')">
+      <div class="acc-left"><span class="acc-icon">${icon}</span>
+        <div><div class="acc-title">${title}</div>${subtitle?`<div class="acc-subtitle">${subtitle}</div>`:''}</div>
+      </div>
+      <div class="acc-right">${count?`<span class="acc-count">${count}</span>`:''}<span class="acc-chev">▼</span></div>
+    </div>
+    <div class="acc-body" id="${id}-b">${content}</div>
+  </div>`;
+}
+function toggleAcc(id){
+  document.querySelector(`[onclick="toggleAcc('${id}')"]`).classList.toggle('open');
+  document.getElementById(id+'-b').classList.toggle('open');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+function tabs(gid, defs){
+  const nav = defs.map((t,i)=>`<button class="tab-btn${i===0?' active':''}" onclick="switchTab('${gid}',${i},this)">${t.label}</button>`).join('');
+  const panels = defs.map((t,i)=>`<div class="tab-panel${i===0?' active':''}" id="${gid}-p${i}">${t.content}</div>`).join('');
+  return `<div class="tabs-nav">${nav}</div>${panels}`;
+}
+function switchTab(gid,idx,btn){
+  btn.closest('.tabs-nav').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll(`[id^="${gid}-p"]`).forEach(p=>p.classList.remove('active'));
+  document.getElementById(`${gid}-p${idx}`).classList.add('active');
+}
+
+// ── DOCUMENT DOWNLOAD ─────────────────────────────────────────────
+function dlDoc(name){ toast('📄 Sign in to download: ' + name); }
+
+// ── STAT MODAL ────────────────────────────────────────────────────
+const STAT_DETAILS = {};
+function toggleStat(id){
+  const s = STAT_DETAILS[id];
+  if(!s) return;
+  document.getElementById('smd-val').textContent = s.val;
+  document.getElementById('smd-lbl').textContent = s.lbl;
+  document.getElementById('smd-src').textContent = 'Source: ' + s.src;
+  document.getElementById('smd-body').innerHTML = s.detail;
+  openModal('stat-modal');
+}
+
+// ════════════════════════════════════════════════
+// PAGE: GLOBAL OVERVIEW
+// ════════════════════════════════════════════════
+function pgOverview(){return `
+<div class="page-hdr"><h1>Global Agriculture &amp; AgTech Overview</h1>
+<p>Worldwide agricultural technology landscape, innovation hotspots, investment trends, and emerging opportunities for founders.</p></div>
+
+<div class="grid4" style="margin-bottom:20px">
+  ${statCard('4.8B ha','Global Agricultural Land','FAO Data','stat-land',`
+    <h4>4.8 Billion Hectares (12 Billion Acres)</h4>
+    <p>Represents approximately <strong>37% of Earth's total land area</strong>.</p>
+    <ul><li>Permanent meadows and pastures make up the largest category</li>
+    <li>Cropland is actively cultivated for food and fibre production</li>
+    <li>Source: Food and Agriculture Organization (FAO)</li></ul>
+    <div class="mini-grid"><div class="mini-item"><strong>Pasture Land</strong><span>Largest — livestock grazing</span></div>
+    <div class="mini-item"><strong>Cropland</strong><span>Actively cultivated</span></div></div>
+    <div class="src-row">🔗 <a href="https://www.fao.org/faostat" target="_blank">FAO FAOSTAT Database</a></div>`)}
+  ${statCard('608M+','Farms Worldwide','Global Census','stat-farms',`
+    <h4>Over 608 Million Farms Globally</h4>
+    <p>Family farms dominate worldwide agriculture.</p>
+    <ul><li>Over <strong>90% are family farms</strong></li>
+    <li>Family farms produce <strong>~80% of the world's food</strong> by value</li>
+    <li>The largest 1% of farms operate over <strong>70% of farmland</strong></li></ul>
+    <div class="mini-grid"><div class="mini-item"><strong>Family Farms 90%+</strong><span>Produce 80% of food value</span></div>
+    <div class="mini-item"><strong>Large Farms 1%</strong><span>Control 70% of farmland</span></div></div>
+    <div class="src-row">🔗 <a href="https://www.fao.org/family-farming" target="_blank">FAO — Family Farming</a></div>`)}
+  ${statCard('$2.28T','Global Agri-Food Exports','2024','stat-exports',`
+    <h4>$2.28 Trillion USD — Global Agri-Food Exports (2024)</h4>
+    <p>Export value in 2023 was <strong>1.7× higher than 2010</strong>. Agriculture's share of merchandise trade: 7% (2010) → 8% (2023).</p>
+    <ul><li><strong>The Americas</strong> — largest net food exporters</li>
+    <li><strong>Asia</strong> — largest net food importer</li>
+    <li><strong>EU:</strong> €235.4B (2024) — top global trader</li>
+    <li><strong>USA:</strong> major grains, soybeans, meat exporter</li>
+    <li><strong>Brazil &amp; Netherlands:</strong> leading exporters</li></ul>
+    <div class="src-row">🔗 <a href="https://www.wto.org/english/res_e/statis_e/its2024_e/its24_highlights_e.htm" target="_blank">WTO Trade Statistics 2024</a> &nbsp;·&nbsp; <a href="https://agriculture.canada.ca/en/sector/overview" target="_blank">AAFC Sector Overview</a></div>`)}
+  ${statCard('$26B–$40B','AgTech Market Value','2026 Est.','stat-market',`
+    <h4>Global AgTech Market Value 2026: $26B–$40B USD</h4>
+    <p><strong>Market Growth Timeline:</strong></p>
+    <ul><li>2020: $9B market value / $7.9B VC investment</li>
+    <li>2021: $18.12B market valuation</li>
+    <li>2022: $22.14B estimated value</li>
+    <li>2023: $27B+ (19% rise from 2022)</li>
+    <li>2024: $21.68B–$28.16B, $3.8B equity capital raised</li>
+    <li>2025: $23.42B–$32.83B (actual)</li>
+    <li>2026: $26B–$40B projected (12–15% CAGR)</li></ul>
+    <p style="margin-top:8px"><strong>Growth Drivers:</strong> AI &amp; robotics adoption · Sustainability mandates · Supply chain resilience · Precision ag at scale</p>
+    <div class="src-row">🔗 <a href="https://www.businesswire.com/news/home/20260112577688/en/" target="_blank">ResearchAndMarkets — Global AgTech Report 2026–2036</a> &nbsp;·&nbsp; <a href="https://agfunder.com/research/" target="_blank">AgFunder Annual Report</a></div>`)}
+</div>
+
+<div class="card"><h3>🌍 Global Innovation Hotspots</h3><div class="sub">Leading regions driving agricultural technology innovation worldwide</div>
+<div class="hotspot-grid">
+${[{c:'🇺🇸 United States',d:'Silicon Valley, Midwest autonomy, precision ag leaders',b:'Top VC Hub',cl:'b-blue'},
+   {c:'🇳🇱 Netherlands',d:'Vertical farming, greenhouse automation, precision horticulture',b:'CEA Leader',cl:'b-green'},
+   {c:'🇮🇱 Israel',d:'Irrigation tech, water management, desert agriculture',b:'Water Tech',cl:'b-yellow'},
+   {c:'🇨🇦 Canada',d:'Grain tech, crop protection, climate adaptation',b:'Grain Focus',cl:'b-green'},
+   {c:'🇧🇷 Brazil',d:'Tropical ag, soy innovation, sugarcane tech',b:'Tropical Leader',cl:'b-orange'},
+   {c:'🇦🇺 Australia',d:'Livestock tech, ranching automation, drought solutions',b:'Livestock Tech',cl:'b-orange'},
+   {c:'🇸🇬 Singapore',d:'Urban farming, food security, vertical systems',b:'Urban Ag',cl:'b-purple'},
+   {c:'🇪🇺 European Union',d:'Sustainability focus, organic tech, regenerative systems',b:'Sustainability',cl:'b-green'},
+].map(h=>`<div class="hotspot"><div class="name">${h.c}</div><div class="desc">${h.d}</div><span class="badge ${h.cl}">${h.b}</span></div>`).join('')}
+</div></div>
+
+<div class="card"><h3>💰 Investment by Stage</h3><div class="sub">Global AgTech VC investment breakdown</div>
+<table class="inv-table"><thead><tr><th>Stage</th><th>Deal Size</th><th>Key Focus</th><th>Timeline</th></tr></thead>
+<tbody>
+<tr><td><strong>Pre-Seed / Seed</strong></td><td>$50K – $2M</td><td>Problem validation, MVP development</td><td>0–18 months</td></tr>
+<tr><td><strong>Series A</strong></td><td>$2M – $15M</td><td>Product-market fit, early revenue</td><td>18–36 months</td></tr>
+<tr><td><strong>Series B</strong></td><td>$10M – $50M</td><td>Scale operations, expand geographically</td><td>3–5 years</td></tr>
+<tr><td><strong>Series C+</strong></td><td>$50M+</td><td>Category leadership, IPO preparation</td><td>5+ years</td></tr>
+<tr><td><strong>Growth / PE</strong></td><td>$100M+</td><td>Market dominance, acquisitions</td><td>Mature stage</td></tr>
+</tbody></table></div>
+
+<div class="card"><h3>🏦 Top AgTech VC Firms</h3><div class="sub">Leading investors in agricultural technology globally</div>
+<div class="vc-grid">
+${[{n:'Anterra Capital',f:'Global AgTech specialist'},{n:'S2G Ventures',f:'Food & agriculture, impact focus'},
+   {n:'Finistere Ventures',f:'Global ag biotech'},{n:'AgFunder',f:'Agri-foodtech investing'},
+   {n:'Omnivore',f:'India & emerging markets'},{n:'Cultivian Sandbox',f:'Early-stage ag innovation'},
+   {n:'Lewis & Clark AgriFood',f:'Early-stage farm tech'},{n:'Pontifax AgriFood',f:'Israel-based global ag'},
+   {n:'Fall Line Capital',f:'Sustainable agriculture'},{n:'Advantage Capital',f:'Rural tech & ag'},
+   {n:'Ajax Venture Partners',f:'Precision ag, biotech'},{n:'Astanor Ventures',f:'EU sustainable foodtech'},
+].map(v=>`<div class="vc-item"><div class="vc-name">${lnk(v.n,LINKS[v.n])}</div><div class="vc-focus">${v.f}</div></div>`).join('')}
+</div></div>
+
+<div class="card"><h3>🌱 Emerging Sectors</h3><div class="sub">High-growth opportunity areas for founders</div>
+<div class="opp-grid">
+<div class="opp-item"><div class="opp-tag">Hot Sector</div><h4>Alternative Proteins</h4><p>Plant-based, cultivated meat, precision fermentation</p></div>
+<div class="opp-item"><div class="opp-tag">Growing Fast</div><h4>Carbon &amp; Regenerative Agriculture</h4><p>Carbon credits, soil health monitoring, regen practices</p></div>
+<div class="opp-item"><div class="opp-tag">AI Boom</div><h4>AI &amp; Computer Vision</h4><p>Crop disease detection, yield prediction, robotic guidance</p></div>
+<div class="opp-item"><div class="opp-tag">Regulatory Shift</div><h4>Supply Chain Transparency</h4><p>Blockchain, traceability, food safety systems</p></div>
+</div></div>
+
+<div class="card"><h3>📈 Global AgTech Trends</h3><div class="sub">Key technology and market trends shaping the future of agriculture</div>
+<div class="trend-grid">
+${[{n:'AI in Agronomy',d:'ML for crop management, pest prediction, and yield optimization',b:'Mainstream Adoption',cl:'b-green'},
+   {n:'Autonomous Robotics',d:'Field robots, harvesting automation, and autonomous tractors',b:'Growing Fast',cl:'b-blue'},
+   {n:'Biological Inputs',d:'Biofertilizers, biopesticides, and microbial solutions replacing synthetics',b:'Early Majority',cl:'b-purple'},
+   {n:'Farm Data Platforms',d:'Integrated management, data analytics, and decision support tools',b:'Mainstream',cl:'b-green'},
+   {n:'Carbon Markets',d:'Carbon credit generation, verification, and trading platforms for farms',b:'Emerging',cl:'b-yellow'},
+   {n:'Vertical Farming',d:'Controlled environment agriculture scaling for urban food production',b:'Scaling',cl:'b-orange'},
+].map(t=>`<div class="trend-item"><h4>${t.n}</h4><p>${t.d}</p><span class="badge ${t.cl}">${t.b}</span></div>`).join('')}
+</div></div>
+
+<div class="card"><h3>⚠️ Startup Challenges in AgTech</h3><div class="sub">Common obstacles and proven solutions for founders</div>
+${acc('ch-mkt','Market & Customer Challenges','',`
+  <div class="acc-item"><div class="acc-item-title">Seasonal Sales Cycles</div><div class="acc-item-desc">Farmers make purchasing decisions once or twice a year tied to planting and harvest seasons. <strong>Solutions:</strong> Engage farmers in off-season, offer pilot programs, leverage local dealer networks.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Conservative Customer Base</div><div class="acc-item-desc">Farmers are risk-averse due to thin margins and weather uncertainty. They prefer proven technologies. <strong>Solutions:</strong> Provide extensive trials and demos, offer money-back guarantees, share peer testimonials.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Fragmented Market</div><div class="acc-item-desc">Agriculture varies significantly by region, crop type, and farm size. <strong>Solutions:</strong> Focus on specific niches initially, partner with regional experts, develop modular customizable solutions.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Price Sensitivity</div><div class="acc-item-desc">Farmers operate on tight margins and carefully evaluate ROI on all purchases. <strong>Solutions:</strong> Demonstrate value clearly, offer flexible payment terms, consider subscription or service models.</div></div>`,'⚠️','4 challenges')}
+${acc('ch-tech','Technical & Development Challenges','',`
+  <div class="acc-item"><div class="acc-item-title">Harsh Operating Conditions</div><div class="acc-item-desc">Farm equipment must withstand dust, moisture, vibration, temperature extremes, and chemical exposure. Build ruggedized hardware from day one.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Connectivity Issues</div><div class="acc-item-desc">Rural areas often lack reliable internet. Design for offline-first operation with sync when connected.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Data Interoperability</div><div class="acc-item-desc">Farm data exists across many incompatible systems (FMIS, equipment brands, input suppliers). Support ADAPT/ISO XML standards.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Scalability vs. Customization</div><div class="acc-item-desc">Agricultural practices vary hugely by crop and region. Balancing scalable platforms with local customization is a key engineering challenge.</div></div>`,'🔧','4 challenges')}
+${acc('ch-reg','Regulatory & Compliance Challenges','',`
+  <div class="acc-item"><div class="acc-item-title">Pesticide &amp; Chemical Regulations</div><div class="acc-item-desc">Vary significantly by country and state/province. Registration can take 3–7 years and cost millions for new biological products.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Data Privacy &amp; Ownership</div><div class="acc-item-desc">Farmers are increasingly concerned about who owns their farm data. Build clear data governance frameworks and transparent policies.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Drone &amp; Autonomous Vehicle Rules</div><div class="acc-item-desc">FAA, Transport Canada, and EASA regulations limit commercial drone operations. Plan for regulatory compliance in your product roadmap.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Food Safety Compliance</div><div class="acc-item-desc">Solutions in the food value chain face FSMA, CFIA, and EU food safety regulations. Compliance is essential for commercial partnerships.</div></div>`,'📋','4 challenges')}
+${acc('ch-biz','Business Model & Scaling Challenges','',`
+  <div class="acc-item"><div class="acc-item-title">Hardware + Software Bundling</div><div class="acc-item-desc">Combined hardware/software products are harder to price, sell, and support at scale. Consider separating or offering hardware-as-a-service models.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Long Sales Cycles</div><div class="acc-item-desc">Enterprise agriculture sales can take 9–18 months. Build a pipeline 2–3× larger than your revenue target.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Distribution Channel Complexity</div><div class="acc-item-desc">Direct-to-farmer sales is expensive. Dealer networks, co-ops, and ag retailers offer scale but require channel partnerships.</div></div>
+  <div class="acc-item"><div class="acc-item-title">Proving ROI Quickly</div><div class="acc-item-desc">Farmers need clear, measurable ROI within 1–2 seasons. Build ROI calculators, case studies, and third-party validation early.</div></div>`,'💼','4 challenges')}
+</div>`;}
+
+function statCard(val,lbl,src,id,detail){
+  STAT_DETAILS[id] = {val,lbl,src,detail};
+  return `<div class="stat-card" onclick="toggleStat('${id}')">
+    <div class="stat-val">${val}</div>
+    <div class="stat-lbl">${lbl}</div>
+    <div class="stat-src">${src}</div>
+    <div class="expand-hint">▼ Click for details</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: FOUNDER'S JOURNEY
+// ════════════════════════════════════════════════
+function pgJourney(){return `
+<div class="page-hdr"><h1>Founder's Journey in AgTech</h1>
+<p>Navigate the path from idea to scale with clarity. Understand your entry points, stages, opportunities, and milestones specific to agricultural technology.</p></div>
+
+<div class="card"><h3>🗺️ Understanding Your Path</h3>
+<p style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:8px">There's no one-size-fits-all approach to building an AgTech startup. Your journey depends on your entry point, resources, team, and goals.</p>
+<p style="font-size:12px;color:var(--text-muted)"><strong>Key Focus Areas:</strong> Entry points → Development stages (Idea → MVP → LOI → Fundraising) → Programs &amp; opportunities → Success milestones</p></div>
+
+<div class="card"><h3>🚪 Entry Points: How Founders Get Started</h3>
+<div class="entry-grid">
+<div class="entry-card">
+  <div class="entry-path">Path 1</div>
+  <h4>Own Idea / Problem You've Identified</h4>
+  <p>You've identified a specific problem in agriculture based on personal experience, industry insight, or market research.</p>
+  <p style="margin-top:8px"><strong>Characteristics:</strong></p>
+  <ul><li>Strong domain expertise or lived experience</li><li>Deep understanding of the problem space</li><li>May need help with business model and go-to-market</li></ul>
+  <p style="margin-top:8px"><strong>Next Steps:</strong></p>
+  <ul><li>Validate the problem with potential customers</li><li>Join accelerators for structure and mentorship</li><li>Consider applying to Founder Institute or CDL</li></ul>
+</div>
+<div class="entry-card">
+  <div class="entry-path">Path 2</div>
+  <h4>Incubator / Accelerator Provided Ideas</h4>
+  <p>Joining a program that provides validated problem statements, matching you with co-founders and resources.</p>
+  <p style="margin-top:8px"><strong>Characteristics:</strong></p>
+  <ul><li>Structured approach with proven frameworks</li><li>Access to mentors and industry connections</li><li>May need to build domain expertise quickly</li></ul>
+  <p style="margin-top:8px"><strong>Next Steps:</strong></p>
+  <ul><li>Immerse yourself in the agricultural sector</li><li>Talk to farmers and industry stakeholders</li><li>Leverage program resources and network</li></ul>
+</div>
+</div></div>
+
+<div class="card"><h3>📈 Development Stages: From Idea to Scale</h3>
+${acc('s1','Stage 1','Idea Validation &amp; Customer Discovery',`<div class="stage-detail">
+<div class="stage-focus">Focus</div>
+<p>Talk to 50+ farmers and agricultural stakeholders to deeply understand the problem before building anything.</p>
+<ul><li>Conduct structured customer interviews (problem-focused, not solution-focused)</li>
+<li>Map the existing workflow and identify friction points</li>
+<li>Quantify the cost/impact of the problem</li>
+<li>Identify your beachhead customer segment</li></ul>
+<p><strong>Key Deliverable:</strong> Customer discovery summary with evidence of problem severity and willingness to pay.</p>
+</div>`,'💡')}
+${acc('s2','Stage 2','MVP / Prototype Development',`<div class="stage-detail">
+<div class="stage-focus">Focus</div>
+<p>Build the minimum viable product that demonstrates your core value proposition.</p>
+<ul><li>Define MVP scope: what's the minimum to prove your hypothesis?</li>
+<li>Set up development sprints with regular farmer feedback loops</li>
+<li>Consider hardware prototyping partners for physical products</li>
+<li>Run 3–5 beta pilots on real farms before broad launch</li></ul>
+<p><strong>Key Deliverable:</strong> Working prototype with documented farm test results.</p>
+</div>`,'🔧')}
+${acc('s3','Stage 3','LOI Collection &amp; Market Validation',`<div class="stage-detail">
+<div class="stage-focus">Focus</div>
+<p>Secure Letters of Intent (LOIs) from potential customers — the clearest signal of real market demand.</p>
+<ul><li>Target 10–20 LOIs from farms representing your core segment</li>
+<li>LOIs should include a price point and intended purchase timeline</li>
+<li>Use LOIs to validate your pricing model</li>
+<li>Present LOIs to investors as proof of traction</li></ul>
+<p><strong>Key Deliverable:</strong> Signed LOIs totaling significant first-year revenue potential.</p>
+</div>`,'📝')}
+${acc('s4','Stage 4','Pitch Deck &amp; Financial Modeling',`<div class="stage-detail">
+<div class="stage-focus">Focus</div>
+<p>Build investor materials that clearly communicate the opportunity, traction, and your team's ability to execute.</p>
+<ul><li>Develop a 10–15 slide pitch deck (problem, solution, market, traction, team, ask)</li>
+<li>Build a 3–5 year financial model with bottom-up revenue projections</li>
+<li>Create a data room: cap table, legal docs, customer contracts</li>
+<li>Prepare responses to the 20 most common investor questions</li></ul>
+<p><strong>Key Deliverable:</strong> Investor-ready pitch deck and financial model. See Documents section for templates.</p>
+</div>`,'📊')}
+${acc('s5','Stage 5','Fundraising &amp; Team Building',`<div class="stage-detail">
+<div class="stage-focus">Focus</div>
+<p>Secure capital to scale operations and build a world-class team to execute your vision.</p>
+<div class="funding-row">
+  <div class="funding-box"><div class="amt">$50K–$500K</div><div class="stg">Pre-Seed<br><span style="font-size:10px;color:var(--text-muted)">Grants, angels, accelerators</span></div></div>
+  <div class="funding-box"><div class="amt">$500K–$2M</div><div class="stg">Seed<br><span style="font-size:10px;color:var(--text-muted)">Angel investors, seed VCs</span></div></div>
+  <div class="funding-box"><div class="amt">$2M–$15M</div><div class="stg">Series A<br><span style="font-size:10px;color:var(--text-muted)">VCs focused on scaling</span></div></div>
+</div>
+<ul style="margin-top:12px"><li>Technical co-founder or CTO (if tech-heavy)</li>
+<li>Sales/BD leader with agricultural connections</li>
+<li>Advisory board with industry credibility</li>
+<li>Consider fractional roles before full-time hires</li></ul>
+</div>`,'🚀')}
+</div>
+
+<div class="card"><h3>🎯 Key AgTech Programs &amp; Opportunities</h3><div class="sub">Impactful programs designed to support AgTech founders</div>
+${tabs('progs',[
+  {label:'Accelerators',content:`
+    ${prog('SVG Ventures | THRIVE','Leading global AgTech accelerator','THRIVE is the premier AgTech-focused accelerator connecting startups with investors and corporate partners. Strong US base with global reach.',['b-green:Global','b-blue:VC Network','b-purple:Corporate Partners'])}
+    ${prog('Creative Destruction Lab (CDL)','Science-based seed-stage program','World-renowned seed-stage program for massively scalable companies with a strong AgTech stream. Intensive mentorship model.',['b-blue:Science-based','b-green:Mentor-driven','b-purple:High-growth'])}
+    ${prog('Cultivator (Canada)','Powered by Protein Industries Canada','Accelerator program for plant-based protein and agri-food companies across Canada\'s Prairies.',['b-green:Plant protein','b-yellow:Agri-food','b-blue:Canadian focus'])}
+    ${prog('Techstars Farm to Fork','Global food &amp; agriculture innovation','Part of the global Techstars network, specializing in food system innovation from farm to consumer.',['b-blue:Global'])}
+    ${prog('Yield Lab','AgTech accelerator and venture fund','Multi-regional AgTech accelerator and venture fund across North America, Europe, and Latin America.',['b-purple:Multi-region'])}`},
+  {label:'Pitch Competitions',content:`
+    ${prog('Rabobank–FoodBytes!','Global food &amp; agriculture startup pitch','International pitch competition connecting early-stage food and agriculture startups with investors and corporate partners.',['b-blue:Global','b-green:Food & Ag'])}
+    ${prog('Ag in Motion Innovation Showcase','Canada\'s largest outdoor ag show','Annual showcase for AgTech innovations at Canada\'s largest outdoor agricultural exhibition in Saskatchewan.',['b-green:Canada','b-yellow:Field demo'])}
+    ${prog('FCC Young Farmer Award','Next-gen agricultural entrepreneurs','Recognition program for young Canadian agricultural entrepreneurs demonstrating innovation and leadership.',['b-green:Canada'])}`},
+  {label:'Grants & Funding',content:`
+    ${prog('Sustainable CAP','Federal-provincial agri-food funding (2023–2028)','Up to $3.5 billion over 5 years for programs strengthening competitiveness, innovation and resiliency in the agriculture and agri-food sector.',['b-green:Canada','b-blue:Federal','b-yellow:$3.5B total'])}
+    ${prog('AgriInnovate','Repayable contributions for commercialization','Up to $10 million in repayable contributions to accelerate commercialization of innovative agri-food products and technologies.',['b-green:Canada','b-yellow:Up to $10M'])}
+    ${prog('SDTC','Cleantech funding including ag innovations','Supports development and demonstration of clean technology solutions, including agricultural technologies addressing environmental challenges.',['b-green:Canada','b-purple:Cleantech'])}`},
+  {label:'General Programs',content:`
+    ${prog('Founder Institute','Global early-stage accelerator','The world\'s largest pre-seed startup accelerator, helping founders build enduring technology companies. Strong for first-time founders.',['b-blue:Global','b-green:Pre-seed'])}
+    ${prog('North Forge','Manitoba incubator for science-based innovation','Manitoba\'s leading technology incubator supporting startups in agricultural technology, cleantech, and other science-based sectors.',['b-green:Manitoba','b-yellow:Science-based'])}
+    ${prog('Bioenterprise','Ontario agri-technology development','Helps agri-technology businesses grow through advisory services, funding connections, and commercialization support across Canada.',['b-green:Canada','b-blue:Advisory'])}`}
+])}</div>
+
+<div class="card"><h3>🏆 Success Milestones &amp; Exit Opportunities</h3>
+<div class="milestone-grid">
+<div class="milestone"><h4>📈 Growth Financing</h4>
+<p>Scale operations, expand geographically, build category leadership.</p>
+<ul><li>Series A: $2M–$15M</li><li>Series B: $10M–$50M</li><li>Series C+: $50M+</li></ul></div>
+<div class="milestone"><h4>🤝 Acquisition / Strategic Exit</h4>
+<p>Acquired by larger agribusiness, tech company, or strategic partner.</p>
+<ul><li>Agribusiness giants (Bayer, Corteva, Syngenta)</li><li>Food corporations (Cargill, ADM)</li><li>Tech companies (Microsoft, Google)</li></ul></div>
+<div class="milestone"><h4>🏛️ IPO / Public Markets</h4>
+<p>List on public markets after demonstrating sustained growth and category leadership.</p>
+<ul><li>Typically $50M+ ARR threshold</li><li>NYSE / NASDAQ / TSX options</li><li>SPAC route for faster path</li></ul></div>
+</div></div>`;}
+
+function prog(name,sub,desc,tags){
+  return `<div class="prog-card"><h4>${lnk(name,LINKS[name])}</h4><div class="prog-sub">${sub}</div><p>${desc}</p>
+  <div class="tag-row">${tags.map(t=>{const[cl,lbl]=t.split(':');return`<span class="badge ${cl}">${lbl}</span>`;}).join('')}</div></div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: GLOSSARY
+// ════════════════════════════════════════════════
+const GLOSS = {
+  '🚜 Farm Operations & Equipment':[
+    ['Row Spacing','Distance between crop rows, varies by crop type and machinery. Corn: 30", soybeans: 7.5–15", wheat: 6–8". Narrower rows often increase yield but require compatible equipment.'],
+    ['No-Till','Farming practice that leaves soil undisturbed from harvest to planting. Reduces erosion, saves fuel, but requires specialized planters and different weed management.'],
+    ['Swathing','Cutting crops and laying them in windrows to dry in the field before combining. Common for canola and some cereal crops.'],
+    ['Straight Cut','Harvesting crops directly without swathing. Requires proper timing and crop maturity.'],
+    ['Seeding Rate','Number of seeds planted per acre, measured in lbs/acre or seeds/ft². Critical for optimizing yield and plant population.'],
+    ['Variable Rate Technology (VRT)','Precision ag technology that applies inputs (seed, fertilizer, pesticides) at varying rates across a field based on soil conditions or yield maps.'],
+    ['GPS Guidance','Satellite navigation system used in farm equipment for precise field operations, reducing overlap and improving efficiency.'],
+    ['Autosteer','Automatic steering system for farm equipment using GPS, allowing hands-free operation and precise field patterns.'],
+  ],
+  '🌾 Crop Management & Agronomy':[
+    ['GDD (Growing Degree Days)','Heat unit measurement used to predict crop development stages. Each crop has specific GDD requirements for maturity.'],
+    ['Canopy Closure','Point when crop leaves completely cover the soil surface. Important for weed competition and spray application timing.'],
+    ['Lodging','When crops fall over due to weather, disease, or excessive nitrogen. Reduces yield and harvest efficiency.'],
+    ['Sclerotinia (White Mold)','Fungal disease affecting many crops, especially canola and soybeans. Forms white cottony growth and hard black sclerotia.'],
+    ['Fusarium Head Blight','Fungal disease in wheat and barley causing yield loss and mycotoxin contamination. Major quality concern.'],
+    ['Herbicide Resistance','When weeds survive herbicide applications. Major management challenge requiring rotation of herbicide modes of action.'],
+    ['Pre-Emergence','Herbicide application before crop or weed emergence. Critical timing for weed control programs.'],
+    ['Plant Back Restrictions','Time period required between herbicide application and planting sensitive crops to avoid injury.'],
+  ],
+  '🌍 Soil & Fertility':[
+    ['Soil Test','Laboratory analysis measuring soil pH, nutrient levels, and organic matter. Basis for fertilizer recommendations.'],
+    ['CEC (Cation Exchange Capacity)','Soil\'s ability to hold positively charged nutrients. Higher CEC soils can hold more nutrients and are generally more productive.'],
+    ['Soil pH','Measure of soil acidity/alkalinity (0–14 scale). Most crops prefer 6.0–7.5. Affects nutrient availability significantly.'],
+    ['N-P-K','Primary macronutrients: Nitrogen (growth & yield), Phosphorus (root development & energy), Potassium (disease resistance & water use).'],
+    ['Micronutrients','Essential elements needed in small amounts: iron, manganese, zinc, copper, boron, molybdenum. Deficiencies can limit yield.'],
+    ['Organic Matter','Decomposed plant/animal material in soil. Improves water holding capacity, nutrient retention, and soil structure.'],
+    ['Soil Compaction','Compression of soil particles reducing pore space. Limits root growth, water infiltration, and air movement.'],
+    ['Field Capacity','Maximum amount of water soil can hold against gravity. Optimal moisture level for most field operations.'],
+  ],
+  '💻 Technology & Data':[
+    ['Yield Map','Spatial representation of crop yield across a field, generated by combine harvesters with yield monitoring systems.'],
+    ['NDVI (Normalized Difference Vegetation Index)','Satellite/drone measurement of crop health and vigor using light reflectance. Scale of -1 to +1.'],
+    ['Prescription Map','Field map showing variable rate application zones for inputs like fertilizer or seed.'],
+    ['Telematics','Technology combining telecommunications and data analytics to monitor and manage farm equipment remotely.'],
+    ['IoT Sensors','Internet-connected devices measuring soil moisture, temperature, humidity, etc. for real-time field monitoring.'],
+    ['Machine Learning','AI technology that learns from farm data to predict outcomes, detect problems, or optimize operations.'],
+    ['Digital Twin','Virtual replica of a farm or field used for simulation and predictive modeling.'],
+    ['Edge Computing','Processing data locally on farm equipment rather than sending to cloud, enabling real-time decisions.'],
+  ],
+  '📈 Business & Marketing':[
+    ['Basis','Difference between local grain price and futures price. Reflects local supply/demand and transportation costs.'],
+    ['Futures Contract','Agreement to buy/sell commodity at specific price and date. Used for price risk management.'],
+    ['Crop Insurance','Federal program protecting farmers against yield or revenue losses. Premium costs shared with government.'],
+    ['Cash Rent','Fixed annual payment for farmland rental. Common alternative to crop share arrangements.'],
+    ['Crop Share','Land rental where landowner receives percentage of crop production instead of cash payment.'],
+    ['Forward Contract','Agreement to deliver grain at future date for predetermined price. Provides price certainty.'],
+    ['LDP (Loan Deficiency Payment)','Government payment when market price is below loan rate. Part of farm safety net programs.'],
+    ['Conservation Compliance','Requirements to implement soil conservation practices to remain eligible for farm programs.'],
+  ],
+  '🐄 Livestock & Specialty':[
+    ['TMR (Total Mixed Ration)','Complete feed mixture containing all nutrients for livestock. Ensures balanced nutrition.'],
+    ['Brix','Measurement of sugar content in plants. Higher brix indicates better plant health and feed quality.'],
+    ['Silage','Fermented, high-moisture stored fodder. Made from corn, alfalfa, or other crops for livestock feed.'],
+    ['Grazing Management','Controlled livestock grazing to optimize pasture health and animal performance.'],
+    ['Rotational Grazing','Moving livestock between paddocks to allow pasture recovery and maximize forage production.'],
+    ['BCS (Body Condition Score)','Visual/physical assessment of livestock fat reserves. Scale varies by species (1–5 or 1–9).'],
+    ['Estrus Synchronization','Hormonal treatment to control breeding cycles in livestock for improved reproductive efficiency.'],
+    ['Feedlot','Confined area where livestock are fed high-energy rations for rapid weight gain before slaughter.'],
+  ]
+};
+function pgGlossary(){
+  const sections = Object.entries(GLOSS).map(([cat,terms],i)=>{
+    const items = terms.map(([t,d])=>`<div class="acc-item"><div class="acc-item-title">${t}</div><div class="acc-item-desc">${d}</div></div>`).join('');
+    const icon = cat.split(' ')[0];
+    const name = cat.substring(cat.indexOf(' ')+1);
+    return acc(`gl${i}`,name,'',items,icon,`${terms.length} terms`);
+  }).join('');
+  return `<div class="page-hdr"><h1>AgTech Glossary for Tech Founders</h1>
+<p>Essential agricultural terminology and concepts for technology entrepreneurs entering the agtech space.</p></div>
+<div class="card">${sections}</div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: DOCUMENTS
+// ════════════════════════════════════════════════
+function pgDocuments(){
+  const d=(title,desc)=>`<div class="doc-row"><div><h4>${title}</h4><p>${desc}</p></div><button class="dl-btn" onclick="dlDoc('${title.replace(/'/g,'')}')">↓ Download</button></div>`;
+  return `<div class="page-hdr"><h1>Founder Documents &amp; Templates</h1>
+<p>Essential templates and agreements for building and scaling your AgTech startup.</p></div>
+<div class="card">
+${acc('di','Investor Materials','Pitch decks, financial models, and fundraising documents',`<div style="padding:2px 16px">
+${d('Pitch Deck Template','Professional pitch deck template for AgTech startups')}
+${d('SAFE Agreement','Standard SAFE investment agreement')}
+${d('Data Room Organization Template','Structure your investor data room')}
+${d('Cap Table (Excel)','Equity distribution tracking template')}
+${d('Financial Model (Excel)','3–5 year financial projection model')}
+${d('Universal Shareholder Agreement','Standard shareholder agreement template')}
+${d('Product Roadmap Template','Visual product development timeline')}
+${d('GTM Strategy Template','Go-to-market planning framework')}
+${d('Sales Script: LinkedIn Invite to Connect','Cold outreach templates')}
+${d('Sales Script: First Message After Connecting','Follow-up messaging guide')}
+${d('Sales Script: Third Message if No Response','Re-engagement templates')}
+${d('Sales Script: Booking a Call / In-Person Meeting','Meeting request templates')}
+${d('Competitive Evaluation (SWOT Excel)','Competitor analysis framework')}
+</div>`,'📊')}
+${acc('dc','Internal Company Contracts','Founder agreements, equity docs, and internal policies',`<div style="padding:2px 16px">
+${d('Founder Stock Purchase Agreement','Initial equity allocation agreement')}
+${d('Vesting Schedule Template','4-year vesting with 1-year cliff')}
+${d('IP Assignment Agreement','Intellectual property ownership transfer document')}
+${d('Confidentiality Agreement (NDA)','Standard mutual NDA')}
+${d('Advisory Board Agreement','Advisor equity and terms')}
+${d('Employment Offer Letter','Standardized offer letter template')}
+${d('Independent Contractor Agreement','Contractor terms and deliverables')}
+${d('Employee Handbook','Company policies and culture guide')}
+</div>`,'🏢')}
+${acc('dca','Customer Agreements','MSAs, SaaS agreements, and customer contracts',`<div style="padding:2px 16px">
+${d('Master Service Agreement (MSA)','Comprehensive customer services agreement')}
+${d('SaaS Subscription Agreement','Standard software subscription terms')}
+${d('Service Level Agreement (SLA)','Performance guarantees and support terms')}
+${d('Statement of Work (SOW) Template','Project scope and deliverables')}
+${d('Data Processing Addendum (DPA)','GDPR data processing terms')}
+${d('Pilot Agreement Template','Structured farm trial agreements')}
+</div>`,'📋')}
+${acc('do','Operational Templates','Board meetings, OKRs, and operational frameworks',`<div style="padding:2px 16px">
+${d('Board Meeting Deck Template','Monthly board meeting format')}
+${d('OKR Planning Template','Objectives and key results framework')}
+${d('Hiring & Interview Scorecard','Structured interview evaluation')}
+${d('Customer Discovery Call Script','Problem validation interview guide')}
+${d('User Story Mapping Template','Product feature prioritization')}
+${d('Sprint Retrospective Template','Team feedback and improvement process')}
+${d('Budget Planning Template','Departmental budget allocation')}
+</div>`,'⚙️')}
+</div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: MEDIA & INFLUENCERS
+// ════════════════════════════════════════════════
+function pgMedia(){
+  return `<div class="page-hdr"><h1>AgTech Media &amp; Influencers</h1>
+<p>Leading media outlets, thought leaders, podcasts, and content creators shaping the AgTech conversation globally.</p></div>
+<div class="card">
+${tabs('media',[
+  {label:'Media Outlets',content:[
+    {n:'AgFunderNews',d:'Leading global publication covering agri-food tech investment, innovation, and startups.',tags:['b-blue:Global','b-blue:Investment Focus']},
+    {n:'PrecisionAg',d:'Digital farming, precision technology, and data-driven agriculture insights.',tags:['b-blue:North America','b-blue:Tech Focus']},
+    {n:'Modern Farmer',d:'Modern agricultural practices, sustainability, and farming culture.',tags:['b-blue:USA','b-blue:Culture & Tech']},
+    {n:'Successful Farming',d:'Crop management, market trends, and farming best practices for row crop producers.',tags:['b-blue:USA','b-blue:Row Crops']},
+    {n:'Agri-Pulse',d:'Agricultural policy, trade, regulations, and political developments.',tags:['b-blue:USA','b-blue:Policy Focus']},
+    {n:'Western Producer',d:'Canadian Prairie agriculture news, grain markets, and livestock.',tags:['b-green:Canada','b-blue:Prairie Focus']},
+    {n:'Greenhouse Canada',d:'Controlled environment agriculture, greenhouse technology, and horticulture.',tags:['b-green:Canada','b-purple:CEA Focus']},
+    {n:'The Packer',d:'Fresh fruit and vegetable industry news, supply chain, and retail trends.',tags:['b-blue:North America','b-green:Fresh Produce']},
+    {n:'American Farm Bureau',d:'National agricultural organization providing policy insights and farmer perspectives.',tags:['b-blue:USA','b-yellow:Advocacy']},
+  ].map(m=>`<div class="media-card"><h4>${lnk(m.n,LINKS[m.n])}</h4><div class="mc-sub">${m.d}</div>
+  <div class="tag-row">${m.tags.map(t=>{const[cl,lbl]=t.split(':');return`<span class="badge ${cl}">${lbl}</span>`;}).join('')}</div></div>`).join('')},
+  {label:'Thought Leaders',content:[
+    {n:'Vonnie Estes',r:'VP of Innovation, IFPA',f:'Fresh Produce',d:'Leading voice on food tech, supply chain innovation, and fresh produce technology trends.',lk:'LinkedIn Profile'},
+    {n:'Louisa Burwood-Taylor',r:'Head of Media, AgFunder',f:'Investment',d:'Expert on agri-food tech investment trends, venture capital, and startup ecosystems.',lk:'LinkedIn Profile'},
+    {n:'Sarah Nolet',r:'Co-founder, AgThentic',f:'Strategy',d:'Innovation strategy, adoption barriers, and practical AgTech implementation insights.',lk:'LinkedIn Profile'},
+    {n:'Rob Trice',r:'Founder, Better Food Ventures',f:'VC / Investor',d:'Early-stage AgTech investor focused on sustainable food systems and technology adoption.',lk:'LinkedIn Profile'},
+    {n:'David Friedberg',r:'CEO, The Production Board',f:'Biotech',d:'Climate tech and agricultural biotechnology investor, founder of Climate Corporation.',lk:'LinkedIn Profile'},
+    {n:'Walt Duflock',r:'Founder, HarvestProfit',f:'SaaS / Founder',d:'AgTech entrepreneur and vocal advocate for farm profitability, data sovereignty, and sustainable business models.',lk:'Twitter/X Profile'},
+    {n:'Michael Gilbert',r:'Founder, Semios',f:'IoT / Founder',d:'Pioneer in agricultural IoT and precision irrigation, building scalable agtech platforms.',lk:'LinkedIn Profile'},
+    {n:'Kimberly Zerkel',r:'Director, Mixing Bowl Hub',f:'Community',d:'Building agri-food tech communities, connecting founders with resources and networks.',lk:'LinkedIn Profile'},
+    {n:'John Cornelius',r:'Co-founder, Grainwise & AgTech Advisor',f:'Operations',d:'Former startup founder turned advisor helping AgTech companies navigate from idea to commercialization.',lk:'LinkedIn Profile'},
+  ].map(p=>`<div class="person-row"><div class="avatar">${p.n[0]}</div>
+  <div class="person-info"><h4>${lnk(p.n,LINKS[p.n])}</h4>
+  <div class="person-role">${p.r} &nbsp;·&nbsp; <span class="badge b-green">${p.f}</span></div>
+  <p>${p.d}</p>${LINKS[p.n]?`<a href="${LINKS[p.n]}" target="_blank" rel="noopener" class="person-link">→ ${p.lk}</a>`:`<div class="person-link" style="cursor:pointer" onclick="toast('🔗 Profile link available in full app')">→ ${p.lk}</div>`}</div></div>`).join('')},
+  {label:'Podcasts & Video',content:[
+    {n:'Future of Agriculture',d:'Conversations with farmers, entrepreneurs, and researchers about agricultural innovation and technology.',t:'Podcast',tag:'Interviews'},
+    {n:'AgTech...So What?',d:"Sarah Nolet's podcast exploring technology adoption, commercialization, and real-world impact in agriculture.",t:'Podcast',tag:'Strategy'},
+    {n:'FarmBits',d:'Weekly ag tech news, startup funding updates, and industry analysis from the FBN team.',t:'Podcast',tag:'News'},
+    {n:'Vertical Farming Podcast',d:'CEA technology, indoor farming innovations, and controlled environment agriculture business models.',t:'Podcast',tag:'CEA Focus'},
+    {n:'Groundbreakers',d:"Syngenta's podcast featuring innovators in agriculture, sustainability, and regenerative practices.",t:'Podcast',tag:'Innovation'},
+    {n:'AgFunder Network',d:'Video interviews with agri-food tech founders, investors, and industry leaders.',t:'YouTube',tag:'Video'},
+  ].map(p=>`<div class="media-card"><h4>${lnk(p.n,LINKS[p.n])}</h4><div class="mc-sub">${p.d}</div>
+  <div class="tag-row"><span class="badge b-purple">${p.t}</span><span class="badge b-blue">${p.tag}</span></div></div>`).join('')}
+])}</div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: ECOSYSTEM OVERVIEW
+// ════════════════════════════════════════════════
+function pgEcosystem(){return `
+<div class="page-hdr"><h1>Canadian AgTech Ecosystem Overview</h1>
+<p>A comprehensive view of Canada's agricultural technology landscape, innovations, and market dynamics.</p></div>
+<div class="grid3" style="margin-bottom:18px">
+<div class="eco-card"><h4>National Agriculture Context</h4>
+<div class="eco-stat"><div class="v">~65–70M acres</div><div class="l">Field crop acres (StatsCan, 2024–25)</div></div>
+<div class="eco-stat"><div class="v">~190,000 farms</div><div class="l">Active commercial farming operations</div></div>
+<div class="eco-stat"><div class="v">$100B+ CAD</div><div class="l">Agri-food exports (2024–25, record year)</div></div>
+<div class="eco-stat"><div class="v">107M tonnes</div><div class="l">Record grain &amp; oilseed production (2024–25)</div></div>
+<div class="src-row" style="margin-top:10px">🔗 <a href="https://agriculture.canada.ca/en/sector/overview" target="_blank">AAFC Sector Overview</a> &nbsp;·&nbsp; <a href="https://www150.statcan.gc.ca/n1/pub/95-640-x/2016001/p1/p1-01-eng.htm" target="_blank">Statistics Canada</a></div></div>
+<div class="eco-card"><h4>Public Support Ecosystem</h4>
+<div class="eco-stat"><div class="v">~30% public funding share</div><div class="l">Higher than US or UK markets</div></div>
+<p style="font-size:11px;color:var(--text-muted);margin:7px 0 4px">Key Support Programs:</p>
+<span class="sup-tag">Sustainable CAP</span><span class="sup-tag">PIC Supercluster</span><span class="sup-tag">CFIN Network</span><span class="sup-tag">AgriInnovate</span></div>
+<div class="eco-card"><h4>AgTech Strengths</h4>
+<div class="eco-stat"><div class="v">Grain & Oilseeds</div><div class="l">World-class precision ag adoption</div></div>
+<div class="eco-stat"><div class="v">Canola</div><div class="l">Global biotech & crop science leader</div></div>
+<div class="eco-stat"><div class="v">Smart Farms</div><div class="l">EMILI, Olds College, Glacier Farm</div></div></div>
+</div>
+<div class="card"><h3>📊 Market Dynamics &amp; Adoption</h3>
+<div class="sub">Canadian farmers are increasingly adopting advanced technologies. The Prairie provinces lead in precision agriculture adoption.</div>
+<div class="grid3">
+<div class="market-card"><h4>Precision Agriculture</h4><p>Variable-rate application, GPS guidance. Mainstream in the Prairies.</p>
+<span class="tech-tag">GPS Guidance</span><span class="tech-tag">VRT</span><span class="tech-tag">Yield Mapping</span>
+<div class="market-val">CA$1.5–2B market by 2027</div></div>
+<div class="market-card"><h4>Farm Automation</h4><p>Robotic milking, autonomous machinery, AI-driven operations.</p>
+<span class="tech-tag">Robotics</span><span class="tech-tag">Autonomous</span><span class="tech-tag">AI-driven</span>
+<div class="market-val">+18% YoY growth</div></div>
+<div class="market-card"><h4>Smart Farming</h4><p>Test farms and demonstration sites driving adoption.</p>
+<span class="tech-tag">IoT Sensors</span><span class="tech-tag">Machine Learning</span><span class="tech-tag">Data Analytics</span>
+<div style="font-size:11px;color:var(--text-faint);margin-top:7px;font-weight:600">Adoption limited by rural connectivity</div></div>
+</div></div>
+<div class="card"><h3>🔭 Trends to Watch</h3>
+<div class="trend-grid">
+<div class="trend-item"><h4>AI in Agronomy</h4><p>CA$200–350M market by 2026. Early adoption, high growth potential in crop disease detection and yield prediction.</p><span class="badge b-blue">Very High Priority</span></div>
+<div class="trend-item"><h4>Farm Cybersecurity</h4><p>Growing need for security in connected farm systems. Emerging specialist market with limited competition.</p><span class="badge b-yellow">Emerging</span></div>
+<div class="trend-item"><h4>Carbon-Smart Farming</h4><p>Canada voluntary carbon credit market with strong government incentives for regenerative practices.</p><span class="badge b-green">Policy-driven</span></div>
+</div></div>`;}
+
+// ════════════════════════════════════════════════
+// PAGE: INDUSTRY SEGMENTS
+// ════════════════════════════════════════════════
+function pgSegments(){
+  const segs=[
+    {id:'prec',n:'Precision Farming & Digital Tools',d:'Data-driven farming, IoT sensors, satellite imagery, and farm management software.',g:'+12% YoY',
+      opp:'Scalable digital tools for Prairie farms averaging 1,000+ acres.',
+      cos:['Deveron','Semios','BinSentry','Farmers Edge','Conservis'],
+      market:'CA$1.5–2B market by 2027 — Prairie-led adoption.',
+      challenge:'Rural connectivity gaps limit real-time data use.'},
+    {id:'auto',n:'Automation & Robotics',d:'Autonomous machinery, robotic systems, and AI-driven farm operations.',g:'+18% YoY',
+      opp:'Labour shortages in grain and horticulture are driving fast adoption.',
+      cos:['4AG Robotics','DOT Technology','Prairie Robotics','CNH Industrial'],
+      market:'Strong growth across Western Canada; one of the fastest-moving segments.',
+      challenge:'High capital cost; short Prairie field seasons compress ROI timelines.'},
+    {id:'bio',n:'Agricultural Biotech & Crop Protection',d:'Biopesticides, biofertilizers, seed technologies, and biological crop protection innovations.',g:'+15% YoY',
+      opp:'Biological inputs replacing synthetics as regulatory and consumer pressure increases.',
+      cos:['Vive Crop Protection','Performance Plants','Iterion','BASF BioAg'],
+      market:'Significant PIC Supercluster investment across the Prairies.',
+      challenge:'Registration timelines of 3–7 years and high compliance costs.'},
+    {id:'cea',n:'Indoor Farming & Controlled Environments',d:'Vertical farming, hydroponics, greenhouse technology, and controlled environment agriculture.',g:'+22% YoY',
+      opp:'Year-round food production for Canadian urban centres with severe winters.',
+      cos:['GoodLeaf Farms','Mucci Farms','Little Leaf Farms','Revol Greens'],
+      market:'Fastest-growing segment globally; Canada has significant greenhouse capacity.',
+      challenge:'High energy costs in Canadian climate; government incentives essential.'},
+    {id:'food',n:'Food Tech & Supply Chain',d:'Food processing innovations, traceability, waste reduction, and supply chain optimization.',g:'+14% YoY',
+      opp:'Cold chain optimization and traceability are critical for Canadian exports.',
+      cos:['Milk Moovement','Provision Analytics','Entosystem','GreenLeaf Foods'],
+      market:'Post-COVID supply chain transformation driving rapid investment.',
+      challenge:'Legacy systems in food processing are slow to upgrade.'},
+    {id:'alt',n:'Alternative Proteins & Cannabis Technology',d:'Plant-based proteins, cultured meat, novel ingredients, and cannabis sector innovations.',g:'+6.8% YoY',
+      opp:'Canada\'s pulse and oilseed crops are ideal feedstock for protein extraction.',
+      cos:['Protein Industries Canada','Merit Functional Foods','Roquette','NWF Agriculture'],
+      market:'PIC Supercluster has deployed $540M+ across plant protein projects.',
+      challenge:'Consumer adoption slowed post-2022; sector maturing and consolidating.'},
+  ];
+  segs.forEach(s=>{ SEG_DETAILS[s.id]={name:s.n,growth:s.g,opp:s.opp,cos:s.cos,market:s.market,challenge:s.challenge}; });
+  return `<div class="page-hdr"><h1>Canadian AgTech Industry Segments</h1>
+<p>Overview of Canada's agtech sectors with notable companies, growth metrics, and founder opportunities. Click any card for details.</p></div>
+<div class="ca-banner">🇨🇦 Canada — Data current as of Q1 2026 &nbsp;·&nbsp; Growth rates reflect YoY Canadian market trends</div>
+<div class="seg-grid">${segs.map(s=>`
+<div class="seg-card" onclick="toggleSeg('${s.id}')">
+  <h4>${s.n}</h4>
+  <p>${s.d}</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+    <div class="growth-tag">↑ ${s.g}</div>
+    <span style="font-size:11px;color:var(--green)">▼ Details</span>
+  </div>
+</div>`).join('')}</div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: CROPS
+// ════════════════════════════════════════════════
+function pgCrops(){
+  const groups=[
+    {id:'grains',cat:'🌾 Grains & Cereals',count:2,crops:[
+      {n:'Wheat',d:'Canada\'s #2 field crop by area (~9M acres). Spring and winter varieties. ~75% of production is exported. Prairie provinces dominate production.'},
+      {n:'Barley',d:'~5M acres nationally. Used for malting (beer/whisky) and livestock feed. Alberta is the largest producer.'},
+    ]},
+    {id:'oils',cat:'🟡 Oilseeds',count:2,crops:[
+      {n:'Canola',d:'Canada\'s #1 field crop by value (~21M acres). Record production of 21.8M tonnes in 2024–25. Canada is the world\'s largest canola exporter. Used for cooking oil, biodiesel, and high-protein meal.'},
+      {n:'Soybeans',d:'~5M acres, primarily in Ontario and Quebec. Used for food, animal feed, and biofuels. Growing non-GMO and organic varieties market.'},
+    ]},
+    {id:'pulses',cat:'🟤 Pulses',count:1,crops:[
+      {n:'Lentils',d:'Saskatchewan produces ~95% of Canada\'s lentils. Canada is the world\'s largest lentil exporter. Strong demand from India, Turkey, and Bangladesh.'},
+    ]},
+    {id:'veg',cat:'🥔 Vegetables',count:1,crops:[
+      {n:'Potatoes',d:'~400,000 acres nationally. PEI, Manitoba, and Alberta are top producers. Used for fresh market, processing (fries, chips), and seed potatoes.'},
+    ]},
+  ];
+  return `<div class="page-hdr"><h1>Canadian Crop Production Overview</h1>
+<p>Comprehensive data and insights for major crops grown across Canada.</p></div>
+<div class="crop-stats">
+<div class="crop-stat"><div class="v">~65–70M</div><div class="l">Field Crop Acres</div></div>
+<div class="crop-stat"><div class="v">~190,000</div><div class="l">Farms Nationally</div></div>
+<div class="crop-stat"><div class="v">107M tonnes</div><div class="l">Record Grain &amp; Oilseed Production (2024–25)</div></div>
+<div class="crop-stat"><div class="v">6</div><div class="l">Major Crop Categories Tracked</div></div>
+</div>
+<div class="crop-grid">${groups.map(g=>`<div class="crop-card">
+<div class="crop-hdr" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.crop-chev').style.transform=this.nextElementSibling.classList.contains('open')?'rotate(180deg)':''">
+  <h4>${g.cat}</h4>
+  <div style="display:flex;align-items:center;gap:8px"><span class="badge b-green">${g.count} crop${g.count>1?'s':''}</span><span class="crop-chev" style="font-size:11px;color:var(--text-faint);transition:transform .2s">▼</span></div>
+</div>
+<div class="crop-body open">${g.crops.map(c=>`<div class="crop-item"><h5>${c.n}</h5><p>${c.d}</p></div>`).join('')}</div>
+</div>`).join('')}</div>`;
+}
+
+// ════════════════════════════════════════════════
+// PAGE: RESOURCES & SUPPORT
+// ════════════════════════════════════════════════
+function pgResources(){
+  const r=(n,sub,d)=>`<div class="res-card"><h4>${lnk(n,LINKS[n])}</h4><div class="res-sub">${sub}</div><p>${d}</p></div>`;
+  return `<div class="page-hdr"><h1>Resources, Networks &amp; Support Programs — Canada</h1>
+<p>Directory of ecosystem support organizations, funding programs, and industry networks in Canada.</p></div>
+<div class="card">
+${tabs('res',[
+  {label:'Government Funding',content:`
+    ${r('Sustainable CAP','Federal-provincial agri-food innovation funding (2023–2028)','Up to $3.5 billion over 5 years for programs that strengthen competitiveness, innovation and resiliency in the agriculture, agri-food and agri-based products sector.')}
+    ${r('AgriInnovate','Repayable contributions for commercialization acceleration','Up to $10 million in repayable contributions to accelerate commercialization of innovative agri-food products, services, processes and technologies.')}
+    ${r('Protein Industries Canada','Innovation supercluster for plant protein and processing','One of Canada\'s five Innovation Superclusters, investing over $540 million in plant protein and agri-food projects across the Prairies.')}
+    ${r('SDTC','Now NRC IRAP — Cleantech &amp; ag innovation funding','SDTC was wound down in 2024. Clean technology agricultural projects are now supported through NRC Industrial Research Assistance Program (IRAP) and the Clean Growth Hub.')}
+    ${r('Farm Credit Canada','$7B investment coalition for ag &amp; food innovation by 2030','FCC Capital has committed C$2B directly and convened a 20+ partner coalition totalling C$7B for Canadian agriculture and food innovation by 2030. Invests across equipment, processing, and agtech startups at seed through growth stages.')}
+    ${r('BDC Capital','Venture capital for Canadian tech companies','Business Development Bank of Canada\'s investment arm actively funds agtech and foodtech companies across Canada.')}`},
+  {label:'Industry Networks',content:`
+    ${r('Pan-Canadian Smart Farm Network','Collaborative network of smart farms across 3 provinces','A network of applied research farms across Canada working together to advance smart agriculture technologies and practices.')}
+    ${r('Creative Destruction Lab (CDL)','AgTech accelerator with multiple nodes','World-renowned seed-stage program for massively scalable, science-based companies, with specific agtech streams across Canada.')}
+    ${r('North Forge','Manitoba incubator for science-based innovation','Manitoba\'s leading technology incubator supporting startups in agricultural technology, cleantech, and other sectors.')}
+    ${r('CFIN (Canadian Food Innovation Network)','National network facilitating agri-food innovation','National network facilitating innovation in Canada\'s agri-food sector through funding, networking, and research collaboration.')}
+    ${r('SVG Ventures THRIVE','Global agtech accelerator with Canadian presence','Leading global agtech accelerator connecting startups with investors and corporate partners, active in the Canadian market.')}
+    ${r('Bioenterprise','Ontario agri-technology development organization','Helps agri-technology businesses grow through advisory services, funding connections, and commercialization support.')}`},
+  {label:'Research Institutions',content:`
+    ${r('Olds College Smart Farm','Canada\'s Smart Farm — leading AgTech research','Showcases precision agriculture technologies and sustainable farming practices on a working farm. Key testbed for AgTech innovation in Alberta.')}
+    ${r('University of Saskatchewan','Agricultural robotics and livestock research','Leading Canadian research in agricultural engineering, crop science, and livestock systems with strong industry partnerships.')}
+    ${r('Glacier Farm','Saskatchewan test site for agricultural innovations','Working farm serving as a demonstration site for agricultural innovations during Ag in Motion and year-round research.')}
+    ${r('Assiniboine Community College','Digital Agriculture program and training','Manitoba college offering specialized digital agriculture training programs and applied research in sustainable farming technologies.')}
+    ${r('Agriculture and Agri-Food Canada (AAFC)','Federal agricultural research and development','Federal department conducting research in sustainable agriculture, food safety, and agricultural innovation across Canada\'s diverse regions.')}
+    ${r('University of Guelph','Ontario AgTech research hub','Leading food and agricultural university with strong industry partnerships, incubation programs, and applied research across the food system.')}`},
+  {label:'Events & Conferences',content:`
+    <div class="event-row"><div><h4>Ag in Motion 2026</h4><div class="date">📅 July 21–23, 2026 — Langham, SK &nbsp;·&nbsp; <span style="color:var(--green);font-weight:600">Registration Open</span></div></div><button class="event-btn" onclick="window.open('https://aginmotion.ca','_blank')">Register →</button></div>
+    <div class="event-row"><div><h4>GrowCanada 2026</h4><div class="date">📅 December 1–3, 2026 — Westin Ottawa, ON</div></div><button class="event-btn" onclick="window.open('https://growcanadaconference.ca','_blank')">Details →</button></div>
+    <div class="event-row"><div><h4>Agriculture Enlightened 2026</h4><div class="date">📅 Fall 2026 (date TBC) — Winnipeg, MB</div></div><button class="event-btn" onclick="toast('📅 Agriculture Enlightened 2026 — date TBC, Winnipeg MB')">Notify Me</button></div>
+    <div class="event-row"><div><h4>Canadian Agricultural Safety Week</h4><div class="date">📅 March 9–15, 2026 — Nationwide</div></div><button class="event-btn" onclick="toast('📅 Canadian Agricultural Safety Week — March 9–15, 2026')">Details</button></div>
+    <div class="event-row"><div><h4>CAAR Retriever Conference 2026</h4><div class="date">📅 February 2026 — Banff, AB</div></div><button class="event-btn" onclick="toast('📅 CAAR Retriever Conference — February 2026, Banff AB')">Details</button></div>`}
+])}</div>`;
+}
+
+// ── SEGMENT MODAL ─────────────────────────────────────────────────
+const SEG_DETAILS = {};
+function toggleSeg(id){
+  const s = SEG_DETAILS[id];
+  if(!s) return;
+  document.getElementById('segm-title').textContent = s.name;
+  document.getElementById('segm-growth').innerHTML = `<span class="growth-tag">↑ ${s.growth}</span>`;
+  document.getElementById('segm-body').innerHTML = `
+    <div class="seg-detail open">
+      <h5>💡 Key Opportunity</h5><p>${s.opp}</p>
+      <h5>🏢 Notable Canadian Companies</h5>
+      <div class="seg-co-tags">${s.cos.map(c=>LINKS[c]?`<a href="${LINKS[c]}" target="_blank" rel="noopener" class="seg-co" style="text-decoration:none;color:var(--text-muted)">${c} 🔗</a>`:`<span class="seg-co">${c}</span>`).join('')}</div>
+      <h5>📈 Market Context</h5><p>${s.market}</p>
+      <h5>⚠️ Key Challenge</h5><p>${s.challenge}</p>
+    </div>`;
+  openModal('seg-modal');
+}
+
+// ── USER TRACKING (localStorage — swaps to Supabase on launch) ────
+const RUSSELL_EMAIL = 'russellcolevop@gmail.com';
+let currentUser = null;
+let isAdmin = false;
+let sessionPageViews = [];
+
+function getLogins(){ return JSON.parse(localStorage.getItem('agtech_logins')||'[]'); }
+function saveLogins(l){ localStorage.setItem('agtech_logins', JSON.stringify(l)); }
+function getApprovedAdmins(){ return [RUSSELL_EMAIL, ...JSON.parse(localStorage.getItem('agtech_admin_list')||'[]')]; }
+function isUserAdmin(email){ return getApprovedAdmins().includes(email); }
+
+function avatarHtml(email, method){
+  const initials = method==='google' ? 'G' : email.slice(0,2).toUpperCase();
+  const bg = method==='google' ? '#4285f4' : 'var(--green)';
+  const icon = method==='google' ? `<svg width="14" height="14" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>` : initials;
+  return `<div style="width:28px;height:28px;border-radius:50%;background:${bg};display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,.3);flex-shrink:0" title="${email}" onclick="openModal('signin-modal')">${icon}</div>`;
+}
+
+function signIn(method){
+  let email = '';
+  if(method === 'email' || method === 'signup'){
+    email = (document.getElementById('signin-email')||{}).value || '';
+    if(!email){ toast('Please enter your email address'); return; }
+    if(!/\S+@\S+\.\S+/.test(email)){ toast('Please enter a valid email address'); return; }
+  } else if(method === 'google'){
+    email = prompt('Google Sign-In (preview mode)\nEnter your Gmail address:') || '';
+    if(!email){ return; }
+    if(!/\S+@\S+\.\S+/.test(email)){ toast('Please enter a valid Gmail address'); return; }
+  }
+  const logins = getLogins();
+  const entry = { id: Date.now(), email, method, ts: new Date().toISOString(), pages:[] };
+  logins.push(entry);
+  saveLogins(logins);
+  currentUser = entry;
+  isAdmin = isUserAdmin(email);
+  closeModal('signin-modal');
+  const btn = document.getElementById('topbar-user-btn');
+  if(btn){ btn.innerHTML = avatarHtml(email, method); btn.onclick = null; }
+  // Hide email field in feedback form if signed in
+  const fbWrap = document.getElementById('fb-email-wrap');
+  if(fbWrap) fbWrap.style.display = 'none';
+  const msg = isAdmin ? '✅ Signed in as admin — ' + email : '✅ Welcome, ' + email.split('@')[0] + '!';
+  toast(msg);
+}
+
+function trackPage(page){
+  sessionPageViews.push({page, ts: new Date().toISOString()});
+  if(currentUser){
+    const logins = getLogins();
+    const idx = logins.findIndex(l=>l.id===currentUser.id);
+    if(idx>-1){ logins[idx].pages = sessionPageViews; saveLogins(logins); }
+  }
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────
+function goAdmin(){
+  if(!currentUser){
+    toast('Please sign in first to access the admin panel');
+    openModal('signin-modal');
+    return;
+  }
+  if(isUserAdmin(currentUser.email)){
+    isAdmin = true;
+    go('admin', null);
+  } else {
+    toast('❌ Admin access is restricted — contact russellcolevop@gmail.com');
+  }
+}
+
+function approveAdmin(email){
+  const admins = JSON.parse(localStorage.getItem('agtech_admin_list')||'[]');
+  if(!admins.includes(email)){ admins.push(email); localStorage.setItem('agtech_admin_list', JSON.stringify(admins)); }
+  toast('✅ Admin access granted to ' + email);
+  go('admin', null);
+}
+
+function revokeAdmin(email){
+  if(email === RUSSELL_EMAIL){ toast('Cannot revoke primary admin'); return; }
+  const admins = JSON.parse(localStorage.getItem('agtech_admin_list')||'[]');
+  localStorage.setItem('agtech_admin_list', JSON.stringify(admins.filter(e=>e!==email)));
+  toast('🔒 Admin access revoked for ' + email);
+  go('admin', null);
+}
+
+function submitFeedback(){
+  const type = (document.getElementById('fb-type')||{}).value || 'General Feedback';
+  const msg = (document.getElementById('fb-msg')||{}).value || '';
+  if(!msg.trim()){ toast('Please write some feedback first'); return; }
+  const fromEmail = currentUser ? currentUser.email : ((document.getElementById('fb-email')||{}).value || 'Anonymous');
+  const subject = encodeURIComponent('AgTech Ops Center Feedback: ' + type);
+  const body = encodeURIComponent(
+    'Feedback Type: ' + type + '\n' +
+    'From: ' + fromEmail + '\n' +
+    'Submitted: ' + new Date().toLocaleString() + '\n\n' +
+    '---\n\n' + msg
+  );
+  window.location.href = 'mailto:russellcolevop@gmail.com?subject=' + subject + '&body=' + body;
+  closeModal('feedback-modal');
+  toast('📧 Email client opened — hit Send to submit your feedback');
+}
+
+function exportCSV(){
+  const logins = getLogins();
+  if(!logins.length){ toast('No login data to export yet'); return; }
+  const rows = [['ID','Email','Method','Timestamp','Pages Viewed']];
+  logins.forEach(l=>rows.push([l.id, l.email, l.method, l.ts, (l.pages||[]).map(p=>p.page).join('|')]));
+  const csv = rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'agtech_users_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('📥 CSV exported');
+}
+
+function pgAdmin(){
+  if(!isAdmin) return `<div class="admin-lock"><h2>🔐 Admin Access Required</h2>
+    <p>Sign in as <strong>russellcolevop@gmail.com</strong> or an approved admin to access this panel.</p>
+    <button onclick="${currentUser?'goAdmin()':'openModal(\'signin-modal\')'}" style="padding:11px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">${currentUser?'Check Admin Access':'Sign In First'}</button></div>`;
+
+  const logins = getLogins();
+  const now = new Date();
+  const today = now.toDateString();
+  const weekAgo = new Date(now - 7*864e5);
+
+  const totalUsers = [...new Set(logins.map(l=>l.email))].length;
+  const todayLogins = logins.filter(l=>new Date(l.ts).toDateString()===today).length;
+  const weekLogins = logins.filter(l=>new Date(l.ts)>=weekAgo).length;
+  const totalSessions = logins.length;
+
+  // Bar chart — last 7 days
+  const days = Array.from({length:7},(_,i)=>{
+    const d = new Date(now); d.setDate(d.getDate()-(6-i)); return d;
+  });
+  const dayCounts = days.map(d=>logins.filter(l=>new Date(l.ts).toDateString()===d.toDateString()).length);
+  const maxCount = Math.max(...dayCounts, 1);
+  const chart = `<div class="bar-chart">${days.map((d,i)=>`
+    <div class="bar-col">
+      <div class="bar-count">${dayCounts[i]||''}</div>
+      <div class="bar-fill" style="height:${Math.max(4,Math.round((dayCounts[i]/maxCount)*70))}px;opacity:${dayCounts[i]>0?1:0.15}"></div>
+      <div class="bar-label">${d.toLocaleDateString('en',{weekday:'short'})}</div>
+    </div>`).join('')}</div>`;
+
+  // User table
+  const uniqueUsers = {};
+  logins.forEach(l=>{
+    if(!uniqueUsers[l.email]) uniqueUsers[l.email]={email:l.email,first:l.ts,last:l.ts,count:0,method:l.method};
+    uniqueUsers[l.email].count++;
+    if(l.ts>uniqueUsers[l.email].last) uniqueUsers[l.email].last=l.ts;
+  });
+  const userRows = Object.values(uniqueUsers).sort((a,b)=>b.last.localeCompare(a.last));
+  const methodColor = {google:'#4285f4',email:'var(--green)',signup:'#7c3aed'};
+
+  return `<div class="page-hdr"><h1>🔐 Admin Panel</h1>
+<p>User activity overview for the AgTech Founder Ops Center. Data stored locally — connects to Supabase on launch.</p></div>
+
+<div class="grid4" style="margin-bottom:20px">
+  <div class="admin-stat"><div class="av">${totalUsers}</div><div class="al">Unique Users</div></div>
+  <div class="admin-stat"><div class="av">${totalSessions}</div><div class="al">Total Sessions</div></div>
+  <div class="admin-stat"><div class="av">${todayLogins}</div><div class="al">Logins Today</div></div>
+  <div class="admin-stat"><div class="av">${weekLogins}</div><div class="al">This Week</div></div>
+</div>
+
+<div class="card"><h3>📊 Logins Per Day — Last 7 Days</h3><div class="sub">Each bar represents total sign-in sessions for that day</div>
+${logins.length ? chart : '<p style="color:var(--text-faint);font-size:13px;padding:20px 0;text-align:center">No login data yet — share the preview to start seeing activity here.</p>'}
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div><h3 style="margin-bottom:3px">👥 User Log</h3><div class="sub">All registered users and their session history</div></div>
+    <button onclick="exportCSV()" style="padding:7px 14px;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">↓ Export CSV</button>
+  </div>
+  ${userRows.length ? `<table class="admin-table"><thead><tr><th>Email</th><th>Method</th><th>First Seen</th><th>Last Login</th><th>Sessions</th><th>Admin</th></tr></thead><tbody>
+  ${userRows.map(u=>{
+    const isRussell = u.email===RUSSELL_EMAIL;
+    const alreadyAdmin = isUserAdmin(u.email);
+    const adminCell = isRussell
+      ? `<span class="badge b-green">Owner</span>`
+      : alreadyAdmin
+        ? `<span class="badge b-blue">Admin</span> <button onclick="revokeAdmin('${u.email}')" style="font-size:10px;padding:2px 7px;background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--text-muted);margin-left:4px">Revoke</button>`
+        : `<button onclick="approveAdmin('${u.email}')" style="font-size:11px;padding:3px 10px;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid);border-radius:5px;cursor:pointer;font-weight:600">+ Approve</button>`;
+    return `<tr>
+      <td style="font-weight:600;color:var(--text)">${u.email}</td>
+      <td><span class="method-dot" style="background:${methodColor[u.method]||'#999'}"></span>${u.method}</td>
+      <td>${new Date(u.first).toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td>${new Date(u.last).toLocaleDateString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+      <td style="font-weight:700;color:var(--green)">${u.count}</td>
+      <td>${adminCell}</td>
+    </tr>`;}).join('')}
+  </tbody></table>` : '<p style="color:var(--text-faint);font-size:13px;padding:16px 0;text-align:center">No users yet — once people sign in, they\'ll appear here.</p>'}
+</div>
+
+<div class="card" style="margin-top:16px"><h3>🔧 Platform Notes</h3>
+<p style="font-size:12px;color:var(--text-muted);line-height:1.7">• <strong>Preview mode:</strong> Login data is stored in your browser (localStorage). This resets if you clear your browser data.<br>
+• <strong>On launch:</strong> Connect to Supabase — swap <code style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px">saveLogins()</code> / <code style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px">getLogins()</code> with Supabase API calls.<br>
+• <strong>Google OAuth:</strong> Requires Next.js + NextAuth setup — the Google button is a placeholder in this preview.<br>
+• <strong>Password:</strong> Change <code style="font-size:11px;background:var(--hover);padding:1px 5px;border-radius:3px">ADMIN_PASS</code> in the source before sharing publicly.</p>
+</div>`;
+}
+
+// ── ROUTER ────────────────────────────────────────────────────────
+const pages = {
+  overview: pgOverview, journey: pgJourney, glossary: pgGlossary,
+  documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem,
+  segments: pgSegments, crops: pgCrops, resources: pgResources,
+  admin: pgAdmin
+};
+function render(page){
+  trackPage(page);
+  document.getElementById('page').innerHTML = (pages[page]||pgOverview)();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+render('overview');
+</script>
+</body>
+</html>
