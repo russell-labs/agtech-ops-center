@@ -492,8 +492,8 @@
       <li>Accelerator and program fit</li>
       <li>Platform feedback and feature requests</li>
     </ul>
-    <button onclick="toast('📅 Opening booking calendar...');closeModal('book-modal')" style="width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">📅 Open Booking Calendar</button>
-    <p style="text-align:center;font-size:11px;color:var(--text-muted)">Or email directly: <strong>russellcolevop@gmail.com</strong></p>
+    <button onclick="openBookingEmail()" style="width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">📅 Email Russell Your Availability</button>
+    <p style="text-align:center;font-size:11px;color:var(--text-muted)">Sends a pre-filled email to <strong>russellcolevop@gmail.com</strong></p>
   </div>
 </div>
 
@@ -791,6 +791,20 @@ function switchTab(gid,idx,btn){
   btn.classList.add('active');
   document.querySelectorAll(`[id^="${gid}-p"]`).forEach(p=>p.classList.remove('active'));
   document.getElementById(`${gid}-p${idx}`).classList.add('active');
+}
+
+// ── BOOKING EMAIL ─────────────────────────────────────────────────
+function openBookingEmail(){
+  const subject = encodeURIComponent('Sharing my availability to book a meeting with Russell Cole');
+  const body = encodeURIComponent(
+    'Hi Russell,\n\n' +
+    'Purpose of call: \n\n' +
+    'Times available this week and next week below:\n\n' +
+    '- \n- \n- \n\n' +
+    'Looking forward to connecting!'
+  );
+  window.location.href = 'mailto:russellcolevop@gmail.com?subject=' + subject + '&body=' + body;
+  closeModal('book-modal');
 }
 
 // ── DOCUMENT DOWNLOAD ─────────────────────────────────────────────
