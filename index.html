@@ -1320,6 +1320,7 @@ const DOC_URLS = {
   'IP Assignment Agreement':              null,
   'Vesting Schedule Template':            null,
   'Advisory Board Agreement':             DOC_BASE + '00_FAST_Advisor_Agreement.docx',
+  'FAST Advisor Agreement':               DOC_BASE + '00_FAST_Advisor_Agreement.docx',
   'Independent Contractor Agreement':     DOC_BASE + '02_Independent_Contractor_Agreement.docx',
   // Customer & Pilot
   'Pilot Agreement Template':             DOC_BASE + '03_AgTech_Pilot_Agreement.docx',
@@ -1348,7 +1349,7 @@ function dlDoc(name){
   const a = document.createElement('a');
   a.href = path;
   a.download = '';
-  a.target = '_blank';
+  a.download = a.href.split('/').pop();
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
