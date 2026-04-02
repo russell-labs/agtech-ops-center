@@ -969,7 +969,7 @@ function applyUser(user, isNew) {
   toast(msg);
 
   // Check for existing profile — block check, then show wizard if new
-  loadProfile(user.id).then(profile => {
+  loadProfile(user.id).then(async profile => {
     _userProfile = profile;
     if (profile && profile.blocked) {
       showBlockedScreen();
