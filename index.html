@@ -3080,9 +3080,54 @@ const pages = {
   segments: pgSegments, crops: pgCrops, resources: pgResources,
   admin: pgAdmin, profile: pgProfile
 };
+
+// Pages guests can see in full
+const GUEST_PAGES = ['overview'];
+// Pages guests get a teaser of (show top portion blurred)
+const TEASER_PAGES = ['ecosystem', 'journey', 'glossary'];
+
 function render(page){
   trackPage(page);
-  document.getElementById('page').innerHTML = (pages[page]||pgOverview)();
+  const el = document.getElementById('page');
+
+  // Signed-in users see everything
+  if (currentUser) {
+    el.innerHTML = (pages[page]||pgOverview)();
+    return;
+  }
+
+  // Guest: full access to allowed pages
+  if (GUEST_PAGES.includes(page)) {
+    el.innerHTML = (pages[page]||pgOverview)();
+    return;
+  }
+
+  // Guest: teaser pages show partial content with blur overlay
+  if (TEASER_PAGES.includes(page)) {
+    el.innerHTML = `<div style="position:relative">
+      <div style="max-height:500px;overflow:hidden;position:relative">
+        <div style="pointer-events:none">${(pages[page]||pgOverview)()}</div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:260px;background:linear-gradient(transparent,var(--bg) 85%);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+      </div>
+      ${guestGateCard(page)}
+    </div>`;
+    return;
+  }
+
+  // Guest: locked pages show gate
+  el.innerHTML = guestGateCard(page);
+}
+
+function guestGateCard(page) {
+  const pageNames = {overview:'Global AgTech Overview',journey:"Founder's Journey",glossary:'AgTech Glossary',documents:'Documents & Templates',media:'Media & Influencers',ecosystem:'Ecosystem Overview',segments:'Industry Segments',crops:'Crop Markets',resources:'Resources & Support'};
+  const pageName = pageNames[page] || 'this section';
+  return `<div style="text-align:center;padding:60px 24px;max-width:480px;margin:0 auto">
+    <div style="width:64px;height:64px;background:var(--accent-bg);border:2px solid var(--green-mid);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px">🔒</div>
+    <h2 style="font-size:22px;font-weight:800;color:var(--text);margin:0 0 10px">Sign in to access ${pageName}</h2>
+    <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin:0 0 24px">Create a free account to unlock the full platform — market data, ecosystem maps, founder resources, smart connections, and more.</p>
+    <button onclick="openModal('signin-modal')" style="padding:13px 36px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(34,197,94,.25)">Create Free Account →</button>
+    <p style="font-size:12px;color:var(--text-faint);margin-top:14px">Google sign-in · Takes 10 seconds · No credit card</p>
+  </div>`;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────
