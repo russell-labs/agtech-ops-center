@@ -1764,26 +1764,26 @@ ${tabs('media',[
     {n:'American Farm Bureau',d:'National agricultural organization providing policy insights and farmer perspectives.',tags:['b-blue:USA','b-yellow:Advocacy']},
   ].map(m=>`<div class="media-card"><h4>${lnk(m.n,LINKS[m.n])}</h4><div class="mc-sub">${m.d}</div>
   <div class="tag-row">${m.tags.map(t=>{const[cl,lbl]=t.split(':');return`<span class="badge ${cl}">${lbl}</span>`;}).join('')}</div></div>`).join('')},
-  {label:'Thought Leaders',content:`<div style="margin-bottom:14px;padding:12px 16px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px;font-size:12px;color:var(--green);display:flex;align-items:center;gap:8px"><span style="font-size:16px">🌱</span> This directory is growing — new leaders are being added regularly. Know someone who should be here? <a href="mailto:russellcolevop@gmail.com?subject=Thought%20Leader%20Suggestion" style="color:var(--green);font-weight:700;text-decoration:underline;margin-left:4px">Suggest a name</a></div>` + [
+  {label:'Thought Leaders',content:`<div style="margin-bottom:14px;padding:12px 16px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px;font-size:12px;color:var(--green);display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px">🌱</span> This directory is growing — new leaders are being added regularly. Know someone who should be here? <a onclick="window.open('mailto:russellcolevop@gmail.com?subject=Thought%20Leader%20Suggestion','_blank')" style="color:var(--green);font-weight:700;text-decoration:underline;cursor:pointer;margin-left:4px">Suggest a name</a></div>` + [
     {n:'Darren Anderson',r:'Co-Founder & CEO, Vive Crop Protection',f:'Biotech',d:'Canadian founder of nanotechnology-based crop protection products with 100+ patents granted.'},
-    {n:'Louisa Burwood-Taylor',r:'Head of Media, AgFunder',f:'Investment',d:'Expert on agri-food tech investment trends, venture capital, and startup ecosystems.'},
-    {n:'Ranveer Chandra',r:'VP & CTO Agri-Food, Microsoft',f:'AI / IoT',d:'Led Microsoft FarmBeats initiative; named one of Newsweek\'s 50 Most Disruptive Innovators.'},
-    {n:'Sylvain Charlebois',r:'Director, Agri-Food Analytics Lab, Dalhousie',f:'Policy',d:'Canadian food systems researcher and author of Canada\'s Food Price Report; frequent policy commentator.'},
-    {n:'John Cornelius',r:'Co-Founder, Grainwise & AgTech Advisor',f:'Operations',d:'Former startup founder turned advisor helping AgTech companies navigate from idea to commercialization.'},
-    {n:'Walt Duflock',r:'Founder, HarvestProfit',f:'SaaS',d:'AgTech entrepreneur and advocate for farm profitability, data sovereignty, and sustainable business models.'},
-    {n:'Vonnie Estes',r:'VP of Innovation, IFPA',f:'Fresh Produce',d:'Leading voice on food tech, supply chain innovation, and fresh produce technology trends.'},
     {n:'David Friedberg',r:'CEO, The Production Board',f:'Biotech',d:'Climate tech and agricultural biotechnology investor; founder of Climate Corporation (acquired by Monsanto).'},
-    {n:'Michael Gilbert',r:'Founder, Semios',f:'IoT',d:'Pioneer in agricultural IoT and precision irrigation; building scalable agtech platforms out of Vancouver.'},
-    {n:'Sara Menker',r:'Founder & CEO, Gro Intelligence',f:'AgData / AI',d:'Data scientist using AI to forecast agricultural and climate trends; World Economic Forum Young Global Leader.'},
-    {n:'Kimbal Musk',r:'Co-Founder, Big Green & Square Roots',f:'Sustainability',d:'Urban farming entrepreneur and food systems advocate impacting communities through learning gardens.'},
     {n:'Evan Nisselson',r:'General Partner, LDV Capital',f:'Investment',d:'Founder of leading AI and computer vision venture fund with significant AgTech portfolio.'},
-    {n:'Sarah Nolet',r:'Co-Founder, AgThentic',f:'Strategy',d:'Innovation strategy, adoption barriers, and practical AgTech implementation insights.'},
-    {n:'Robert Saik',r:'CEO & Founder, AGvisorPRO',f:'Digital Platform',d:'Named one of Canada\'s Top 50 Most Influential Agriculture Leaders; connecting farmers to ag experts digitally.'},
+    {n:'John Cornelius',r:'Co-Founder, Grainwise & AgTech Advisor',f:'Operations',d:'Former startup founder turned advisor helping AgTech companies navigate from idea to commercialization.'},
     {n:'Karen Schuett',r:'Co-Founder & CEO, Livestock Water Recycling',f:'Livestock Tech',d:'Calgary-based entrepreneur; named one of six most influential women in Canadian agriculture.'},
-    {n:'Matt Stevens',r:'Co-Founder, Finite Farms',f:'Robotics',d:'Canadian founder developing autonomous orchard robots for sustainable fruit production.'},
-    {n:'Rob Trice',r:'Founder, Better Food Ventures',f:'VC / Investor',d:'Early-stage AgTech investor focused on sustainable food systems and technology adoption.'},
+    {n:'Kimbal Musk',r:'Co-Founder, Big Green & Square Roots',f:'Sustainability',d:'Urban farming entrepreneur and food systems advocate impacting communities through learning gardens.'},
     {n:'Kimberly Zerkel',r:'Director, Mixing Bowl Hub',f:'Community',d:'Building agri-food tech communities, connecting founders with resources and networks.'},
-  ].map(p=>`<div class="person-row"><div class="avatar" style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:800">${p.n[0]}</div>
+    {n:'Louisa Burwood-Taylor',r:'Head of Media, AgFunder',f:'Investment',d:'Expert on agri-food tech investment trends, venture capital, and startup ecosystems.'},
+    {n:'Matt Stevens',r:'Co-Founder, Finite Farms',f:'Robotics',d:'Canadian founder developing autonomous orchard robots for sustainable fruit production.'},
+    {n:'Michael Gilbert',r:'Founder, Semios',f:'IoT',d:'Pioneer in agricultural IoT and precision irrigation; building scalable agtech platforms out of Vancouver.'},
+    {n:'Ranveer Chandra',r:'VP & CTO Agri-Food, Microsoft',f:'AI / IoT',d:'Led Microsoft FarmBeats initiative; named one of Newsweek\'s 50 Most Disruptive Innovators.'},
+    {n:'Rob Trice',r:'Founder, Better Food Ventures',f:'VC / Investor',d:'Early-stage AgTech investor focused on sustainable food systems and technology adoption.'},
+    {n:'Robert Saik',r:'CEO & Founder, AGvisorPRO',f:'Digital Platform',d:'Named one of Canada\'s Top 50 Most Influential Agriculture Leaders; connecting farmers to ag experts digitally.'},
+    {n:'Sara Menker',r:'Founder & CEO, Gro Intelligence',f:'AgData / AI',d:'Data scientist using AI to forecast agricultural and climate trends; World Economic Forum Young Global Leader.'},
+    {n:'Sarah Nolet',r:'Co-Founder, AgThentic',f:'Strategy',d:'Innovation strategy, adoption barriers, and practical AgTech implementation insights.'},
+    {n:'Sylvain Charlebois',r:'Director, Agri-Food Analytics Lab, Dalhousie',f:'Policy',d:'Canadian food systems researcher and author of Canada\'s Food Price Report; frequent policy commentator.'},
+    {n:'Vonnie Estes',r:'VP of Innovation, IFPA',f:'Fresh Produce',d:'Leading voice on food tech, supply chain innovation, and fresh produce technology trends.'},
+    {n:'Walt Duflock',r:'Founder, HarvestProfit',f:'SaaS',d:'AgTech entrepreneur and advocate for farm profitability, data sovereignty, and sustainable business models.'},
+  ].map(p=>`<div class="person-row"><div class="avatar" style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:800">${p.n.split(' ')[0][0]}${p.n.split(' ').pop()[0]}</div>
   <div class="person-info"><h4>${lnk(p.n,LINKS[p.n])}</h4>
   <div class="person-role">${p.r} &nbsp;·&nbsp; <span class="badge b-green">${p.f}</span></div>
   <p>${p.d}</p>${LINKS[p.n]?`<a href="${LINKS[p.n]}" target="_blank" rel="noopener" class="person-link">→ View Profile</a>`:''}</div></div>`).join('')},
