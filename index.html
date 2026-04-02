@@ -745,9 +745,13 @@ function applyUser(user, isNew) {
   const msg = isAdmin ? '✅ Welcome back, Admin!' : '✅ Welcome, ' + name + '!';
   toast(msg);
 
-  // Check for existing profile — show wizard if new
+  // Check for existing profile — block check, then show wizard if new
   loadProfile(user.id).then(profile => {
     _userProfile = profile;
+    if (profile && profile.blocked) {
+      showBlockedScreen();
+      return;
+    }
     if (!profile || !profile.onboarding_complete) {
       setTimeout(() => showWizard(), 800);
     }
@@ -1945,6 +1949,43 @@ async function updateAdminNotes(userId, notes, tags) {
   return !error;
 }
 
+async function blockUser(userId, reason) {
+  const { error } = await _supabase.from('profiles').update({ blocked: true, blocked_reason: reason || '', blocked_at: new Date().toISOString() }).eq('id', userId);
+  if (error) { console.error('blockUser error:', error); toast('Error blocking user'); return false; }
+  // Update cache
+  const p = _allProfiles.find(x => x.id === userId);
+  if (p) { p.blocked = true; p.blocked_reason = reason; p.blocked_at = new Date().toISOString(); }
+  toast('🚫 User blocked');
+  render('admin');
+  return true;
+}
+
+async function unblockUser(userId) {
+  const { error } = await _supabase.from('profiles').update({ blocked: false, blocked_reason: '', blocked_at: null }).eq('id', userId);
+  if (error) { console.error('unblockUser error:', error); toast('Error unblocking user'); return false; }
+  const p = _allProfiles.find(x => x.id === userId);
+  if (p) { p.blocked = false; p.blocked_reason = ''; p.blocked_at = null; }
+  toast('✅ User unblocked');
+  render('admin');
+  return true;
+}
+
+function promptBlockUser(userId, userName) {
+  const reason = prompt('Block ' + userName + '?\n\nOptionally provide a reason (or leave blank):');
+  if (reason === null) return; // cancelled
+  blockUser(userId, reason);
+}
+
+function showBlockedScreen() {
+  document.getElementById('page').innerHTML = `<div style="text-align:center;padding:80px 20px">
+    <div style="font-size:64px;margin-bottom:16px">🚫</div>
+    <h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px">Access Restricted</h2>
+    <p style="font-size:14px;color:var(--text-muted);max-width:400px;margin:0 auto 24px;line-height:1.7">Your access to Founder Ops Center has been restricted. If you believe this is an error, please contact the administrator.</p>
+    <a href="mailto:russellcolevop@gmail.com" style="padding:11px 28px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block">Contact Russell Cole</a>
+    <div style="margin-top:16px"><button onclick="signOut()" style="padding:8px 20px;background:none;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);cursor:pointer">Sign Out</button></div>
+  </div>`;
+}
+
 // ══════════════════════════════════════════════════════════════
 // ONBOARDING WIZARD
 // ══════════════════════════════════════════════════════════════
@@ -2269,8 +2310,11 @@ function pgAdmin(){
   }
 
   const profiles = _allProfiles;
+  const blocked = profiles.filter(p=>p.blocked).length;
+
   const filtered = profiles.filter(p => {
-    if (adminFilter !== 'all' && p.persona !== adminFilter) return false;
+    if (adminFilter === 'blocked' && !p.blocked) return false;
+    else if (adminFilter !== 'all' && adminFilter !== 'blocked' && p.persona !== adminFilter) return false;
     if (adminSearch) {
       const s = adminSearch.toLowerCase();
       return (p.full_name||'').toLowerCase().includes(s) || (p.email||'').toLowerCase().includes(s) || (p.organization||'').toLowerCase().includes(s) || (p.company_name||'').toLowerCase().includes(s);
@@ -2294,6 +2338,7 @@ function pgAdmin(){
     const expanded = adminExpandedUser === p.id;
     const initials = (p.full_name||p.email||'?').slice(0,2).toUpperCase();
     const tags = [];
+    if (p.blocked) tags.push(`<span class="admin-tag" style="background:#fef2f2;color:#dc2626">🚫 Blocked</span>`);
     if (p.persona) tags.push(`<span class="admin-tag tag-${p.persona}">${personaIcon(p.persona)} ${personaLabel(p.persona)}</span>`);
     if (p.company_stage) tags.push(`<span class="admin-tag" style="background:var(--hover);color:var(--text-muted)">${(COMPANY_STAGES.find(s=>s.id===p.company_stage)||{}).label||p.company_stage}</span>`);
     if (p.funding_status) tags.push(`<span class="admin-tag" style="background:var(--hover);color:var(--text-muted)">${(FUNDING_STATUSES.find(s=>s.id===p.funding_status)||{}).label||p.funding_status}</span>`);
@@ -2335,7 +2380,16 @@ function pgAdmin(){
           <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint);display:block;margin-bottom:4px">📝 Admin Notes (only you can see this)</label>
           <textarea class="admin-notes-area" id="notes-${p.id}" onblur="saveNotes('${p.id}')">${p.admin_notes||''}</textarea>
         </div>
-        <div style="margin-top:8px;font-size:10px;color:var(--text-faint)">Joined: ${new Date(p.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · Last updated: ${new Date(p.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="font-size:10px;color:var(--text-faint)">Joined: ${new Date(p.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · Last updated: ${new Date(p.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+          ${p.email !== RUSSELL_EMAIL ? (p.blocked
+            ? `<div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;color:#dc2626;font-weight:700">🚫 Blocked${p.blocked_reason ? ' — '+p.blocked_reason : ''}</span>
+                <button onclick="event.stopPropagation();unblockUser('${p.id}')" style="padding:5px 14px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✅ Unblock</button>
+              </div>`
+            : `<button onclick="event.stopPropagation();promptBlockUser('${p.id}','${(p.full_name||p.email).replace(/'/g,"\\'")}')" style="padding:5px 14px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🚫 Block User</button>`
+          ) : ''}
+        </div>
       </div>`;
     }
 
@@ -2387,6 +2441,7 @@ function pgAdmin(){
       ${filterBtn('industry_pro','🏭 Industry',profiles.filter(p=>p.persona==='industry_pro').length)}
       ${filterBtn('service_provider','⚖️ Services',profiles.filter(p=>p.persona==='service_provider').length)}
       ${filterBtn('government','🏛️ Government',profiles.filter(p=>p.persona==='government').length)}
+      ${blocked ? filterBtn('blocked','🚫 Blocked',blocked) : ''}
     </div>
     ${filtered.length ? userCards : '<div style="text-align:center;padding:32px;color:var(--text-faint)"><div style="font-size:28px;margin-bottom:8px">🔍</div><p>No users match your filters. Adjust filters or search terms.</p></div>'}
   </div>`;
