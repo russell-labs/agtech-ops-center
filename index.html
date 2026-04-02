@@ -1431,14 +1431,14 @@ ${[{c:'🇺🇸 United States',d:'Silicon Valley, Midwest autonomy, precision ag
 ${currentUser ? `<div class="card"><h3>🏦 Active AgTech Investors</h3><div class="sub">VC firms and funds actively writing checks in agricultural technology. Sorted by stage.</div>
 <div style="margin-bottom:14px;padding:10px 14px;background:var(--hover);border-radius:8px;font-size:11px;color:var(--text-faint)">📅 Last verified: Q1 2026 &middot; Auto-updated monthly &middot; Sources: Crunchbase, PitchBook, fund websites</div>
 
-${acc('vc-seed','\U0001f331 Pre-Seed & Seed ($100K \u2013 $3M)','6 active firms',`<div style="padding:8px 16px"><div class="vc-grid">
+${acc('vc-seed','Pre-Seed & Seed ($100K – $3M)','6 active firms',`<div style="padding:8px 16px"><div class="vc-grid">
 ${[
-  {n:'Radicle Growth',f:'Pre-seed/seed specialist with on-farm trials & mentorship. Launched AgRogue Growth Partners with Land O\'Lakes.',s:'$125K\u2013$2M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Big Idea Ventures',f:'Plant-based & alt protein seed fund. Demo days + corporate intros.',s:'$125K\u2013$500K',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'AgFunder',f:'Agri-foodtech platform investor. Broad portfolio across upstream & downstream.',s:'$200K\u2013$2M',r:'\U0001f1fa\U0001f1f8 Global',cl:'b-blue'},
-  {n:'The Yield Lab',f:'Global seed accelerator/VC with programs in NA, EU, LATAM, APAC. $100K per company + 9-month cohort.',s:'$100K\u2013$1M',r:'\U0001f30d Global',cl:'b-blue'},
-  {n:'Fledge',f:'Conscious company accelerator. Ag, energy, health. Revenue-based funding model.',s:'$15K\u2013$50K',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'SVG Ventures | THRIVE',f:'Global agri-food accelerator. Up to $1M for challenge winners. Pioneer Fund for early-stage.',s:'$500K\u2013$1M',r:'\U0001f30d Global',cl:'b-blue'},
+  {n:'Radicle Growth',f:'Pre-seed/seed specialist with on-farm trials & mentorship. Launched AgRogue Growth Partners with Land O\'Lakes.',s:'$125K–$2M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Big Idea Ventures',f:'Plant-based & alt protein seed fund. Demo days + corporate intros.',s:'$125K–$500K',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'AgFunder',f:'Agri-foodtech platform investor. Broad portfolio across upstream & downstream.',s:'$200K–$2M',r:'🇺🇸 Global',cl:'b-blue'},
+  {n:'The Yield Lab',f:'Global seed accelerator/VC with programs in NA, EU, LATAM, APAC. $100K per company + 9-month cohort.',s:'$100K–$1M',r:'🌍 Global',cl:'b-blue'},
+  {n:'Fledge',f:'Conscious company accelerator. Ag, energy, health. Revenue-based funding model.',s:'$15K–$50K',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'SVG Ventures | THRIVE',f:'Global agri-food accelerator. Up to $1M for challenge winners. Pioneer Fund for early-stage.',s:'$500K–$1M',r:'🌍 Global',cl:'b-blue'},
 ].map(v=>`<div class="vc-item" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
   <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px"><div class="vc-name" style="font-weight:700;font-size:13px">${lnk(v.n,LINKS[v.n])}</div><span class="badge ${v.cl}" style="font-size:10px;flex-shrink:0">${v.r}</span></div>
   <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:6px">${v.f}</div>
@@ -1446,20 +1446,20 @@ ${[
 </div>`).join('')}
 </div></div>`,'💰','6 firms')}
 
-${acc('vc-ab','\U0001f680 Series A & B ($2M \u2013 $50M)','12 active firms',`<div style="padding:8px 16px"><div class="vc-grid">
+${acc('vc-ab','Series A & B ($2M – $50M)','12 active firms',`<div style="padding:8px 16px"><div class="vc-grid">
 ${[
-  {n:'S2G Ventures',f:'Food & agriculture impact investor. Broad portfolio from farm to fork. One of the most active ag-focused funds.',s:'$2M\u2013$25M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Finistere Ventures',f:'Global ag biotech VC based in San Diego. Seed through late-stage in crop science, biologicals, and precision ag.',s:'$2M\u2013$15M',r:'\U0001f30d Global',cl:'b-blue'},
-  {n:'DCVC (Data Collective)',f:'Deep tech VC applying AI/ML to agriculture. Computational biology, precision ag, climate.',s:'$5M\u2013$30M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Congruent Ventures',f:'Climate + ag fund backing early-stage tools for sustainable food systems.',s:'$1M\u2013$5M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'ACRE Venture Partners',f:'Food & agriculture-focused. Scalable innovations across the value chain. Based in New York.',s:'$2M\u2013$15M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Cultivian Sandbox',f:'Growth-stage food & ag. 33 portfolio companies. Partnership between Cultivian Ventures & Sandbox Industries.',s:'$3M\u2013$15M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Anterra Capital',f:'Global AgTech specialist. Precision ag, biotech, sustainability. Based in Netherlands.',s:'$2M\u2013$20M',r:'\U0001f1f3\U0001f1f1 Europe',cl:'b-purple'},
-  {n:'Pontifax AgriFood',f:'Israel-based global ag fund. Crop protection, biologicals, food safety.',s:'$3M\u2013$15M',r:'\U0001f1ee\U0001f1f1 Israel',cl:'b-yellow'},
-  {n:'Astanor Ventures',f:'EU sustainable food & ag. Climate-positive food systems. Brussels-based.',s:'$2M\u2013$20M',r:'\U0001f1ea\U0001f1fa Europe',cl:'b-purple'},
-  {n:'Lewis & Clark AgriFood',f:'Early-stage farm tech. Specialty crops, water, biologicals.',s:'$1M\u2013$10M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Omnivore',f:'India & emerging market ag investor. Smallholder farming tech, supply chain.',s:'$1M\u2013$10M',r:'\U0001f1ee\U0001f1f3 India',cl:'b-orange'},
-  {n:'Supply Change Capital',f:'Early-stage food, ag & climate. Cultural shifts and consumer-driven innovation.',s:'$500K\u2013$5M',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
+  {n:'S2G Ventures',f:'Food & agriculture impact investor. Broad portfolio from farm to fork. One of the most active ag-focused funds.',s:'$2M–$25M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Finistere Ventures',f:'Global ag biotech VC based in San Diego. Seed through late-stage in crop science, biologicals, and precision ag.',s:'$2M–$15M',r:'🌍 Global',cl:'b-blue'},
+  {n:'DCVC (Data Collective)',f:'Deep tech VC applying AI/ML to agriculture. Computational biology, precision ag, climate.',s:'$5M–$30M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Congruent Ventures',f:'Climate + ag fund backing early-stage tools for sustainable food systems.',s:'$1M–$5M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'ACRE Venture Partners',f:'Food & agriculture-focused. Scalable innovations across the value chain. Based in New York.',s:'$2M–$15M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Cultivian Sandbox',f:'Growth-stage food & ag. 33 portfolio companies. Partnership between Cultivian Ventures & Sandbox Industries.',s:'$3M–$15M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Anterra Capital',f:'Global AgTech specialist. Precision ag, biotech, sustainability. Based in Netherlands.',s:'$2M–$20M',r:'🇳🇱 Europe',cl:'b-purple'},
+  {n:'Pontifax AgriFood',f:'Israel-based global ag fund. Crop protection, biologicals, food safety.',s:'$3M–$15M',r:'🇮🇱 Israel',cl:'b-yellow'},
+  {n:'Astanor Ventures',f:'EU sustainable food & ag. Climate-positive food systems. Brussels-based.',s:'$2M–$20M',r:'🇪🇺 Europe',cl:'b-purple'},
+  {n:'Lewis & Clark AgriFood',f:'Early-stage farm tech. Specialty crops, water, biologicals.',s:'$1M–$10M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Omnivore',f:'India & emerging market ag investor. Smallholder farming tech, supply chain.',s:'$1M–$10M',r:'🇮🇳 India',cl:'b-orange'},
+  {n:'Supply Change Capital',f:'Early-stage food, ag & climate. Cultural shifts and consumer-driven innovation.',s:'$500K–$5M',r:'🇺🇸 USA',cl:'b-green'},
 ].map(v=>`<div class="vc-item" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
   <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px"><div class="vc-name" style="font-weight:700;font-size:13px">${lnk(v.n,LINKS[v.n])}</div><span class="badge ${v.cl}" style="font-size:10px;flex-shrink:0">${v.r}</span></div>
   <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:6px">${v.f}</div>
@@ -1467,12 +1467,12 @@ ${[
 </div>`).join('')}
 </div></div>`,'💰','12 firms')}
 
-${acc('vc-growth','\U0001f3db\ufe0f Growth & Late-Stage ($20M+)','4 active firms',`<div style="padding:8px 16px"><div class="vc-grid">
+${acc('vc-growth','Growth & Late-Stage ($20M+)','4 active firms',`<div style="padding:8px 16px"><div class="vc-grid">
 ${[
-  {n:'Continental Grain',f:'Founded 1813. 200+ years in agriculture. 87 portfolio companies across biotech, digital, alt protein, animal health.',s:'$10M\u2013$100M+',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Fall Line Capital',f:'Sustainable agriculture and farmland. Long-term value creation through land + tech.',s:'$10M\u2013$50M+',r:'\U0001f1fa\U0001f1f8 USA',cl:'b-green'},
-  {n:'Temasek (Vertex Ventures)',f:'Singapore sovereign wealth fund. Active in global agtech through multiple vehicles.',s:'$20M\u2013$100M+',r:'\U0001f1f8\U0001f1ec APAC',cl:'b-orange'},
-  {n:'Leaps by Bayer',f:'Impact investment arm of Bayer. Breakthrough agriculture, health, and sustainability.',s:'$30M\u2013$100M+',r:'\U0001f1e9\U0001f1ea Global',cl:'b-blue'},
+  {n:'Continental Grain',f:'Founded 1813. 200+ years in agriculture. 87 portfolio companies across biotech, digital, alt protein, animal health.',s:'$10M–$100M+',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Fall Line Capital',f:'Sustainable agriculture and farmland. Long-term value creation through land + tech.',s:'$10M–$50M+',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Temasek (Vertex Ventures)',f:'Singapore sovereign wealth fund. Active in global agtech through multiple vehicles.',s:'$20M–$100M+',r:'🇸🇬 APAC',cl:'b-orange'},
+  {n:'Leaps by Bayer',f:'Impact investment arm of Bayer. Breakthrough agriculture, health, and sustainability.',s:'$30M–$100M+',r:'🇩🇪 Global',cl:'b-blue'},
 ].map(v=>`<div class="vc-item" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
   <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px"><div class="vc-name" style="font-weight:700;font-size:13px">${lnk(v.n,LINKS[v.n])}</div><span class="badge ${v.cl}" style="font-size:10px;flex-shrink:0">${v.r}</span></div>
   <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:6px">${v.f}</div>
@@ -1486,22 +1486,22 @@ ${[
 
 ${acc('acc-prog','Active Accelerator Programs','9 programs',`<div style="padding:8px 16px">
 ${[
-  {n:'SVG Ventures | THRIVE',loc:'\U0001f30d Global (Silicon Valley HQ)',type:'Accelerator + Investment',d:'Premier global agri-food accelerator. Annual THRIVE Challenge with up to $1M investment. Pioneer Fund for early-stage. 400+ alumni.',app:'Rolling \u2014 Challenge opens annually',url:'https://thriveagrifood.com'},
-  {n:'The Yield Lab',loc:'\U0001f30d Global (NA, EU, LATAM, APAC)',type:'Accelerator + Seed Fund',d:'$100K investment per company. 9-month cohort with mentorship and ag industry network. 4 regional funds across continents.',app:'Annual cohort \u2014 applications open Q3',url:'https://theyieldlab.com'},
-  {n:'AgLaunch365',loc:'\U0001f1fa\U0001f1f8 Memphis, TN',type:'Accelerator + Farm Trials',d:'Multi-stage challenge connecting startups with farmers for real-world trials. Multi-year farm partnerships. Strong Midwest network.',app:'Applications open \u2014 Sep 15 deadline for 2026 cohort',url:'https://aglaunch.com'},
-  {n:'Creative Destruction Lab (CDL)',loc:'\U0001f1e8\U0001f1e6\U0001f1fa\U0001f1f8\U0001f1ea\U0001f1fa 12 global sites',type:'Seed Program (No equity, no fees)',d:'Objectives-based program for science-based companies. Oct\u2013Jun sessions. 12 sites across Canada, US, and Europe. AgTech-specific streams.',app:'Annual \u2014 applications open spring',url:'https://creativedestructionlab.com'},
-  {n:'Cultivator (Conexus)',loc:'\U0001f1e8\U0001f1e6\U0001f1ec\U0001f1e7 Canada + UK',type:'Accelerator',d:'5 cohorts completed. 62 companies supported. $161.9M raised by alumni. 3-month program with in-person kickoff in Saskatchewan.',app:'Cohort 5 active \u2014 Cohort 6 expected Q3 2026',url:'https://www.cultivator.ca'},
-  {n:'Plug and Play AgTech',loc:'\U0001f30d Global (Silicon Valley HQ)',type:'Accelerator + Corporate Innovation',d:'Connects startups with major agribusiness corporations. Demo days, pilot opportunities, and follow-on investment.',app:'Rolling applications',url:'https://www.plugandplaytechcenter.com'},
-  {n:'EIT Food RisingFoodStars',loc:'\U0001f1ea\U0001f1fa Europe',type:'Accelerator + Network',d:'EU co-funded. Supports agri-food innovation across Europe. Mentorship, funding access, and market validation.',app:'Annual cohort \u2014 check EIT Food website',url:'https://www.eitfood.eu'},
-  {n:'Radicle Growth Lab',loc:'\U0001f1fa\U0001f1f8 San Diego',type:'Accelerator + Seed Fund',d:'Pre-seed specialist with on-farm trial infrastructure. AgRogue Growth Partners with Land O\'Lakes. Up to $10M across startups.',app:'Rolling applications',url:'https://www.radicle.vc'},
-  {n:'Cycle Momentum',loc:'\U0001f1fa\U0001f1f8 Global',type:'Accelerator',d:'Sustainable agriculture and food systems. Global ecosystem of founders, investors, researchers, and food producers.',app:'Check website for cohort windows',url:'https://cyclemomentum.com'},
+  {n:'SVG Ventures | THRIVE',loc:'🌍 Global (Silicon Valley HQ)',type:'Accelerator + Investment',d:'Premier global agri-food accelerator. Annual THRIVE Challenge with up to $1M investment. Pioneer Fund for early-stage. 400+ alumni.',app:'Rolling — Challenge opens annually',url:'https://thriveagrifood.com'},
+  {n:'The Yield Lab',loc:'🌍 Global (NA, EU, LATAM, APAC)',type:'Accelerator + Seed Fund',d:'$100K investment per company. 9-month cohort with mentorship and ag industry network. 4 regional funds across continents.',app:'Annual cohort — applications open Q3',url:'https://theyieldlab.com'},
+  {n:'AgLaunch365',loc:'🇺🇸 Memphis, TN',type:'Accelerator + Farm Trials',d:'Multi-stage challenge connecting startups with farmers for real-world trials. Multi-year farm partnerships. Strong Midwest network.',app:'Applications open — Sep 15 deadline for 2026 cohort',url:'https://aglaunch.com'},
+  {n:'Creative Destruction Lab (CDL)',loc:'🇨🇦🇺🇸🇪🇺 12 global sites',type:'Seed Program (No equity, no fees)',d:'Objectives-based program for science-based companies. Oct–Jun sessions. 12 sites across Canada, US, and Europe. AgTech-specific streams.',app:'Annual — applications open spring',url:'https://creativedestructionlab.com'},
+  {n:'Cultivator (Conexus)',loc:'🇨🇦🇬🇧 Canada + UK',type:'Accelerator',d:'5 cohorts completed. 62 companies supported. $161.9M raised by alumni. 3-month program with in-person kickoff in Saskatchewan.',app:'Cohort 5 active — Cohort 6 expected Q3 2026',url:'https://www.cultivator.ca'},
+  {n:'Plug and Play AgTech',loc:'🌍 Global (Silicon Valley HQ)',type:'Accelerator + Corporate Innovation',d:'Connects startups with major agribusiness corporations. Demo days, pilot opportunities, and follow-on investment.',app:'Rolling applications',url:'https://www.plugandplaytechcenter.com'},
+  {n:'EIT Food RisingFoodStars',loc:'🇪🇺 Europe',type:'Accelerator + Network',d:'EU co-funded. Supports agri-food innovation across Europe. Mentorship, funding access, and market validation.',app:'Annual cohort — check EIT Food website',url:'https://www.eitfood.eu'},
+  {n:'Radicle Growth Lab',loc:'🇺🇸 San Diego',type:'Accelerator + Seed Fund',d:'Pre-seed specialist with on-farm trial infrastructure. AgRogue Growth Partners with Land O\'Lakes. Up to $10M across startups.',app:'Rolling applications',url:'https://www.radicle.vc'},
+  {n:'Cycle Momentum',loc:'🇺🇸 Global',type:'Accelerator',d:'Sustainable agriculture and food systems. Global ecosystem of founders, investors, researchers, and food producers.',app:'Check website for cohort windows',url:'https://cyclemomentum.com'},
 ].map(p=>`<div style="padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin-bottom:10px">
   <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:6px;margin-bottom:6px">
-    <h4 style="margin:0;font-size:14px">${p.url ? '<a href="'+p.url+'" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none">'+p.n+' \u2197</a>' : p.n}</h4>
+    <h4 style="margin:0;font-size:14px">${p.url ? '<a href="'+p.url+'" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none">'+p.n+' ↗</a>' : p.n}</h4>
     <div style="display:flex;gap:4px;flex-shrink:0"><span class="badge b-blue" style="font-size:10px">${p.type}</span><span class="badge b-green" style="font-size:10px">${p.loc}</span></div>
   </div>
   <p style="font-size:12px;color:var(--text-muted);line-height:1.6;margin:0 0 8px">${p.d}</p>
-  <div style="font-size:11px;color:var(--green);font-weight:600">\U0001f4cb ${p.app}</div>
+  <div style="font-size:11px;color:var(--green);font-weight:600">📋 ${p.app}</div>
 </div>`).join('')}
 </div>`,'🎓','9 programs')}
 </div>` : `<div class="card" style="text-align:center;padding:36px 24px">
@@ -3050,15 +3050,15 @@ function pgInvestorOpportunity() {
 
   const investorUsers = _allProfiles.filter(p => p.admin_tags && p.admin_tags.includes('investor_access'));
   const accessList = investorUsers.length
-    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${investorUsers.map(p => `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:16px;font-size:11px;color:var(--green);font-weight:600">${p.full_name||p.email} <button onclick="revokeInvestorAccess('${p.id}')" style="background:none;border:none;color:var(--text-faint);font-size:14px;cursor:pointer;padding:0 2px;line-height:1" title="Revoke access">\u00d7</button></span>`).join('')}</div>`
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${investorUsers.map(p => `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:16px;font-size:11px;color:var(--green);font-weight:600">${p.full_name||p.email} <button onclick="revokeInvestorAccess('${p.id}')" style="background:none;border:none;color:var(--text-faint);font-size:14px;cursor:pointer;padding:0 2px;line-height:1" title="Revoke access">×</button></span>`).join('')}</div>`
     : '<p style="font-size:12px;color:var(--text-faint);margin-top:6px">No investors granted access yet. Use the toggle on any user profile in the Directory tab.</p>';
 
   return `
   <div class="card" style="background:linear-gradient(135deg, rgba(99,102,241,.06), rgba(99,102,241,.02));border:1px solid rgba(99,102,241,.2)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <div style="width:44px;height:44px;border-radius:12px;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff">\U0001f4bc</div>
+      <div style="width:44px;height:44px;border-radius:12px;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff">💼</div>
       <div>
-        <h3 style="margin:0">Investor Opportunity \u2014 Confidential</h3>
+        <h3 style="margin:0">Investor Opportunity — Confidential</h3>
         <div class="sub" style="margin:2px 0 0">Investment overview for FounderOps Center. Admin-only unless shared with specific investors.</div>
       </div>
     </div>
@@ -3069,28 +3069,28 @@ function pgInvestorOpportunity() {
   </div>
 
   <div class="card" style="margin-top:16px;border-left:4px solid #6366f1">
-    <h3 style="margin:0 0 4px">\U0001f30d The Problem</h3>
+    <h3 style="margin:0 0 4px">🌍 The Problem</h3>
     <div class="sub" style="margin-bottom:14px">Why AgTech ecosystems need FounderOps Center</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
       <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">\U0001f9f1 Ecosystem Fragmentation</div>
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">🧱 Ecosystem Fragmentation</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Startups, investors, accelerators, farms, and government programs all operate in silos. No single platform connects the dots across the AgTech landscape.</div>
       </div>
       <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">\U0001f4ca Information Asymmetry</div>
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">📊 Information Asymmetry</div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Founders waste months discovering programs, investors, and resources that ecosystem managers already know about. Investors miss deal flow that never reaches them.</div>
       </div>
       <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">\U0001f6e0\ufe0f Tool Sprawl</div>
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Ecosystem managers patch together Airtable, Google Drive, email, and generic CRMs. No tool understands AgTech natively \u2014 personas, funding stages, crop sectors, or seasonal cycles.</div>
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">🛠️ Tool Sprawl</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Ecosystem managers patch together Airtable, Google Drive, email, and generic CRMs. No tool understands AgTech natively — personas, funding stages, crop sectors, or seasonal cycles.</div>
       </div>
     </div>
   </div>
 
   <div class="card" style="margin-top:16px;border-left:4px solid var(--green)">
-    <h3 style="margin:0 0 4px">\U0001f4a1 The Solution</h3>
-    <div class="sub" style="margin-bottom:14px">FounderOps Center \u2014 AgTech Ecosystem Intelligence</div>
-    <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">FounderOps Center is the operating system for AgTech ecosystems. We combine curated market intelligence, founder resources, and a matching engine into one platform \u2014 giving founders the map and connections they need, while giving ecosystem managers and investors the data layer they've never had.</p>
+    <h3 style="margin:0 0 4px">💡 The Solution</h3>
+    <div class="sub" style="margin-bottom:14px">FounderOps Center — AgTech Ecosystem Intelligence</div>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">FounderOps Center is the operating system for AgTech ecosystems. We combine curated market intelligence, founder resources, and a matching engine into one platform — giving founders the map and connections they need, while giving ecosystem managers and investors the data layer they've never had.</p>
     <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
       <div style="text-align:center;padding:16px;background:var(--accent-bg);border-radius:10px;border:1px solid var(--green-mid)">
         <div style="font-size:28px;font-weight:900;color:var(--green)">${total}</div>
@@ -3112,21 +3112,21 @@ function pgInvestorOpportunity() {
   </div>
 
   <div class="card" style="margin-top:16px">
-    <h3 style="margin:0 0 4px">\U0001f680 Growth Roadmap</h3>
+    <h3 style="margin:0 0 4px">🚀 Growth Roadmap</h3>
     <div class="sub" style="margin-bottom:14px">Three phases to category leadership</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
       <div style="padding:16px;border:2px solid var(--green);border-radius:10px;background:var(--accent-bg)">
-        <span class="badge b-green" style="margin-bottom:8px">Phase 1 \u2014 Now</span>
+        <span class="badge b-green" style="margin-bottom:8px">Phase 1 — Now</span>
         <h4 style="margin:0 0 6px;font-size:14px">Intelligence Platform</h4>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Curated AgTech market data, investor & accelerator directory, founder resources, ecosystem maps, and smart connections matching engine. Live and growing.</div>
       </div>
       <div style="padding:16px;border:1px solid var(--border);border-radius:10px">
-        <span class="badge b-blue" style="margin-bottom:8px">Phase 2 \u2014 Next</span>
+        <span class="badge b-blue" style="margin-bottom:8px">Phase 2 — Next</span>
         <h4 style="margin:0 0 6px;font-size:14px">Multi-Ecosystem CRM</h4>
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Private workspaces for ecosystem managers \u2014 pipeline tracking, relationship management, document vault, and opt-in cross-ecosystem data sharing. Replaces Airtable + Google Drive.</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Private workspaces for ecosystem managers — pipeline tracking, relationship management, document vault, and opt-in cross-ecosystem data sharing. Replaces Airtable + Google Drive.</div>
       </div>
       <div style="padding:16px;border:1px solid var(--border);border-radius:10px">
-        <span class="badge b-purple" style="margin-bottom:8px">Phase 3 \u2014 Scale</span>
+        <span class="badge b-purple" style="margin-bottom:8px">Phase 3 — Scale</span>
         <h4 style="margin:0 0 6px;font-size:14px">Thesis-Driven Fund</h4>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Proprietary deal flow from the platform powers a data-driven AgTech fund. Every startup tracked, every introduction made, every pipeline conversion becomes investment intelligence.</div>
       </div>
@@ -3134,12 +3134,12 @@ function pgInvestorOpportunity() {
   </div>
 
   <div class="card" style="margin-top:16px;border-left:4px solid #6366f1">
-    <h3 style="margin:0 0 4px">\U0001f4b0 The Opportunity</h3>
+    <h3 style="margin:0 0 4px">💰 The Opportunity</h3>
     <div class="sub" style="margin-bottom:14px">Early-stage investment in the platform powering AgTech ecosystem coordination</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:16px">
       <div style="padding:16px;background:var(--hover);border-radius:10px;border:1px solid var(--border);text-align:center">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Equity Available</div>
-        <div style="font-size:28px;font-weight:900;color:#6366f1">5\u201320%</div>
+        <div style="font-size:28px;font-weight:900;color:#6366f1">5–20%</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Flexible based on investment size</div>
       </div>
       <div style="padding:16px;background:var(--hover);border-radius:10px;border:1px solid var(--border);text-align:center">
@@ -3152,13 +3152,13 @@ function pgInvestorOpportunity() {
       </div>
     </div>
     <div style="padding:14px;background:linear-gradient(135deg, rgba(99,102,241,.06), rgba(99,102,241,.02));border:1px solid rgba(99,102,241,.2);border-radius:10px">
-      <div style="font-size:13px;line-height:1.7;color:var(--text-muted)"><strong style="color:var(--text)">Why now:</strong> AgTech VC investment hit $5.7B in 2024 across 736 startups, but the ecosystem infrastructure connecting founders to capital is still held together with spreadsheets. FounderOps Center is building the connective tissue \u2014 and every user, every ecosystem node, every introduction made on the platform increases the value of the network and the quality of deal flow for future fund investments.</div>
+      <div style="font-size:13px;line-height:1.7;color:var(--text-muted)"><strong style="color:var(--text)">Why now:</strong> AgTech VC investment hit $5.7B in 2024 across 736 startups, but the ecosystem infrastructure connecting founders to capital is still held together with spreadsheets. FounderOps Center is building the connective tissue — and every user, every ecosystem node, every introduction made on the platform increases the value of the network and the quality of deal flow for future fund investments.</div>
     </div>
   </div>
 
   <div class="card" style="margin-top:16px;text-align:center;padding:28px">
     <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px">Interested in learning more? Let's talk.</p>
-    <button onclick="window.open('mailto:russellcolevop@gmail.com?subject=FounderOps%20Center%20-%20Investment%20Inquiry&body=Hi%20Russell%2C%0A%0AI%20reviewed%20the%20investor%20opportunity%20on%20FounderOps%20Center%20and%20would%20like%20to%20discuss%20further.%0A%0A','_blank')" style="padding:13px 36px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.25)">\U0001f4e7 Email Russell About Investing</button>
+    <button onclick="window.open('mailto:russellcolevop@gmail.com?subject=FounderOps%20Center%20-%20Investment%20Inquiry&body=Hi%20Russell%2C%0A%0AI%20reviewed%20the%20investor%20opportunity%20on%20FounderOps%20Center%20and%20would%20like%20to%20discuss%20further.%0A%0A','_blank')" style="padding:13px 36px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.25)">📧 Email Russell About Investing</button>
   </div>`;
 }
 
@@ -3170,7 +3170,7 @@ async function grantInvestorAccess(userId) {
   const { error } = await _supabase.from('profiles').update({ admin_tags: tags }).eq('id', userId);
   if (error) { console.error('grantInvestor error:', error); toast('Error granting access'); return; }
   p.admin_tags = tags;
-  toast('\U0001f4bc Investor access granted to ' + (p.full_name || p.email));
+  toast('💼 Investor access granted to ' + (p.full_name || p.email));
   render('admin');
 }
 
@@ -3181,7 +3181,7 @@ async function revokeInvestorAccess(userId) {
   const { error } = await _supabase.from('profiles').update({ admin_tags: tags }).eq('id', userId);
   if (error) { console.error('revokeInvestor error:', error); toast('Error revoking access'); return; }
   p.admin_tags = tags;
-  toast('\U0001f512 Investor access revoked for ' + (p.full_name || p.email));
+  toast('🔒 Investor access revoked for ' + (p.full_name || p.email));
   render('admin');
 }
 
