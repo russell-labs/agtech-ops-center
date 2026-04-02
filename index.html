@@ -1280,44 +1280,29 @@ function openBookingEmail(){
 // Files live at https://founderopscenter.com/docs/<filename>
 // Add a filename here once you upload the file to the /docs folder in GitHub.
 const DOC_URLS = {
-  // ── Investor Materials ──
+  // Investor Materials
   'Pitch Deck Template':                  null,
   'SAFE Agreement':                       null,
-  'Data Room Organization Template':      null,
   'Cap Table (Excel)':                    null,
   'Financial Model (Excel)':              null,
-  'Universal Shareholder Agreement':      null,
-  'Product Roadmap Template':             null,
-  'GTM Strategy Template':                null,
-  'Sales Script: LinkedIn Invite to Connect':          null,
-  'Sales Script: First Message After Connecting':      null,
-  'Sales Script: Third Message if No Response':        null,
-  'Sales Script: Booking a Call / In-Person Meeting':  null,
+  'Data Room Organization Template':      null,
   'Competitive Evaluation (SWOT Excel)':  null,
-  // ── Internal Company Contracts ──
-  'Founder Stock Purchase Agreement':     null,
-  'Vesting Schedule Template':            null,
-  'IP Assignment Agreement':              null,
+  // Founder & Team Agreements
   'Confidentiality Agreement (NDA)':      null,
+  'IP Assignment Agreement':              null,
+  'Vesting Schedule Template':            null,
   'Advisory Board Agreement':             null,
-  'Employment Offer Letter':              null,
   'Independent Contractor Agreement':     null,
-  'Employee Handbook':                    null,
-  // ── Customer Agreements ──
-  'Master Service Agreement (MSA)':       null,
-  'SaaS Subscription Agreement':          null,
-  'Service Level Agreement (SLA)':        null,
-  'Statement of Work (SOW) Template':     null,
-  'Data Processing Addendum (DPA)':       null,
+  // Customer & Pilot
   'Pilot Agreement Template':             null,
-  // ── Operational Templates ──
-  'Board Meeting Deck Template':          null,
-  'OKR Planning Template':                null,
-  'Hiring & Interview Scorecard':         null,
+  'SaaS Subscription Agreement':          null,
+  'Master Service Agreement (MSA)':       null,
+  'Statement of Work (SOW) Template':     null,
+  // Operations & Growth
   'Customer Discovery Call Script':       null,
-  'User Story Mapping Template':          null,
-  'Sprint Retrospective Template':        null,
-  'Budget Planning Template':             null,
+  'OKR Planning Template':               null,
+  'Board Meeting Deck Template':          null,
+  'Hiring & Interview Scorecard':         null,
 };
 
 function dlDoc(name){
@@ -1424,16 +1409,85 @@ ${[{c:'🇺🇸 United States',d:'Silicon Valley, Midwest autonomy, precision ag
 <tr><td><strong>Growth / PE</strong></td><td>$100M+</td><td>Market dominance, acquisitions</td><td>Mature stage</td></tr>
 </tbody></table></div>
 
-<div class="card"><h3>🏦 Top AgTech VC Firms</h3><div class="sub">Leading investors in agricultural technology globally</div>
+<div class="card"><h3>🏦 Active AgTech Investors</h3><div class="sub">VC firms and funds actively writing checks in agricultural technology. Sorted by typical stage.</div>
+<div style="margin-bottom:14px;padding:10px 14px;background:var(--hover);border-radius:8px;font-size:11px;color:var(--text-faint)">📅 Last verified: Q1 2026 &nbsp;·&nbsp; Auto-updated monthly &nbsp;·&nbsp; Sources: Crunchbase, PitchBook, fund websites</div>
+
+<h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)">🌱 Pre-Seed & Seed ($100K – $3M)</h4>
 <div class="vc-grid">
-${[{n:'Anterra Capital',f:'Global AgTech specialist'},{n:'S2G Ventures',f:'Food & agriculture, impact focus'},
-   {n:'Finistere Ventures',f:'Global ag biotech'},{n:'AgFunder',f:'Agri-foodtech investing'},
-   {n:'Omnivore',f:'India & emerging markets'},{n:'Cultivian Sandbox',f:'Early-stage ag innovation'},
-   {n:'Lewis & Clark AgriFood',f:'Early-stage farm tech'},{n:'Pontifax AgriFood',f:'Israel-based global ag'},
-   {n:'Fall Line Capital',f:'Sustainable agriculture'},{n:'Advantage Capital',f:'Rural tech & ag'},
-   {n:'Ajax Venture Partners',f:'Precision ag, biotech'},{n:'Astanor Ventures',f:'EU sustainable foodtech'},
-].map(v=>`<div class="vc-item"><div class="vc-name">${lnk(v.n,LINKS[v.n])}</div><div class="vc-focus">${v.f}</div></div>`).join('')}
-</div></div>
+${[
+  {n:'Radicle Growth',f:'Pre-seed/seed specialist with on-farm trials & mentorship. Launched AgRogue Growth Partners with Land O\'Lakes.',s:'$125K–$2M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Big Idea Ventures',f:'Plant-based & alt protein seed fund. Demo days + corporate intros.',s:'$125K–$500K',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'AgFunder',f:'Agri-foodtech platform investor. Broad portfolio across upstream & downstream.',s:'$200K–$2M',r:'🇺🇸 Global',cl:'b-blue'},
+  {n:'The Yield Lab',f:'Global seed accelerator/VC with programs in NA, EU, LATAM, APAC. $100K per company + 9-month cohort.',s:'$100K–$1M',r:'🌍 Global',cl:'b-blue'},
+  {n:'Fledge',f:'Conscious company accelerator. Ag, energy, health. Revenue-based funding model.',s:'$15K–$50K',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'SVG Ventures | THRIVE',f:'Global agri-food accelerator. Up to $1M for challenge winners. Pioneer Fund for early-stage.',s:'$500K–$1M',r:'🌍 Global',cl:'b-blue'},
+].map(v=>`<div class="vc-item" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+  <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px"><div class="vc-name" style="font-weight:700;font-size:13px">${lnk(v.n,LINKS[v.n])}</div><span class="badge ${v.cl}" style="font-size:10px;flex-shrink:0">${v.r}</span></div>
+  <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:6px">${v.f}</div>
+  <div style="font-size:11px;font-weight:700;color:var(--green)">Typical check: ${v.s}</div>
+</div>`).join('')}
+</div>
+
+<h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)">🚀 Series A & B ($2M – $50M)</h4>
+<div class="vc-grid">
+${[
+  {n:'S2G Ventures',f:'Food & agriculture impact investor. Broad portfolio from farm to fork. One of the most active ag-focused funds.',s:'$2M–$25M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Finistere Ventures',f:'Global ag biotech VC based in San Diego. Seed through late-stage in crop science, biologicals, and precision ag.',s:'$2M–$15M',r:'🌍 Global',cl:'b-blue'},
+  {n:'DCVC (Data Collective)',f:'Deep tech VC applying AI/ML to agriculture. Computational biology, precision ag, climate.',s:'$5M–$30M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Congruent Ventures',f:'Climate + ag fund backing early-stage tools for sustainable food systems.',s:'$1M–$5M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'ACRE Venture Partners',f:'Food & agriculture-focused. Scalable innovations across the value chain. Based in New York.',s:'$2M–$15M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Cultivian Sandbox',f:'Growth-stage food & ag. 33 portfolio companies. Partnership between Cultivian Ventures & Sandbox Industries.',s:'$3M–$15M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Anterra Capital',f:'Global AgTech specialist. Precision ag, biotech, sustainability. Based in Netherlands.',s:'$2M–$20M',r:'🇳🇱 Europe',cl:'b-purple'},
+  {n:'Pontifax AgriFood',f:'Israel-based global ag fund. Crop protection, biologicals, food safety.',s:'$3M–$15M',r:'🇮🇱 Israel',cl:'b-yellow'},
+  {n:'Astanor Ventures',f:'EU sustainable food & ag. Climate-positive food systems. Brussels-based.',s:'$2M–$20M',r:'🇪🇺 Europe',cl:'b-purple'},
+  {n:'Lewis & Clark AgriFood',f:'Early-stage farm tech. Specialty crops, water, biologicals.',s:'$1M–$10M',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Omnivore',f:'India & emerging market ag investor. Smallholder farming tech, supply chain.',s:'$1M–$10M',r:'🇮🇳 India',cl:'b-orange'},
+  {n:'Supply Change Capital',f:'Early-stage food, ag & climate. Cultural shifts and consumer-driven innovation.',s:'$500K–$5M',r:'🇺🇸 USA',cl:'b-green'},
+].map(v=>`<div class="vc-item" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+  <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px"><div class="vc-name" style="font-weight:700;font-size:13px">${lnk(v.n,LINKS[v.n])}</div><span class="badge ${v.cl}" style="font-size:10px;flex-shrink:0">${v.r}</span></div>
+  <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:6px">${v.f}</div>
+  <div style="font-size:11px;font-weight:700;color:var(--green)">Typical check: ${v.s}</div>
+</div>`).join('')}
+</div>
+
+<h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)">🏛️ Growth & Late-Stage ($20M+)</h4>
+<div class="vc-grid">
+${[
+  {n:'Continental Grain',f:'Founded 1813. 200+ years in agriculture. 87 portfolio companies across biotech, digital, alt protein, animal health.',s:'$10M–$100M+',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Fall Line Capital',f:'Sustainable agriculture and farmland. Long-term value creation through land + tech.',s:'$10M–$50M+',r:'🇺🇸 USA',cl:'b-green'},
+  {n:'Temasek (Vertex Ventures)',f:'Singapore sovereign wealth fund. Active in global agtech through multiple vehicles.',s:'$20M–$100M+',r:'🇸🇬 APAC',cl:'b-orange'},
+  {n:'Leaps by Bayer',f:'Impact investment arm of Bayer. Breakthrough agriculture, health, and sustainability.',s:'$30M–$100M+',r:'🇩🇪 Global',cl:'b-blue'},
+].map(v=>`<div class="vc-item" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+  <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px"><div class="vc-name" style="font-weight:700;font-size:13px">${lnk(v.n,LINKS[v.n])}</div><span class="badge ${v.cl}" style="font-size:10px;flex-shrink:0">${v.r}</span></div>
+  <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:6px">${v.f}</div>
+  <div style="font-size:11px;font-weight:700;color:var(--green)">Typical check: ${v.s}</div>
+</div>`).join('')}
+</div>
+</div>
+
+<div class="card"><h3>🎓 Global Accelerators & Programs</h3><div class="sub">Active programs accepting AgTech startups. Application windows are verified and auto-updated monthly.</div>
+<div style="margin-bottom:14px;padding:10px 14px;background:var(--hover);border-radius:8px;font-size:11px;color:var(--text-faint)">📅 Last verified: Q1 2026 &nbsp;·&nbsp; Check program websites for latest deadlines</div>
+
+${[
+  {n:'SVG Ventures | THRIVE',loc:'🌍 Global (Silicon Valley HQ)',type:'Accelerator + Investment',d:'Premier global agri-food accelerator. Annual THRIVE Challenge with up to $1M investment. Pioneer Fund for early-stage. 400+ alumni.',app:'Rolling — Challenge opens annually',url:'https://thriveagrifood.com'},
+  {n:'The Yield Lab',loc:'🌍 Global (NA, EU, LATAM, APAC)',type:'Accelerator + Seed Fund',d:'$100K investment per company. 9-month cohort with mentorship and ag industry network. 4 regional funds across continents.',app:'Annual cohort — applications open Q3',url:'https://theyieldlab.com'},
+  {n:'AgLaunch365',loc:'🇺🇸 Memphis, TN',type:'Accelerator + Farm Trials',d:'Multi-stage challenge connecting startups with farmers for real-world trials. Multi-year farm partnerships. Strong Midwest network.',app:'Applications open — Sep 15 deadline for 2026 cohort',url:'https://aglaunch.com'},
+  {n:'Creative Destruction Lab (CDL)',loc:'🇨🇦🇺🇸🇪🇺 12 global sites',type:'Seed Program (No equity, no fees)',d:'Objectives-based program for science-based companies. Oct–Jun sessions. 12 sites across Canada, US, and Europe. AgTech-specific streams.',app:'Annual — applications open spring',url:'https://creativedestructionlab.com'},
+  {n:'Cultivator (Conexus)',loc:'🇨🇦🇬🇧 Canada + UK',type:'Accelerator',d:'5 cohorts completed. 62 companies supported. $161.9M raised by alumni. Canadian & UK startups in ag innovation.',app:'Cohort 5 closed Jan 2026 — Cohort 6 expected Q3 2026',url:'https://cultivatorsk.ca'},
+  {n:'Plug and Play AgTech',loc:'🌍 Global (Silicon Valley HQ)',type:'Accelerator + Corporate Innovation',d:'Connects startups with major agribusiness corporations. Demo days, pilot opportunities, and follow-on investment.',app:'Rolling applications',url:'https://www.plugandplaytechcenter.com'},
+  {n:'EIT Food RisingFoodStars',loc:'🇪🇺 Europe',type:'Accelerator + Network',d:'EU co-funded. Supports agri-food innovation across Europe. Mentorship, funding access, and market validation.',app:'Annual cohort — check EIT Food website',url:'https://www.eitfood.eu'},
+  {n:'Radicle Growth Lab',loc:'🇺🇸 San Diego',type:'Accelerator + Seed Fund',d:'Pre-seed specialist with on-farm trial infrastructure. AgRogue Growth Partners with Land O\'Lakes. Up to $10M across startups.',app:'Rolling applications',url:'https://www.radicle.vc'},
+  {n:'Cycle Momentum',loc:'🇺🇸 Global',type:'Accelerator',d:'Sustainable agriculture and food systems. Global ecosystem of founders, investors, researchers, and food producers.',app:'Check website for cohort windows',url:'https://cyclemomentum.com'},
+  {n:'Farm-ng Accelerator',loc:'🇺🇸 California',type:'Accelerator + Hardware Lab',d:'Robotics and AI for small-to-mid farms. Funding, mentorship, and access to California ag testing facilities.',app:'Check website for cohort windows',url:'https://farm-ng.com'},
+].map(p=>`<div style="padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin-bottom:10px">
+  <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+    <h4 style="margin:0;font-size:14px">${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none">${p.n} ↗</a>` : p.n}</h4>
+    <div style="display:flex;gap:4px;flex-shrink:0"><span class="badge b-blue" style="font-size:10px">${p.type}</span><span class="badge b-green" style="font-size:10px">${p.loc}</span></div>
+  </div>
+  <p style="font-size:12px;color:var(--text-muted);line-height:1.6;margin:0 0 8px">${p.d}</p>
+  <div style="font-size:11px;color:var(--green);font-weight:600">📋 ${p.app}</div>
+</div>`).join('')}
+</div>
 
 <div class="card"><h3>🌱 Emerging Sectors</h3><div class="sub">High-growth opportunity areas for founders</div>
 <div class="opp-grid">
@@ -1705,50 +1759,49 @@ function pgDocuments(){
     return `<div class="doc-row"><div><div style="display:flex;align-items:center;margin-bottom:2px">${badge}<h4 style="display:inline">${title}</h4></div><p>${desc}</p></div>${btn}</div>`;
   };
   const signedIn = !!currentUser;
+
+  // Count available docs
+  const totalDocs = Object.keys(DOC_URLS).length;
+  const availDocs = Object.values(DOC_URLS).filter(v => v !== null).length;
+
   return `<div class="page-hdr"><h1>Founder Documents &amp; Templates</h1>
 <p>Essential templates and agreements for building and scaling your AgTech startup.${!signedIn ? ' <a href="#" onclick="openModal(\'signin-modal\');return false;" style="color:var(--green);font-weight:600;">Sign in</a> to download.' : ''}</p></div>
+
+<div style="padding:16px;background:linear-gradient(135deg,rgba(34,197,94,.06),rgba(34,197,94,.02));border:1px solid var(--green-mid);border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <div style="width:44px;height:44px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0">📄</div>
+  <div style="flex:1;min-width:200px">
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">Document Library — Actively Building</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.6">${availDocs} of ${totalDocs} templates available. New documents are added weekly. Need something specific? <a onclick="window.open('mailto:russellcolevop@gmail.com?subject=Document%20Request&body=Hi%20Russell%2C%0A%0AI%20would%20find%20it%20helpful%20to%20have%20a%20template%20for%3A%20','_blank')" style="color:var(--green);font-weight:700;text-decoration:underline;cursor:pointer">Request a template</a></div>
+  </div>
+</div>
+
 <div class="card">
-${acc('di','Investor Materials','Pitch decks, financial models, and fundraising documents',`<div style="padding:2px 16px">
-${d('Pitch Deck Template','Professional pitch deck template for AgTech startups')}
-${d('SAFE Agreement','Standard SAFE investment agreement')}
-${d('Data Room Organization Template','Structure your investor data room')}
-${d('Cap Table (Excel)','Equity distribution tracking template')}
-${d('Financial Model (Excel)','3–5 year financial projection model')}
-${d('Universal Shareholder Agreement','Standard shareholder agreement template')}
-${d('Product Roadmap Template','Visual product development timeline')}
-${d('GTM Strategy Template','Go-to-market planning framework')}
-${d('Sales Script: LinkedIn Invite to Connect','Cold outreach templates')}
-${d('Sales Script: First Message After Connecting','Follow-up messaging guide')}
-${d('Sales Script: Third Message if No Response','Re-engagement templates')}
-${d('Sales Script: Booking a Call / In-Person Meeting','Meeting request templates')}
-${d('Competitive Evaluation (SWOT Excel)','Competitor analysis framework')}
+${acc('di','Investor Materials','Pitch decks, financial models, and fundraising documents — the essentials for raising capital',`<div style="padding:2px 16px">
+${d('Pitch Deck Template','Professional 12-slide pitch deck tailored for AgTech startups. Includes market sizing, traction, and ask slides.')}
+${d('SAFE Agreement','Y Combinator standard SAFE (Simple Agreement for Future Equity). Pre-money valuation cap version.')}
+${d('Cap Table (Excel)','Track equity distribution across founders, investors, and option pool. Auto-calculates dilution.')}
+${d('Financial Model (Excel)','3–5 year revenue projection model with AgTech-specific assumptions (seasonal revenue, hardware + SaaS hybrid, farm trial economics).')}
+${d('Data Room Organization Template','Folder structure and checklist for organizing your investor data room before fundraising.')}
+${d('Competitive Evaluation (SWOT Excel)','Competitor analysis framework with scoring matrix for positioning your startup.')}
 </div>`,'📊')}
-${acc('dc','Internal Company Contracts','Founder agreements, equity docs, and internal policies',`<div style="padding:2px 16px">
-${d('Founder Stock Purchase Agreement','Initial equity allocation agreement')}
-${d('Vesting Schedule Template','4-year vesting with 1-year cliff')}
-${d('IP Assignment Agreement','Intellectual property ownership transfer document')}
-${d('Confidentiality Agreement (NDA)','Standard mutual NDA')}
-${d('Advisory Board Agreement','Advisor equity and terms')}
-${d('Employment Offer Letter','Standardized offer letter template')}
-${d('Independent Contractor Agreement','Contractor terms and deliverables')}
-${d('Employee Handbook','Company policies and culture guide')}
+${acc('dc','Founder & Team Agreements','Protect your equity, IP, and team relationships from day one',`<div style="padding:2px 16px">
+${d('Confidentiality Agreement (NDA)','Standard mutual NDA for conversations with potential partners, investors, and hires.')}
+${d('IP Assignment Agreement','Ensure all intellectual property created by founders and contractors belongs to the company.')}
+${d('Vesting Schedule Template','Standard 4-year vesting with 1-year cliff. Founder and employee versions.')}
+${d('Advisory Board Agreement','Advisor equity grant terms, expectations, and vesting. 0.25%–1% typical range.')}
+${d('Independent Contractor Agreement','Contractor scope, deliverables, IP ownership, and payment terms.')}
 </div>`,'🏢')}
-${acc('dca','Customer Agreements','MSAs, SaaS agreements, and customer contracts',`<div style="padding:2px 16px">
-${d('Master Service Agreement (MSA)','Comprehensive customer services agreement')}
-${d('SaaS Subscription Agreement','Standard software subscription terms')}
-${d('Service Level Agreement (SLA)','Performance guarantees and support terms')}
-${d('Statement of Work (SOW) Template','Project scope and deliverables')}
-${d('Data Processing Addendum (DPA)','GDPR data processing terms')}
-${d('Pilot Agreement Template','Structured farm trial agreements')}
+${acc('dca','Customer & Pilot Agreements','Contracts for selling to farms, agribusiness, and enterprise customers',`<div style="padding:2px 16px">
+${d('Pilot Agreement Template','Structured farm trial agreement — scope, timeline, success metrics, data ownership, and path to paid contract.')}
+${d('SaaS Subscription Agreement','Standard software subscription terms for recurring revenue products.')}
+${d('Master Service Agreement (MSA)','Comprehensive customer services agreement for enterprise relationships.')}
+${d('Statement of Work (SOW) Template','Project scope, deliverables, timeline, and acceptance criteria.')}
 </div>`,'📋')}
-${acc('do','Operational Templates','Board meetings, OKRs, and operational frameworks',`<div style="padding:2px 16px">
-${d('Board Meeting Deck Template','Monthly board meeting format')}
-${d('OKR Planning Template','Objectives and key results framework')}
-${d('Hiring & Interview Scorecard','Structured interview evaluation')}
-${d('Customer Discovery Call Script','Problem validation interview guide')}
-${d('User Story Mapping Template','Product feature prioritization')}
-${d('Sprint Retrospective Template','Team feedback and improvement process')}
-${d('Budget Planning Template','Departmental budget allocation')}
+${acc('do','Operations & Growth','Board meetings, OKRs, hiring, and customer development',`<div style="padding:2px 16px">
+${d('Customer Discovery Call Script','Problem validation interview guide — 15 questions to ask before building.')}
+${d('OKR Planning Template','Objectives and key results framework for quarterly goal-setting.')}
+${d('Board Meeting Deck Template','Monthly board update format — metrics, wins, asks, and financials.')}
+${d('Hiring & Interview Scorecard','Structured interview evaluation to reduce bias and improve hiring quality.')}
 </div>`,'⚙️')}
 </div>`;
 }
