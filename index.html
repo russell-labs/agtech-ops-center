@@ -2509,6 +2509,28 @@ function completenessBarHtml(pct) {
   return `<div class="completeness-bar"><div class="completeness-fill ${cls}" style="width:${pct}%"></div></div>`;
 }
 
+function getMissingFields(p) {
+  if (!p) return [];
+  const labels = {
+    full_name:'Full Name', persona:'Persona', linkedin_url:'LinkedIn URL', location:'Location',
+    company_name:'Company Name', company_stage:'Company Stage', what_building:'What You\'re Building',
+    funding_status:'Funding Status', investment_stages:'Investment Stages', check_size:'Check Size',
+    expertise_areas:'Expertise Areas', institution:'Institution', research_focus:'Research Focus',
+    organization:'Organization', job_title:'Job Title', service_type:'Service Type'
+  };
+  const required = ['full_name','persona','linkedin_url','location'];
+  const personaFields = {
+    founder:['company_name','company_stage','what_building','funding_status'],
+    investor:['investment_stages','check_size'], farmer:['location'],
+    advisor:['expertise_areas'], researcher:['institution','research_focus'],
+    industry_pro:['organization','job_title'], service_provider:['service_type'],
+    government:['organization']
+  };
+  const extra = personaFields[p.persona] || [];
+  const all = [...required, ...extra];
+  return all.filter(f => { const v = p[f]; return !(Array.isArray(v) ? v.length > 0 : (v && String(v).trim())); }).map(f => labels[f] || f);
+}
+
 function badgesGridHtml(earnedBadges) {
   return `<div style="display:flex;flex-wrap:wrap;gap:6px">${BADGE_DEFS.map(b => {
     const earned = earnedBadges.includes(b.id);
@@ -2983,7 +3005,14 @@ function pgProfile() {
       <span style="font-size:20px;font-weight:800;color:${completeness>=100?'var(--green)':completeness>=50?'#f59e0b':'#ef4444'}">${completeness}%</span>
     </div>
     ${completenessBarHtml(completeness)}
-    ${completeness < 100 ? `<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Complete your profile to earn the <strong>Verified Profile</strong> badge and unlock higher tiers. Required: name, persona, LinkedIn, location${p.persona==='founder'?', company details':''}.</p>` : `<p style="font-size:12px;color:var(--green);margin-top:8px;font-weight:600">✅ Profile fully verified! ${p.verified_at ? 'Verified on ' + new Date(p.verified_at).toLocaleDateString() : ''}</p>`}
+    ${completeness < 100 ? (() => {
+      const missing = getMissingFields(p);
+      return `<div style="margin-top:10px">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Complete these fields to earn the <strong>Verified Profile</strong> badge and unlock higher tiers:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${missing.map(f => `<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);font-weight:600">⚠ ${f}</span>`).join('')}</div>
+        <button onclick="showOnboarding()" style="padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px">✏️ Complete Your Profile</button>
+      </div>`;
+    })() : `<p style="font-size:12px;color:var(--green);margin-top:8px;font-weight:600">✅ Profile fully verified! ${p.verified_at ? 'Verified on ' + new Date(p.verified_at).toLocaleDateString() : ''}</p>`}
   </div>
 
   <div class="card" style="margin-top:14px">
