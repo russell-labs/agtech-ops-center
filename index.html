@@ -25,7 +25,7 @@
   #sidebar.collapsed { width: 0; min-width: 0; overflow: hidden; }
   .sidebar-brand { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .sidebar-logo { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
-  .logo-icon { width: 30px; height: 30px; background: var(--green); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; flex-shrink: 0; }
+  .logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#16a34a,#22c55e); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 900; flex-shrink: 0; }
   .logo-text { font-weight: 800; color: var(--green); font-size: 14px; line-height: 1.2; }
   .logo-sub { font-size: 10px; font-weight: 500; color: var(--text-muted); }
   .sidebar-tagline { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
@@ -509,10 +509,10 @@
 </head>
 <body>
 
-<aside id="sidebar">
+<aside id="sidebar" style="display:none">
   <div class="sidebar-brand">
     <div class="sidebar-logo">
-      <div class="logo-icon">🌾</div>
+      <div class="logo-icon">F</div>
       <div>
         <div class="logo-text">Founder Ops Center</div>
         <div class="logo-sub">founderopscenter.com</div>
@@ -561,22 +561,33 @@
       </div>
     </div>
     <button class="book-btn" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
-    <button id="nav-profile-btn" style="display:none;width:100%;margin-top:8px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;display:none;align-items:center;justify-content:center;gap:5px" onclick="go('profile',this)">👤 My Profile</button>
+    <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
     <button id="nav-admin-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="goAdmin()">🔐 Admin Panel</button>
   </div>
 </aside>
 
-<div id="main">
+<div id="main" style="display:none">
   <div class="topbar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="topbar-title">Founder Ops Center</div>
     <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
-    <button class="signin-btn" id="topbar-user-btn" onclick="openModal('signin-modal')">→ Sign In</button>
+    <div style="position:relative" id="user-menu-wrap">
+      <button class="signin-btn" id="topbar-user-btn" onclick="openModal('signin-modal')">→ Sign In</button>
+      <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:200px;z-index:200;overflow:hidden">
+        <div id="user-dropdown-info" style="padding:14px 16px;border-bottom:1px solid var(--border)">
+          <div id="ud-name" style="font-size:13px;font-weight:700;color:var(--text)"></div>
+          <div id="ud-email" style="font-size:11px;color:var(--text-muted);margin-top:2px"></div>
+        </div>
+        <button onclick="closeUserDropdown();go('profile',this)" style="width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">👤 My Profile</button>
+        <button id="ud-admin-btn" onclick="closeUserDropdown();goAdmin()" style="display:none;width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:var(--text);cursor:pointer;font-family:inherit;display:none;align-items:center;gap:8px;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">🔐 Admin Panel</button>
+        <button onclick="closeUserDropdown();signOut()" style="width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:#dc2626;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">↪ Sign Out</button>
+      </div>
+    </div>
   </div>
   <div id="page"></div>
 </div>
 
-<button class="fab" onclick="openModal('feedback-modal')">🎯 Your Feedback is Critical!</button>
+<button class="fab" style="display:none" onclick="openModal('feedback-modal')">🎯 Your Feedback is Critical!</button>
 
 <!-- HOW TO USE MODAL -->
 <div class="overlay" id="how-modal" onclick="if(event.target===this)closeModal('how-modal')">
@@ -757,13 +768,7 @@ const _supabase = supabase.createClient(
   'sb_publishable_YpJNsFLhMw1Xhsloy9V0ng_XXGLtPFY'
 );
 
-// Handle OAuth redirect on page load
-(async () => {
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (session?.user) applyUser(session.user, false);
-})();
-
-// Listen for auth state changes
+// Listen for auth state changes (session check happens in INIT block at bottom)
 _supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     applyUser(session.user, event === 'SIGNED_IN');
@@ -840,7 +845,46 @@ function notifyNewUser(name, email) {
 }
 
 function openSignOutMenu() {
-  if (confirm('Sign out of Founder Ops Center?')) signOut();
+  toggleUserDropdown();
+}
+
+function toggleUserDropdown() {
+  const dd = document.getElementById('user-dropdown');
+  if (!dd) return;
+  const isOpen = dd.style.display !== 'none';
+  if (isOpen) {
+    closeUserDropdown();
+  } else {
+    // Populate info
+    if (currentUser) {
+      document.getElementById('ud-name').textContent = currentUser.name || 'User';
+      document.getElementById('ud-email').textContent = currentUser.email || '';
+      const adminBtn = document.getElementById('ud-admin-btn');
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'flex' : 'none';
+    }
+    dd.style.display = 'block';
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', closeUserDropdownOutside, { once: true });
+    }, 50);
+  }
+}
+
+function closeUserDropdown() {
+  const dd = document.getElementById('user-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+function closeUserDropdownOutside(e) {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    closeUserDropdown();
+  } else {
+    // Re-attach if click was inside
+    setTimeout(() => {
+      document.addEventListener('click', closeUserDropdownOutside, { once: true });
+    }, 50);
+  }
 }
 
 async function signOut() {
@@ -2232,8 +2276,9 @@ function showWizard() {
 
 function wizRender() {
   // Always save text inputs before re-rendering so nothing is lost
-  if (document.getElementById('wiz-org')) wizCollectInputs();
-  const root = document.getElementById('wiz-root');
+  const wizRoot = document.getElementById('wiz-root');
+  if (wizRoot && wizRoot.innerHTML) wizCollectInputs();
+  const root = wizRoot;
   const step = WIZ_STEPS[wizStep];
   const total = WIZ_STEPS.length;
   const dots = WIZ_STEPS.map((s,i) => `<div class="wiz-dot ${i<wizStep?'done':''} ${i===wizStep?'active':''}"></div>`).join('');
@@ -2254,50 +2299,50 @@ function wizRender() {
     </div>`;
   } else if (step === 'basics') {
     body = `<label class="wiz-label">Organization / Company</label>
-    <input class="wiz-input" id="wiz-org" value="${wizData.organization||''}" placeholder="e.g. CropSense AI, University of Guelph">
+    <input class="wiz-input" id="wiz-org" value="${wizData.organization||''}" oninput="wizData.organization=this.value" placeholder="e.g. CropSense AI, University of Guelph">
     <label class="wiz-label">Your Title / Role</label>
-    <input class="wiz-input" id="wiz-title" value="${wizData.job_title||''}" placeholder="e.g. CEO & Co-Founder, Partner, Professor">
+    <input class="wiz-input" id="wiz-title" value="${wizData.job_title||''}" oninput="wizData.job_title=this.value" placeholder="e.g. CEO & Co-Founder, Partner, Professor">
     <label class="wiz-label">LinkedIn URL</label>
-    <input class="wiz-input" id="wiz-linkedin" value="${wizData.linkedin_url||''}" placeholder="https://linkedin.com/in/yourname">
+    <input class="wiz-input" id="wiz-linkedin" value="${wizData.linkedin_url||''}" oninput="wizData.linkedin_url=this.value" placeholder="https://linkedin.com/in/yourname">
     <label class="wiz-label">Location</label>
-    <input class="wiz-input" id="wiz-location" value="${wizData.location||''}" placeholder="e.g. Toronto, ON, Canada">
+    <input class="wiz-input" id="wiz-location" value="${wizData.location||''}" oninput="wizData.location=this.value" placeholder="e.g. Toronto, ON, Canada">
     <label class="wiz-label">AgTech Focus Areas</label>
     <div class="chip-grid">${AGTECH_FOCUS.map(f => `<div class="chip ${wizData.agtech_focus.includes(f)?'selected':''}" onclick="wizToggleChip('agtech_focus','${f}')">${f}</div>`).join('')}</div>`;
   } else if (step === 'details') {
     if (wizData.persona === 'founder') {
       body = `<label class="wiz-label">Company Name</label>
-      <input class="wiz-input" id="wiz-company" value="${wizData.company_name||''}" placeholder="Your startup name">
+      <input class="wiz-input" id="wiz-company" value="${wizData.company_name||''}" oninput="wizData.company_name=this.value" placeholder="Your startup name">
       <label class="wiz-label">Stage</label>
       <div class="chip-grid">${COMPANY_STAGES.map(s => `<div class="chip ${wizData.company_stage===s.id?'selected':''}" onclick="wizData.company_stage='${s.id}';wizRender()">${s.label}</div>`).join('')}</div>
       <label class="wiz-label">What are you building?</label>
-      <textarea class="wiz-textarea" id="wiz-building" placeholder="Brief description of your product or solution...">${wizData.what_building||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-building" oninput="wizData.what_building=this.value" placeholder="Brief description of your product or solution...">${wizData.what_building||''}</textarea>
       <label class="wiz-label">Funding Status</label>
       <div class="chip-grid">${FUNDING_STATUSES.map(s => `<div class="chip ${wizData.funding_status===s.id?'selected':''}" onclick="wizData.funding_status='${s.id}';wizRender()">${s.label}</div>`).join('')}</div>
       <label class="wiz-label">Team Size</label>
-      <input class="wiz-input" id="wiz-team" value="${wizData.team_size||''}" placeholder="e.g. 3, 10-15, Just me">
+      <input class="wiz-input" id="wiz-team" value="${wizData.team_size||''}" oninput="wizData.team_size=this.value" placeholder="e.g. 3, 10-15, Just me">
       <label class="wiz-label">What do you need most right now?</label>
       <div class="chip-grid">${FOUNDER_NEEDS.map(n => `<div class="chip ${wizData.biggest_needs.includes(n)?'selected':''}" onclick="wizToggleChip('biggest_needs','${n}')">${n}</div>`).join('')}</div>`;
     } else if (wizData.persona === 'investor') {
       body = `<label class="wiz-label">Investment Stage Preferences</label>
       <div class="chip-grid">${INVEST_STAGES.map(s => `<div class="chip ${wizData.investment_stages.includes(s)?'selected':''}" onclick="wizToggleChip('investment_stages','${s}')">${s}</div>`).join('')}</div>
       <label class="wiz-label">Typical Check Size</label>
-      <input class="wiz-input" id="wiz-check" value="${wizData.check_size||''}" placeholder="e.g. $50K-$250K, $1M+">
+      <input class="wiz-input" id="wiz-check" value="${wizData.check_size||''}" oninput="wizData.check_size=this.value" placeholder="e.g. $50K-$250K, $1M+">
       <label class="wiz-label">Current AgTech Portfolio</label>
-      <textarea class="wiz-textarea" id="wiz-portfolio" placeholder="List any AgTech companies you've invested in...">${wizData.portfolio_agtech||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-portfolio" oninput="wizData.portfolio_agtech=this.value" placeholder="List any AgTech companies you've invested in...">${wizData.portfolio_agtech||''}</textarea>
       <label class="wiz-label">What types of deals are you looking for?</label>
-      <textarea class="wiz-textarea" id="wiz-deals" placeholder="Sectors, stages, geographies...">${wizData.deal_interests||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-deals" oninput="wizData.deal_interests=this.value" placeholder="Sectors, stages, geographies...">${wizData.deal_interests||''}</textarea>`;
     } else if (wizData.persona === 'advisor') {
       body = `<label class="wiz-label">Areas of Expertise</label>
       <div class="chip-grid">${EXPERTISE_LIST.map(e => `<div class="chip ${wizData.expertise_areas.includes(e)?'selected':''}" onclick="wizToggleChip('expertise_areas','${e}')">${e}</div>`).join('')}</div>
       <label class="wiz-label">How many startups are you currently advising?</label>
-      <input class="wiz-input" id="wiz-advcount" value="${wizData.advising_count||''}" placeholder="e.g. 3, None yet">
+      <input class="wiz-input" id="wiz-advcount" value="${wizData.advising_count||''}" oninput="wizData.advising_count=this.value" placeholder="e.g. 3, None yet">
       <label class="wiz-label">What kind of startups do you want to help?</label>
-      <textarea class="wiz-textarea" id="wiz-advinterests" placeholder="Stage, focus area, type of help...">${wizData.advisor_interests||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-advinterests" oninput="wizData.advisor_interests=this.value" placeholder="Stage, focus area, type of help...">${wizData.advisor_interests||''}</textarea>`;
     } else if (wizData.persona === 'researcher') {
       body = `<label class="wiz-label">Institution</label>
-      <input class="wiz-input" id="wiz-institution" value="${wizData.institution||''}" placeholder="e.g. University of Guelph">
+      <input class="wiz-input" id="wiz-institution" value="${wizData.institution||''}" oninput="wizData.institution=this.value" placeholder="e.g. University of Guelph">
       <label class="wiz-label">Research Focus</label>
-      <textarea class="wiz-textarea" id="wiz-research" placeholder="Describe your research area...">${wizData.research_focus||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-research" oninput="wizData.research_focus=this.value" placeholder="Describe your research area...">${wizData.research_focus||''}</textarea>
       <label class="wiz-label">Open to startup collaboration?</label>
       <div class="chip-grid">
         <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=true;wizRender()">Yes, actively looking</div>
@@ -2307,11 +2352,11 @@ function wizRender() {
       body = `<label class="wiz-label">Farm Type</label>
       <div class="chip-grid">${FARM_TYPES.map(f => `<div class="chip ${(wizData.agtech_focus||[]).includes(f)?'selected':''}" onclick="wizToggleChip('agtech_focus','${f}')">${f}</div>`).join('')}</div>
       <label class="wiz-label">Farm Size (acres or description)</label>
-      <input class="wiz-input" id="wiz-farm-size" value="${wizData.team_size||''}" placeholder="e.g. 500 acres, Small family farm, 3 greenhouses">
+      <input class="wiz-input" id="wiz-farm-size" value="${wizData.team_size||''}" oninput="wizData.team_size=this.value" placeholder="e.g. 500 acres, Small family farm, 3 greenhouses">
       <label class="wiz-label">Location / Region</label>
-      <input class="wiz-input" id="wiz-farm-loc" value="${wizData.location||''}" placeholder="e.g. Southern Alberta, Fraser Valley, PEI">
+      <input class="wiz-input" id="wiz-farm-loc" value="${wizData.location||''}" oninput="wizData.location=this.value" placeholder="e.g. Southern Alberta, Fraser Valley, PEI">
       <label class="wiz-label">What technology are you currently using?</label>
-      <textarea class="wiz-textarea" id="wiz-farm-tech" placeholder="e.g. GPS guidance, soil sensors, drone imaging, manual scouting...">${wizData.what_building||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-farm-tech" oninput="wizData.what_building=this.value" placeholder="e.g. GPS guidance, soil sensors, drone imaging, manual scouting...">${wizData.what_building||''}</textarea>
       <label class="wiz-label">What are you most interested in?</label>
       <div class="chip-grid">${FARM_INTERESTS.map(f => `<div class="chip ${(wizData.biggest_needs||[]).includes(f)?'selected':''}" onclick="wizToggleChip('biggest_needs','${f}')">${f}</div>`).join('')}</div>
       <label class="wiz-label">Open to piloting new AgTech products on your farm?</label>
@@ -2321,7 +2366,7 @@ function wizRender() {
       </div>`;
     } else if (wizData.persona === 'service_provider') {
       body = `<label class="wiz-label">Type of Service</label>
-      <input class="wiz-input" id="wiz-service" value="${wizData.service_type||''}" placeholder="e.g. IP Law, Accounting, Marketing Agency">
+      <input class="wiz-input" id="wiz-service" value="${wizData.service_type||''}" oninput="wizData.service_type=this.value" placeholder="e.g. IP Law, Accounting, Marketing Agency">
       <label class="wiz-label">Experience working with startups?</label>
       <div class="chip-grid">
         <div class="chip ${wizData.startup_experience?'selected':''}" onclick="wizData.startup_experience=true;wizRender()">Yes</div>
@@ -2329,9 +2374,9 @@ function wizRender() {
       </div>`;
     } else {
       body = `<label class="wiz-label">Your Role</label>
-      <input class="wiz-input" id="wiz-role-detail" value="${wizData.job_title||''}" placeholder="Describe your role and focus">
+      <input class="wiz-input" id="wiz-role-detail" value="${wizData.job_title||''}" oninput="wizData.job_title=this.value" placeholder="Describe your role and focus">
       <label class="wiz-label">How can you contribute to the ecosystem?</label>
-      <textarea class="wiz-textarea" id="wiz-contrib" placeholder="What value do you bring to AgTech founders?">${wizData.goals_general||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-contrib" oninput="wizData.goals_general=this.value" placeholder="What value do you bring to AgTech founders?">${wizData.goals_general||''}</textarea>`;
     }
   } else if (step === 'goals') {
     body = `<div style="text-align:center;margin-bottom:14px">
@@ -2339,11 +2384,11 @@ function wizRender() {
       <h3 style="margin:0 0 4px;font-size:16px">Almost done!</h3>
     </div>
     <label class="wiz-label">What do you hope to get from Founder Ops Center?</label>
-    <textarea class="wiz-textarea" id="wiz-goals-platform" placeholder="e.g. Find investors, discover co-founders, access market data...">${wizData.goals_platform||''}</textarea>
+    <textarea class="wiz-textarea" id="wiz-goals-platform" oninput="wizData.goals_platform=this.value" placeholder="e.g. Find investors, discover co-founders, access market data...">${wizData.goals_platform||''}</textarea>
     <label class="wiz-label">What are your big-picture goals?</label>
-    <textarea class="wiz-textarea" id="wiz-goals-general" placeholder="e.g. Launch MVP by Q3, raise $500K seed round, scale to 100 farms...">${wizData.goals_general||''}</textarea>
+    <textarea class="wiz-textarea" id="wiz-goals-general" oninput="wizData.goals_general=this.value" placeholder="e.g. Launch MVP by Q3, raise $500K seed round, scale to 100 farms...">${wizData.goals_general||''}</textarea>
     <label class="wiz-label">How did you hear about us?</label>
-    <input class="wiz-input" id="wiz-heard" value="${wizData.how_heard||''}" placeholder="e.g. LinkedIn, friend referral, Google search">`;
+    <input class="wiz-input" id="wiz-heard" value="${wizData.how_heard||''}" oninput="wizData.how_heard=this.value" placeholder="e.g. LinkedIn, friend referral, Google search">`;
   }
 
   root.innerHTML = `<div class="wiz-overlay">
@@ -3025,11 +3070,18 @@ function render(page){
 
 // ── INIT ──────────────────────────────────────────────────────────
 // Check if user is already signed in; if not, show landing page
+// App elements are hidden by default to prevent flash of content
 (async () => {
   const { data: { session } } = await _supabase.auth.getSession();
   if (session?.user) {
+    // User is signed in — show the app
+    document.getElementById('sidebar').style.display = '';
+    document.getElementById('main').style.display = '';
+    document.querySelector('.fab').style.display = '';
+    applyUser(session.user, false);
     render('overview');
   } else {
+    // Not signed in — show landing page (app stays hidden)
     showLandingPage(false);
   }
 })();
