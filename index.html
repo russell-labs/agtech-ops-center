@@ -1,128 +1,3 @@
-
-  await syncProfileMeta();
-// ════════════════════════════════════════════════
-// BADGE & TIER SYSTEM
-
-// ════════════════════════════════════════════════
-// PROFILE VERIFICATION & SYNC
-// ════════════════════════════════════════════════
-async function syncProfileMeta() {
-  if (!_userProfile) return;
-  const p = _userProfile;
-  const completeness = calcCompleteness(p);
-  const earned = calcBadges(p);
-  const manual = (p.badges||[]).filter(b=>['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b));
-  const allBadges = [...new Set([...earned, ...manual])];
-  const tier = calcTier(allBadges);
-  const updates = { profile_completeness: completeness, badges: allBadges, tier: tier };
-  if (completeness >= 100 && !p.verified_at) updates.verified_at = new Date().toISOString();
-  try {
-    await _sb.from('profiles').update(updates).eq('id', p.id);
-    Object.assign(_userProfile, updates);
-  } catch(e) { console.warn('syncProfileMeta error', e); }
-}
-
-function profileVerificationBanner() {
-  if (!_userProfile) return '';
-  const p = _userProfile;
-  const completeness = calcCompleteness(p);
-  if (completeness >= 100) return '';
-  const hours = p.created_at ? (Date.now() - new Date(p.created_at).getTime()) / 36e5 : 0;
-  if (hours < 24) return '<div class="verification-banner warning"><span style="font-size:20px">' + "\u26A0\uFE0F" + '</span><div><strong>Complete your profile within 24 hours</strong><div style="font-size:12px;margin-top:2px">Profiles must be ' + completeness + '% \u2192 100% to remain active. <a href="#" onclick="event.preventDefault();showWizard()" style="color:#92400e;font-weight:700">Complete now \u2192</a></div></div></div>';
-  return '<div class="verification-banner danger"><span style="font-size:20px">' + "\u274C" + '</span><div><strong>Profile incomplete \u2014 action required</strong><div style="font-size:12px;margin-top:2px">Your account may be suspended. Currently ' + completeness + '% complete. <a href="#" onclick="event.preventDefault();showWizard()" style="color:#991b1b;font-weight:700">Complete now \u2192</a></div></div></div>';
-}
-
-async function checkAutoSuspend() {
-  if (!_userProfile || _userProfile.email === RUSSELL_EMAIL) return;
-  const p = _userProfile;
-  if (p.blocked) return;
-  const completeness = calcCompleteness(p);
-  if (completeness >= 100) return;
-  const hours = (Date.now() - new Date(p.created_at).getTime()) / 36e5;
-  if (hours >= 48) {
-    await _sb.from('profiles').update({ blocked: true, blocked_reason: 'Auto-suspended: incomplete profile after 48 hours' }).eq('id', p.id);
-    _userProfile.blocked = true;
-    toast('Your account has been suspended due to an incomplete profile. Please contact Russell.');
-  } else if (hours >= 24 && !p.suspension_warned_at) {
-    await _sb.from('profiles').update({ suspension_warned_at: new Date().toISOString() }).eq('id', p.id);
-    toast('Please complete your profile within 24 hours to avoid suspension.');
-  }
-}
-
-async function grantBadge(userId, badgeId) {
-  const profiles = _allProfiles.length ? _allProfiles : [_userProfile];
-  const p = profiles.find(u => u.id === userId);
-  if (!p) return;
-  const badges = [...new Set([...(p.badges||[]), badgeId])];
-  const tier = calcTier(badges);
-  await _sb.from('profiles').update({ badges, tier }).eq('id', userId);
-  p.badges = badges; p.tier = tier;
-  toast('Badge granted: ' + badgeId);
-  render();
-}
-
-async function revokeBadge(userId, badgeId) {
-  const profiles = _allProfiles.length ? _allProfiles : [_userProfile];
-  const p = profiles.find(u => u.id === userId);
-  if (!p) return;
-  const badges = (p.badges||[]).filter(b => b !== badgeId);
-  const tier = calcTier(badges);
-  await _sb.from('profiles').update({ badges, tier }).eq('id', userId);
-  p.badges = badges; p.tier = tier;
-  toast('Badge revoked: ' + badgeId);
-  render();
-}
-
-async function updateIntroTierPref(userId, tierId) {
-  await _sb.from('profiles').update({ intro_tier_pref: tierId }).eq('id', userId);
-  if (_userProfile && _userProfile.id === userId) _userProfile.intro_tier_pref = tierId;
-  toast('Intro preference updated to ' + tierDef(tierId).label + '+');
-  render();
-}
-
-// ════════════════════════════════════════════════
-const BADGE_DEFS = [
-  { id:'verified_profile', icon:'✅', label:'Verified Profile', desc:'Complete all required profile fields', check: p => calcCompleteness(p) >= 100 },
-  { id:'linkedin_connected', icon:'🔗', label:'LinkedIn Connected', desc:'Add your LinkedIn URL', check: p => !!(p.linkedin_url && p.linkedin_url.includes('linkedin.com')) },
-  { id:'stage_declared', icon:'🎯', label:'Stage Declared', desc:'Declare your stage or focus', check: p => !!(p.company_stage || (p.investment_stages && p.investment_stages.length > 0) || p.expertise_areas?.length > 0) },
-  { id:'first_feedback', icon:'💬', label:'First Feedback', desc:'Submit your first feedback', check: p => !!(p.badges && p.badges.includes('first_feedback')) },
-  { id:'deck_ready', icon:'📊', label:'Deck Ready', desc:'Pitch deck reviewed by admin', check: p => !!(p.badges && p.badges.includes('deck_ready')) },
-  { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Complete first pilot program', check: p => !!(p.badges && p.badges.includes('first_pilot')) },
-  { id:'active_contributor', icon:'⭐', label:'Active Contributor', desc:'Be active for 30+ days', check: p => { if (!p.created_at) return false; const days = (Date.now() - new Date(p.created_at).getTime()) / 864e5; return days >= 30; } },
-  { id:'revenue_milestone', icon:'💰', label:'Revenue Milestone', desc:'Hit a revenue milestone', check: p => !!(p.badges && p.badges.includes('revenue_milestone')) },
-  { id:'network_builder', icon:'🤝', label:'Network Builder', desc:'Make 5+ successful intros', check: p => !!(p.badges && p.badges.includes('network_builder')) },
-];
-const TIER_DEFS = [
-  { id:'explorer', icon:'🔍', label:'Explorer', min:0, color:'#0369a1' },
-  { id:'builder', icon:'🔨', label:'Builder', min:3, color:'#a16207' },
-  { id:'operator', icon:'⚡', label:'Operator', min:5, color:'#7e22ce' },
-  { id:'leader', icon:'👑', label:'Leader', min:7, color:'#f59e0b' },
-];
-
-function calcCompleteness(p) {
-  if (!p) return 0;
-  const required = ['full_name','persona','linkedin_url','location'];
-  const personaFields = {
-    founder: ['company_name','company_stage','what_building','funding_status'],
-    investor: ['investment_stages','check_size'],
-    farmer: ['location'], advisor: ['expertise_areas'],
-    researcher: ['institution','research_focus'],
-    industry_pro: ['organization','job_title'],
-    service_provider: ['service_type'], government: ['organization']
-  };
-  const extra = personaFields[p.persona] || [];
-  const all = [...required, ...extra];
-  let filled = 0;
-  for (const f of all) { const v = p[f]; if (Array.isArray(v) ? v.length > 0 : (v && String(v).trim())) filled++; }
-  return Math.round((filled / all.length) * 100);
-}
-function calcBadges(p) { return BADGE_DEFS.filter(b => b.check(p)).map(b => b.id); }
-function calcTier(badges) { let t = 'explorer'; for (const td of TIER_DEFS) { if (badges.length >= td.min) t = td.id; } return t; }
-function tierDef(id) { return TIER_DEFS.find(t => t.id === id) || TIER_DEFS[0]; }
-function tierHtml(id) { const t = tierDef(id); return '<span class="tier-badge tier-' + t.id + '">' + t.icon + ' ' + t.label + '</span>'; }
-function completenessBarHtml(pct) { const cls = pct >= 80 ? 'high' : pct >= 40 ? 'med' : 'low'; return '<div class="completeness-bar"><div class="completeness-fill ' + cls + '" style="width:' + pct + '%"></div></div>'; }
-function badgesGridHtml(earned) { return '<div style="display:flex;flex-wrap:wrap;gap:6px">' + BADGE_DEFS.map(b => '<span class="badge-item ' + (earned.includes(b.id) ? 'earned' : 'locked') + '" title="' + b.desc + '">' + b.icon + ' ' + b.label + '</span>').join('') + '</div>'; }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2556,6 +2431,131 @@ function showBlockedScreen() {
 }
 
 // ══════════════════════════════════════════════════════════════
+
+  await syncProfileMeta();
+// ════════════════════════════════════════════════
+// BADGE & TIER SYSTEM
+
+// ════════════════════════════════════════════════
+// PROFILE VERIFICATION & SYNC
+// ════════════════════════════════════════════════
+async function syncProfileMeta() {
+  if (!_userProfile) return;
+  const p = _userProfile;
+  const completeness = calcCompleteness(p);
+  const earned = calcBadges(p);
+  const manual = (p.badges||[]).filter(b=>['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b));
+  const allBadges = [...new Set([...earned, ...manual])];
+  const tier = calcTier(allBadges);
+  const updates = { profile_completeness: completeness, badges: allBadges, tier: tier };
+  if (completeness >= 100 && !p.verified_at) updates.verified_at = new Date().toISOString();
+  try {
+    await _sb.from('profiles').update(updates).eq('id', p.id);
+    Object.assign(_userProfile, updates);
+  } catch(e) { console.warn('syncProfileMeta error', e); }
+}
+
+function profileVerificationBanner() {
+  if (!_userProfile) return '';
+  const p = _userProfile;
+  const completeness = calcCompleteness(p);
+  if (completeness >= 100) return '';
+  const hours = p.created_at ? (Date.now() - new Date(p.created_at).getTime()) / 36e5 : 0;
+  if (hours < 24) return '<div class="verification-banner warning"><span style="font-size:20px">' + "\u26A0\uFE0F" + '</span><div><strong>Complete your profile within 24 hours</strong><div style="font-size:12px;margin-top:2px">Profiles must be ' + completeness + '% \u2192 100% to remain active. <a href="#" onclick="event.preventDefault();showWizard()" style="color:#92400e;font-weight:700">Complete now \u2192</a></div></div></div>';
+  return '<div class="verification-banner danger"><span style="font-size:20px">' + "\u274C" + '</span><div><strong>Profile incomplete \u2014 action required</strong><div style="font-size:12px;margin-top:2px">Your account may be suspended. Currently ' + completeness + '% complete. <a href="#" onclick="event.preventDefault();showWizard()" style="color:#991b1b;font-weight:700">Complete now \u2192</a></div></div></div>';
+}
+
+async function checkAutoSuspend() {
+  if (!_userProfile || _userProfile.email === RUSSELL_EMAIL) return;
+  const p = _userProfile;
+  if (p.blocked) return;
+  const completeness = calcCompleteness(p);
+  if (completeness >= 100) return;
+  const hours = (Date.now() - new Date(p.created_at).getTime()) / 36e5;
+  if (hours >= 48) {
+    await _sb.from('profiles').update({ blocked: true, blocked_reason: 'Auto-suspended: incomplete profile after 48 hours' }).eq('id', p.id);
+    _userProfile.blocked = true;
+    toast('Your account has been suspended due to an incomplete profile. Please contact Russell.');
+  } else if (hours >= 24 && !p.suspension_warned_at) {
+    await _sb.from('profiles').update({ suspension_warned_at: new Date().toISOString() }).eq('id', p.id);
+    toast('Please complete your profile within 24 hours to avoid suspension.');
+  }
+}
+
+async function grantBadge(userId, badgeId) {
+  const profiles = _allProfiles.length ? _allProfiles : [_userProfile];
+  const p = profiles.find(u => u.id === userId);
+  if (!p) return;
+  const badges = [...new Set([...(p.badges||[]), badgeId])];
+  const tier = calcTier(badges);
+  await _sb.from('profiles').update({ badges, tier }).eq('id', userId);
+  p.badges = badges; p.tier = tier;
+  toast('Badge granted: ' + badgeId);
+  render();
+}
+
+async function revokeBadge(userId, badgeId) {
+  const profiles = _allProfiles.length ? _allProfiles : [_userProfile];
+  const p = profiles.find(u => u.id === userId);
+  if (!p) return;
+  const badges = (p.badges||[]).filter(b => b !== badgeId);
+  const tier = calcTier(badges);
+  await _sb.from('profiles').update({ badges, tier }).eq('id', userId);
+  p.badges = badges; p.tier = tier;
+  toast('Badge revoked: ' + badgeId);
+  render();
+}
+
+async function updateIntroTierPref(userId, tierId) {
+  await _sb.from('profiles').update({ intro_tier_pref: tierId }).eq('id', userId);
+  if (_userProfile && _userProfile.id === userId) _userProfile.intro_tier_pref = tierId;
+  toast('Intro preference updated to ' + tierDef(tierId).label + '+');
+  render();
+}
+
+// ════════════════════════════════════════════════
+const BADGE_DEFS = [
+  { id:'verified_profile', icon:'✅', label:'Verified Profile', desc:'Complete all required profile fields', check: p => calcCompleteness(p) >= 100 },
+  { id:'linkedin_connected', icon:'🔗', label:'LinkedIn Connected', desc:'Add your LinkedIn URL', check: p => !!(p.linkedin_url && p.linkedin_url.includes('linkedin.com')) },
+  { id:'stage_declared', icon:'🎯', label:'Stage Declared', desc:'Declare your stage or focus', check: p => !!(p.company_stage || (p.investment_stages && p.investment_stages.length > 0) || p.expertise_areas?.length > 0) },
+  { id:'first_feedback', icon:'💬', label:'First Feedback', desc:'Submit your first feedback', check: p => !!(p.badges && p.badges.includes('first_feedback')) },
+  { id:'deck_ready', icon:'📊', label:'Deck Ready', desc:'Pitch deck reviewed by admin', check: p => !!(p.badges && p.badges.includes('deck_ready')) },
+  { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Complete first pilot program', check: p => !!(p.badges && p.badges.includes('first_pilot')) },
+  { id:'active_contributor', icon:'⭐', label:'Active Contributor', desc:'Be active for 30+ days', check: p => { if (!p.created_at) return false; const days = (Date.now() - new Date(p.created_at).getTime()) / 864e5; return days >= 30; } },
+  { id:'revenue_milestone', icon:'💰', label:'Revenue Milestone', desc:'Hit a revenue milestone', check: p => !!(p.badges && p.badges.includes('revenue_milestone')) },
+  { id:'network_builder', icon:'🤝', label:'Network Builder', desc:'Make 5+ successful intros', check: p => !!(p.badges && p.badges.includes('network_builder')) },
+];
+const TIER_DEFS = [
+  { id:'explorer', icon:'🔍', label:'Explorer', min:0, color:'#0369a1' },
+  { id:'builder', icon:'🔨', label:'Builder', min:3, color:'#a16207' },
+  { id:'operator', icon:'⚡', label:'Operator', min:5, color:'#7e22ce' },
+  { id:'leader', icon:'👑', label:'Leader', min:7, color:'#f59e0b' },
+];
+
+function calcCompleteness(p) {
+  if (!p) return 0;
+  const required = ['full_name','persona','linkedin_url','location'];
+  const personaFields = {
+    founder: ['company_name','company_stage','what_building','funding_status'],
+    investor: ['investment_stages','check_size'],
+    farmer: ['location'], advisor: ['expertise_areas'],
+    researcher: ['institution','research_focus'],
+    industry_pro: ['organization','job_title'],
+    service_provider: ['service_type'], government: ['organization']
+  };
+  const extra = personaFields[p.persona] || [];
+  const all = [...required, ...extra];
+  let filled = 0;
+  for (const f of all) { const v = p[f]; if (Array.isArray(v) ? v.length > 0 : (v && String(v).trim())) filled++; }
+  return Math.round((filled / all.length) * 100);
+}
+function calcBadges(p) { return BADGE_DEFS.filter(b => b.check(p)).map(b => b.id); }
+function calcTier(badges) { let t = 'explorer'; for (const td of TIER_DEFS) { if (badges.length >= td.min) t = td.id; } return t; }
+function tierDef(id) { return TIER_DEFS.find(t => t.id === id) || TIER_DEFS[0]; }
+function tierHtml(id) { const t = tierDef(id); return '<span class="tier-badge tier-' + t.id + '">' + t.icon + ' ' + t.label + '</span>'; }
+function completenessBarHtml(pct) { const cls = pct >= 80 ? 'high' : pct >= 40 ? 'med' : 'low'; return '<div class="completeness-bar"><div class="completeness-fill ' + cls + '" style="width:' + pct + '%"></div></div>'; }
+function badgesGridHtml(earned) { return '<div style="display:flex;flex-wrap:wrap;gap:6px">' + BADGE_DEFS.map(b => '<span class="badge-item ' + (earned.includes(b.id) ? 'earned' : 'locked') + '" title="' + b.desc + '">' + b.icon + ' ' + b.label + '</span>').join('') + '</div>'; }
+
 // ONBOARDING WIZARD
 // ══════════════════════════════════════════════════════════════
 const PERSONAS = [
