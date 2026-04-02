@@ -1,3 +1,128 @@
+
+  await syncProfileMeta();
+// ════════════════════════════════════════════════
+// BADGE & TIER SYSTEM
+
+// ════════════════════════════════════════════════
+// PROFILE VERIFICATION & SYNC
+// ════════════════════════════════════════════════
+async function syncProfileMeta() {
+  if (!_userProfile) return;
+  const p = _userProfile;
+  const completeness = calcCompleteness(p);
+  const earned = calcBadges(p);
+  const manual = (p.badges||[]).filter(b=>['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b));
+  const allBadges = [...new Set([...earned, ...manual])];
+  const tier = calcTier(allBadges);
+  const updates = { profile_completeness: completeness, badges: allBadges, tier: tier };
+  if (completeness >= 100 && !p.verified_at) updates.verified_at = new Date().toISOString();
+  try {
+    await _sb.from('profiles').update(updates).eq('id', p.id);
+    Object.assign(_userProfile, updates);
+  } catch(e) { console.warn('syncProfileMeta error', e); }
+}
+
+function profileVerificationBanner() {
+  if (!_userProfile) return '';
+  const p = _userProfile;
+  const completeness = calcCompleteness(p);
+  if (completeness >= 100) return '';
+  const hours = p.created_at ? (Date.now() - new Date(p.created_at).getTime()) / 36e5 : 0;
+  if (hours < 24) return '<div class="verification-banner warning"><span style="font-size:20px">' + "\u26A0\uFE0F" + '</span><div><strong>Complete your profile within 24 hours</strong><div style="font-size:12px;margin-top:2px">Profiles must be ' + completeness + '% \u2192 100% to remain active. <a href="#" onclick="event.preventDefault();showWizard()" style="color:#92400e;font-weight:700">Complete now \u2192</a></div></div></div>';
+  return '<div class="verification-banner danger"><span style="font-size:20px">' + "\u274C" + '</span><div><strong>Profile incomplete \u2014 action required</strong><div style="font-size:12px;margin-top:2px">Your account may be suspended. Currently ' + completeness + '% complete. <a href="#" onclick="event.preventDefault();showWizard()" style="color:#991b1b;font-weight:700">Complete now \u2192</a></div></div></div>';
+}
+
+async function checkAutoSuspend() {
+  if (!_userProfile || _userProfile.email === RUSSELL_EMAIL) return;
+  const p = _userProfile;
+  if (p.blocked) return;
+  const completeness = calcCompleteness(p);
+  if (completeness >= 100) return;
+  const hours = (Date.now() - new Date(p.created_at).getTime()) / 36e5;
+  if (hours >= 48) {
+    await _sb.from('profiles').update({ blocked: true, blocked_reason: 'Auto-suspended: incomplete profile after 48 hours' }).eq('id', p.id);
+    _userProfile.blocked = true;
+    toast('Your account has been suspended due to an incomplete profile. Please contact Russell.');
+  } else if (hours >= 24 && !p.suspension_warned_at) {
+    await _sb.from('profiles').update({ suspension_warned_at: new Date().toISOString() }).eq('id', p.id);
+    toast('Please complete your profile within 24 hours to avoid suspension.');
+  }
+}
+
+async function grantBadge(userId, badgeId) {
+  const profiles = _allProfiles.length ? _allProfiles : [_userProfile];
+  const p = profiles.find(u => u.id === userId);
+  if (!p) return;
+  const badges = [...new Set([...(p.badges||[]), badgeId])];
+  const tier = calcTier(badges);
+  await _sb.from('profiles').update({ badges, tier }).eq('id', userId);
+  p.badges = badges; p.tier = tier;
+  toast('Badge granted: ' + badgeId);
+  render();
+}
+
+async function revokeBadge(userId, badgeId) {
+  const profiles = _allProfiles.length ? _allProfiles : [_userProfile];
+  const p = profiles.find(u => u.id === userId);
+  if (!p) return;
+  const badges = (p.badges||[]).filter(b => b !== badgeId);
+  const tier = calcTier(badges);
+  await _sb.from('profiles').update({ badges, tier }).eq('id', userId);
+  p.badges = badges; p.tier = tier;
+  toast('Badge revoked: ' + badgeId);
+  render();
+}
+
+async function updateIntroTierPref(userId, tierId) {
+  await _sb.from('profiles').update({ intro_tier_pref: tierId }).eq('id', userId);
+  if (_userProfile && _userProfile.id === userId) _userProfile.intro_tier_pref = tierId;
+  toast('Intro preference updated to ' + tierDef(tierId).label + '+');
+  render();
+}
+
+// ════════════════════════════════════════════════
+const BADGE_DEFS = [
+  { id:'verified_profile', icon:'✅', label:'Verified Profile', desc:'Complete all required profile fields', check: p => calcCompleteness(p) >= 100 },
+  { id:'linkedin_connected', icon:'🔗', label:'LinkedIn Connected', desc:'Add your LinkedIn URL', check: p => !!(p.linkedin_url && p.linkedin_url.includes('linkedin.com')) },
+  { id:'stage_declared', icon:'🎯', label:'Stage Declared', desc:'Declare your stage or focus', check: p => !!(p.company_stage || (p.investment_stages && p.investment_stages.length > 0) || p.expertise_areas?.length > 0) },
+  { id:'first_feedback', icon:'💬', label:'First Feedback', desc:'Submit your first feedback', check: p => !!(p.badges && p.badges.includes('first_feedback')) },
+  { id:'deck_ready', icon:'📊', label:'Deck Ready', desc:'Pitch deck reviewed by admin', check: p => !!(p.badges && p.badges.includes('deck_ready')) },
+  { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Complete first pilot program', check: p => !!(p.badges && p.badges.includes('first_pilot')) },
+  { id:'active_contributor', icon:'⭐', label:'Active Contributor', desc:'Be active for 30+ days', check: p => { if (!p.created_at) return false; const days = (Date.now() - new Date(p.created_at).getTime()) / 864e5; return days >= 30; } },
+  { id:'revenue_milestone', icon:'💰', label:'Revenue Milestone', desc:'Hit a revenue milestone', check: p => !!(p.badges && p.badges.includes('revenue_milestone')) },
+  { id:'network_builder', icon:'🤝', label:'Network Builder', desc:'Make 5+ successful intros', check: p => !!(p.badges && p.badges.includes('network_builder')) },
+];
+const TIER_DEFS = [
+  { id:'explorer', icon:'🔍', label:'Explorer', min:0, color:'#0369a1' },
+  { id:'builder', icon:'🔨', label:'Builder', min:3, color:'#a16207' },
+  { id:'operator', icon:'⚡', label:'Operator', min:5, color:'#7e22ce' },
+  { id:'leader', icon:'👑', label:'Leader', min:7, color:'#f59e0b' },
+];
+
+function calcCompleteness(p) {
+  if (!p) return 0;
+  const required = ['full_name','persona','linkedin_url','location'];
+  const personaFields = {
+    founder: ['company_name','company_stage','what_building','funding_status'],
+    investor: ['investment_stages','check_size'],
+    farmer: ['location'], advisor: ['expertise_areas'],
+    researcher: ['institution','research_focus'],
+    industry_pro: ['organization','job_title'],
+    service_provider: ['service_type'], government: ['organization']
+  };
+  const extra = personaFields[p.persona] || [];
+  const all = [...required, ...extra];
+  let filled = 0;
+  for (const f of all) { const v = p[f]; if (Array.isArray(v) ? v.length > 0 : (v && String(v).trim())) filled++; }
+  return Math.round((filled / all.length) * 100);
+}
+function calcBadges(p) { return BADGE_DEFS.filter(b => b.check(p)).map(b => b.id); }
+function calcTier(badges) { let t = 'explorer'; for (const td of TIER_DEFS) { if (badges.length >= td.min) t = td.id; } return t; }
+function tierDef(id) { return TIER_DEFS.find(t => t.id === id) || TIER_DEFS[0]; }
+function tierHtml(id) { const t = tierDef(id); return '<span class="tier-badge tier-' + t.id + '">' + t.icon + ' ' + t.label + '</span>'; }
+function completenessBarHtml(pct) { const cls = pct >= 80 ? 'high' : pct >= 40 ? 'med' : 'low'; return '<div class="completeness-bar"><div class="completeness-fill ' + cls + '" style="width:' + pct + '%"></div></div>'; }
+function badgesGridHtml(earned) { return '<div style="display:flex;flex-wrap:wrap;gap:6px">' + BADGE_DEFS.map(b => '<span class="badge-item ' + (earned.includes(b.id) ? 'earned' : 'locked') + '" title="' + b.desc + '">' + b.icon + ' ' + b.label + '</span>').join('') + '</div>'; }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -271,7 +396,9 @@
   .opp-item p { font-size: 11px; color: var(--text-muted); }
 
   /* ── FEEDBACK FAB ── */
-  .fab { position: fixed; bottom: 18px; right: 18px; background: #ea580c; color: #fff; border: none; border-radius: 24px; padding: 9px 15px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(234,88,12,.3); z-index: 99; }
+  .fab { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg,#ea580c,#f97316); color: #fff; border: none; border-radius: 28px; padding: 14px 22px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 24px rgba(234,88,12,.4); z-index: 99; animation: fab-pulse 2.5s ease-in-out infinite; transition: transform .2s, box-shadow .2s; }
+  .fab:hover { transform: scale(1.08); box-shadow: 0 8px 30px rgba(234,88,12,.55); animation: none; }
+  @keyframes fab-pulse { 0%,100%{ box-shadow: 0 6px 24px rgba(234,88,12,.4); } 50%{ box-shadow: 0 6px 32px rgba(234,88,12,.65), 0 0 0 8px rgba(234,88,12,.1); } }
 
   /* ── TOAST ── */
   #toast { position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%) translateY(8px); background: #1e293b; color: #f1f5f9; padding: 10px 20px; border-radius: 9px; font-size: 13px; z-index: 997; box-shadow: 0 4px 18px rgba(0,0,0,.35); white-space: nowrap; opacity: 0; transition: opacity .22s, transform .22s; pointer-events: none; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; }
@@ -361,6 +488,20 @@
   .profile-chips { display:flex;flex-wrap:wrap;gap:6px; }
   .profile-chip { padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid); }
   .profile-2col { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+  .tier-badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:14px;font-size:11px;font-weight:700; }
+  .tier-explorer { background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd; }
+  .tier-builder { background:#fefce8;color:#a16207;border:1px solid #fde68a; }
+  .tier-operator { background:#faf5ff;color:#7e22ce;border:1px solid #e9d5ff; }
+  .tier-leader { background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b; }
+  .badge-item { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600; }
+  .badge-item.earned { background:var(--accent-bg);border-color:var(--green-mid);color:var(--green); }
+  .badge-item.locked { opacity:.45; }
+  .completeness-bar { width:100%;height:8px;background:var(--hover);border-radius:4px;overflow:hidden; }
+  .completeness-fill { height:100%;border-radius:4px;transition:width .5s; }
+  .completeness-fill.low { background:#ef4444; } .completeness-fill.med { background:#f59e0b; } .completeness-fill.high { background:#22c55e; }
+  .verification-banner { padding:14px 18px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:12px; }
+  .verification-banner.warning { background:#fef3c7;border:1px solid #fde68a;color:#92400e; }
+  .verification-banner.danger { background:#fef2f2;border:1px solid #fecaca;color:#991b1b; }
   @media(max-width:640px){ .profile-2col { grid-template-columns:1fr; } }
 
   /* ── ENHANCED ADMIN ── */
@@ -588,7 +729,7 @@
   <div id="page"></div>
 </div>
 
-<button class="fab" style="display:none" onclick="openModal('feedback-modal')">🎯 Your Feedback is Critical!</button>
+<button class="fab" style="display:none" onclick="openModal('feedback-modal')">🎯 Share Feedback</button>
 
 <!-- HOW TO USE MODAL -->
 <div class="overlay" id="how-modal" onclick="if(event.target===this)closeModal('how-modal')">
@@ -841,6 +982,13 @@ function applyUser(user, isNew) {
     }
     if (!profile || !profile.onboarding_complete) {
       setTimeout(() => showWizard(), 800);
+    } else {
+      // Sync badges, tier, and completeness
+      await syncProfileMeta();
+      // Check auto-suspend for incomplete profiles
+      await checkAutoSuspend();
+      // Re-render to show any verification banners
+      if (currentPage) render(currentPage);
     }
   });
 }
@@ -896,6 +1044,13 @@ function closeUserDropdownOutside(e) {
 async function signOut() {
   await _supabase.auth.signOut({ scope: 'global' });
   toast('👋 Signed out');
+    // Grant first_feedback badge
+    if (_userProfile && _userProfile.id) {
+      const badges = [...new Set([...(_userProfile.badges||[]), 'first_feedback'])];
+      const tier = calcTier(badges);
+      _sb.from('profiles').update({ badges, tier }).eq('id', _userProfile.id);
+      _userProfile.badges = badges; _userProfile.tier = tier;
+    }
 }
 
 function showSignedOutPage() {
@@ -2731,12 +2886,23 @@ function pgProfile() {
     detailSection = `${field('Service Type', p.service_type)}${field('Startup Experience', p.startup_experience ? 'Yes' : 'No')}`;
   }
 
+    const completeness = calcCompleteness(p);
+  const earnedBadges = calcBadges(p);
+  const allBadges = [...new Set([...earnedBadges, ...(p.badges||[]).filter(b=>['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b))])];
+  const tier = calcTier(allBadges);
+  const td = tierDef(tier);
+  const introTierPref = p.intro_tier_pref || 'explorer';
+  const isInvestorOrAdvisor = ['investor','advisor','industry_pro','researcher'].includes(p.persona);
+
   return `<div class="page-hdr"><h1>My Profile</h1><p>Your information helps Russell connect you with the right people in the AgTech ecosystem.</p></div>
   <div class="card">
     <div class="profile-header">
       ${p.avatar_url ? `<img src="${p.avatar_url}" class="profile-avatar">` : `<div class="profile-avatar-placeholder">${(p.full_name||'?')[0].toUpperCase()}</div>`}
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--text)">${p.full_name || 'Anonymous'}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:18px;font-weight:800;color:var(--text)">${p.full_name || 'Anonymous'}</span>
+          ${tierHtml(tier)}
+        </div>
         <div style="font-size:13px;color:var(--text-muted)">${p.email}</div>
         <span class="admin-tag tag-${p.persona}" style="margin-top:4px;display:inline-block">${personaIcon(p.persona)} ${personaLabel(p.persona)}</span>
       </div>
@@ -2746,6 +2912,40 @@ function pgProfile() {
       <div>${field('LinkedIn', p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" style="color:var(--green)">${p.linkedin_url}</a>` : '')}${field('Member Since', new Date(p.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}</div>
     </div>
   </div>
+
+  <div class="card" style="margin-top:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <h3 style="margin:0">Profile Completeness</h3>
+      <span style="font-size:20px;font-weight:800;color:${completeness>=100?'var(--green)':completeness>=50?'#f59e0b':'#ef4444'}">${completeness}%</span>
+    </div>
+    ${completenessBarHtml(completeness)}
+    ${completeness < 100 ? `<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Complete your profile to earn the <strong>Verified Profile</strong> badge and unlock higher tiers. Required: name, persona, LinkedIn, location${p.persona==='founder'?', company details':''}.</p>` : `<p style="font-size:12px;color:var(--green);margin-top:8px;font-weight:600">✅ Profile fully verified! ${p.verified_at ? 'Verified on ' + new Date(p.verified_at).toLocaleDateString() : ''}</p>`}
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:22px">${td.icon}</span>
+      <div>
+        <h3 style="margin:0">Your Tier: ${td.label}</h3>
+        <div style="font-size:12px;color:var(--text-muted)">${allBadges.length} badge${allBadges.length!==1?'s':''} earned — ${
+          tier==='leader'?'Maximum tier reached!':
+          `${TIER_DEFS.find(t=>t.min>allBadges.length)?.min - allBadges.length} more badge${(TIER_DEFS.find(t=>t.min>allBadges.length)?.min - allBadges.length)!==1?'s':''} to reach ${TIER_DEFS.find(t=>t.min>allBadges.length)?.label}`
+        }</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:14px">${TIER_DEFS.map(t => `<div style="flex:1;height:6px;border-radius:3px;background:${allBadges.length >= t.min ? t.color : 'var(--hover)'};transition:background .3s"></div>`).join('')}</div>
+    <h4 style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Badges</h4>
+    ${badgesGridHtml(allBadges)}
+  </div>
+
+  ${isInvestorOrAdvisor ? `<div class="card" style="margin-top:14px">
+    <h3>🎚️ Introduction Preferences</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Set the minimum tier you'll accept introductions from. Higher tiers mean more verified, committed founders.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${TIER_DEFS.map(t => `<button onclick="updateIntroTierPref('${p.id}','${t.id}')" style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid ${introTierPref===t.id?t.color:'var(--border)'};background:${introTierPref===t.id?t.color+'15':'var(--surface)'};color:${introTierPref===t.id?t.color:'var(--text-muted)'}">${t.icon} ${t.label}+</button>`).join('')}
+    </div>
+    <p style="font-size:11px;color:var(--text-faint);margin-top:8px">Currently: accepting intros from <strong>${tierDef(introTierPref).label}</strong> tier and above.</p>
+  </div>` : ''}
 
   <div class="card" style="margin-top:14px">
     <h3>${personaIcon(p.persona)} ${personaLabel(p.persona)} Details</h3>
@@ -2815,6 +3015,8 @@ function pgAdmin(){
     const tags = [];
     if (p.blocked) tags.push(`<span class="admin-tag" style="background:#fef2f2;color:#dc2626">🚫 Blocked</span>`);
     if (p.persona) tags.push(`<span class="admin-tag tag-${p.persona}">${personaIcon(p.persona)} ${personaLabel(p.persona)}</span>`);
+    tags.push(tierHtml(p.tier || 'explorer'));
+    if (p.profile_completeness !== undefined && p.profile_completeness < 100) tags.push('<span class="admin-tag" style="background:#fef3c7;color:#92400e">' + (p.profile_completeness||0) + '% complete</span>');
     if (p.company_stage) tags.push(`<span class="admin-tag" style="background:var(--hover);color:var(--text-muted)">${(COMPANY_STAGES.find(s=>s.id===p.company_stage)||{}).label||p.company_stage}</span>`);
     if (p.funding_status) tags.push(`<span class="admin-tag" style="background:var(--hover);color:var(--text-muted)">${(FUNDING_STATUSES.find(s=>s.id===p.funding_status)||{}).label||p.funding_status}</span>`);
     if (p.location) tags.push(`<span class="admin-tag" style="background:var(--hover);color:var(--text-muted)">📍 ${p.location}</span>`);
@@ -2855,7 +3057,19 @@ function pgAdmin(){
           <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint);display:block;margin-bottom:4px">📝 Admin Notes (only you can see this)</label>
           <textarea class="admin-notes-area" id="notes-${p.id}" onblur="saveNotes('${p.id}')">${p.admin_notes||''}</textarea>
         </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint)">🏅 Badges & Tier</span>
+            ${tierHtml(p.tier || 'explorer')}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${BADGE_DEFS.map(b => {
+            const has = (p.badges||[]).includes(b.id);
+            const isManual = ['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b.id);
+            return `<span class="badge-item ${has?'earned':'locked'}" style="font-size:10px;padding:3px 8px;cursor:${isManual?'pointer':'default'}" ${isManual ? `onclick="event.stopPropagation();${has?'revokeBadge':'grantBadge'}('${p.id}','${b.id}')"` : ''} title="${b.desc}${isManual?' (click to toggle)':' (auto-earned)'}">${b.icon} ${b.label}</span>`;
+          }).join('')}</div>
+          <div style="font-size:10px;color:var(--text-faint)">Profile: ${calcCompleteness(p)}% complete · ${(p.badges||[]).length} badges · Intro pref: ${tierDef(p.intro_tier_pref||'explorer').label}+</div>
+        </div>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint)">Feature Access:</span>
           ${((p.admin_tags||[]).includes('roadmap_access'))
             ? `<button onclick="event.stopPropagation();revokeRoadmapAccess('${p.id}')" style="padding:4px 12px;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🗺️ Roadmap ✓</button>`
@@ -3075,6 +3289,29 @@ function pgRoadmap() {
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">💰</span><h3 style="margin:0">Phase 3 — Revenue Model</h3></div>
     <span class="badge b-purple" style="margin-bottom:12px">Long-term</span>
     <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">Free tier: ecosystem intelligence platform (current features). Pro tier: CRM workspace for ecosystem managers ($X/month per seat). Fund: thesis-driven investments powered by proprietary deal flow generated by the entire network. The platform pays for itself through data-driven investment returns.</p>
+  </div>
+
+  <div class="card" style="margin-top:16px;border-left:4px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">👥</span><h3 style="margin:0">Phase 4 — Talent & Employment</h3></div>
+    <span class="badge b-purple" style="margin-bottom:12px">Future Opportunity</span>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">AgTech startups struggle to find specialized talent — engineers who understand agriculture, sales people who can navigate farm networks, operators who've scaled hardware+software companies. Meanwhile, talented professionals interested in AgTech have no central place to discover opportunities.</p>
+    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">
+      <div style="padding:12px;background:var(--hover);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">🎯 Job Board</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Startups post roles tagged by sector, stage, and skills needed. Talent profiles match automatically based on expertise and interests.</div>
+      </div>
+      <div style="padding:12px;background:var(--hover);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">🤝 Talent Matching</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Same matching engine that powers investor-founder intros, extended to talent. Founders describe their ideal hire, the platform surfaces candidates from the network.</div>
+      </div>
+      <div style="padding:12px;background:var(--hover);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">📊 Ecosystem Talent Data</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Aggregated insights on talent supply and demand across the AgTech ecosystem. Where are the skill gaps? Which sectors are hiring fastest? Data for ecosystem managers and investors.</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:8px">
+      <div style="font-size:12px;color:var(--green);line-height:1.6"><strong>Why it fits:</strong> Every startup on the platform eventually needs to hire. Every professional in the network is a potential candidate. The talent layer monetizes naturally through job listing fees and recruiting commissions — and deepens platform stickiness for all personas.</div>
+    </div>
   </div>`;
 }
 
@@ -3309,6 +3546,14 @@ function computeMatches(profiles) {
   for (let i = 0; i < active.length; i++) {
     for (let j = i + 1; j < active.length; j++) {
       const a = active[i], b = active[j];
+      // Respect intro tier preferences
+      const tierOrder = ['explorer','builder','operator','leader'];
+      const aTier = tierOrder.indexOf(a.tier || 'explorer');
+      const bTier = tierOrder.indexOf(b.tier || 'explorer');
+      const aPref = tierOrder.indexOf(a.intro_tier_pref || 'explorer');
+      const bPref = tierOrder.indexOf(b.intro_tier_pref || 'explorer');
+      if (bTier < aPref || aTier < bPref) continue; // Tier gate
+
       const result = scoreMatch(a, b);
       if (result.score >= 20) {
         matches.push({ a, b, score: result.score, reasons: result.reasons });
@@ -3551,7 +3796,8 @@ function render(page){
 
   // Signed-in users see everything
   if (currentUser) {
-    el.innerHTML = (pages[page]||pgOverview)();
+    const banner = _userProfile ? profileVerificationBanner(_userProfile) : '';
+    el.innerHTML = banner + (pages[page]||pgOverview)()
     return;
   }
 
