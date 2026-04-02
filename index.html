@@ -2797,6 +2797,10 @@ function pgAdmin(){
             ? `<button onclick="event.stopPropagation();revokeRoadmapAccess('${p.id}')" style="padding:4px 12px;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🗺️ Roadmap ✓</button>`
             : `<button onclick="event.stopPropagation();grantRoadmapAccess('${p.id}')" style="padding:4px 12px;background:var(--hover);color:var(--text-muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🗺️ Roadmap</button>`
           }
+          ${((p.admin_tags||[]).includes('investor_access'))
+            ? `<button onclick="event.stopPropagation();revokeInvestorAccess('${p.id}')" style="padding:4px 12px;background:rgba(99,102,241,.1);color:#6366f1;border:1px solid rgba(99,102,241,.3);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">💼 Investor ✓</button>`
+            : `<button onclick="event.stopPropagation();grantInvestorAccess('${p.id}')" style="padding:4px 12px;background:var(--hover);color:var(--text-muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">💼 Investor</button>`
+          }
         </div>
         <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div style="font-size:10px;color:var(--text-faint)">Joined: ${new Date(p.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · Last updated: ${new Date(p.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
@@ -2829,8 +2833,8 @@ function pgAdmin(){
 
   // Admin tab bar helper
   const adminTabBar = (active) => `<div style="display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--border);flex-wrap:wrap">
-    ${['directory','connections','roadmap'].map(t => {
-      const labels = {directory:'👥 User Directory', connections:'🧠 Smart Connections', roadmap:'🗺️ Product Roadmap'};
+    ${['directory','connections','roadmap','investor'].map(t => {
+      const labels = {directory:'👥 User Directory', connections:'🧠 Smart Connections', roadmap:'🗺️ Product Roadmap', investor:'💼 Investor Opportunity'};
       const isActive = active === t;
       return `<button onclick="adminTab='${t}';render('admin')" style="padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:${isActive?'var(--green)':'var(--text-muted)'};border-bottom:2px solid ${isActive?'var(--green)':'transparent'};margin-bottom:-2px">${labels[t]}</button>`;
     }).join('')}
@@ -2848,6 +2852,13 @@ function pgAdmin(){
     return `<div class="page-hdr"><h1>🔐 Admin Dashboard</h1>
     <p>Ecosystem intelligence — see who's using the platform and make great connections.</p></div>
     ${adminTabBar('roadmap')}` + pgRoadmap();
+  }
+
+  // Investor opportunity tab
+  if (adminTab === 'investor') {
+    return `<div class="page-hdr"><h1>🔐 Admin Dashboard</h1>
+    <p>Ecosystem intelligence — see who's using the platform and make great connections.</p></div>
+    ${adminTabBar('investor')}` + pgInvestorOpportunity();
   }
 
   return `<div class="page-hdr"><h1>🔐 Admin Dashboard</h1>
@@ -3027,10 +3038,158 @@ async function revokeRoadmapAccess(userId) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// INVESTOR OPPORTUNITY (Admin + Granted Users)
+// ══════════════════════════════════════════════════════════════
+
+function pgInvestorOpportunity() {
+  const total = _allProfiles.length;
+  const founders = _allProfiles.filter(p=>p.persona==='founder').length;
+  const investors = _allProfiles.filter(p=>p.persona==='investor').length;
+  const ecosystemMgrs = _allProfiles.filter(p=>['advisor','government','industry_pro'].includes(p.persona)).length;
+  const thisMonth = _allProfiles.filter(p=>new Date(p.created_at) >= new Date(Date.now()-30*864e5)).length;
+
+  const investorUsers = _allProfiles.filter(p => p.admin_tags && p.admin_tags.includes('investor_access'));
+  const accessList = investorUsers.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${investorUsers.map(p => `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:16px;font-size:11px;color:var(--green);font-weight:600">${p.full_name||p.email} <button onclick="revokeInvestorAccess('${p.id}')" style="background:none;border:none;color:var(--text-faint);font-size:14px;cursor:pointer;padding:0 2px;line-height:1" title="Revoke access">\u00d7</button></span>`).join('')}</div>`
+    : '<p style="font-size:12px;color:var(--text-faint);margin-top:6px">No investors granted access yet. Use the toggle on any user profile in the Directory tab.</p>';
+
+  return `
+  <div class="card" style="background:linear-gradient(135deg, rgba(99,102,241,.06), rgba(99,102,241,.02));border:1px solid rgba(99,102,241,.2)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:44px;height:44px;border-radius:12px;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff">\U0001f4bc</div>
+      <div>
+        <h3 style="margin:0">Investor Opportunity \u2014 Confidential</h3>
+        <div class="sub" style="margin:2px 0 0">Investment overview for FounderOps Center. Admin-only unless shared with specific investors.</div>
+      </div>
+    </div>
+    <div style="padding:6px 12px;background:var(--hover);border-radius:8px;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px">Investors With Access</div>
+      ${accessList}
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;border-left:4px solid #6366f1">
+    <h3 style="margin:0 0 4px">\U0001f30d The Problem</h3>
+    <div class="sub" style="margin-bottom:14px">Why AgTech ecosystems need FounderOps Center</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+      <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">\U0001f9f1 Ecosystem Fragmentation</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Startups, investors, accelerators, farms, and government programs all operate in silos. No single platform connects the dots across the AgTech landscape.</div>
+      </div>
+      <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">\U0001f4ca Information Asymmetry</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Founders waste months discovering programs, investors, and resources that ecosystem managers already know about. Investors miss deal flow that never reaches them.</div>
+      </div>
+      <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">\U0001f6e0\ufe0f Tool Sprawl</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Ecosystem managers patch together Airtable, Google Drive, email, and generic CRMs. No tool understands AgTech natively \u2014 personas, funding stages, crop sectors, or seasonal cycles.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;border-left:4px solid var(--green)">
+    <h3 style="margin:0 0 4px">\U0001f4a1 The Solution</h3>
+    <div class="sub" style="margin-bottom:14px">FounderOps Center \u2014 AgTech Ecosystem Intelligence</div>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">FounderOps Center is the operating system for AgTech ecosystems. We combine curated market intelligence, founder resources, and a matching engine into one platform \u2014 giving founders the map and connections they need, while giving ecosystem managers and investors the data layer they've never had.</p>
+    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+      <div style="text-align:center;padding:16px;background:var(--accent-bg);border-radius:10px;border:1px solid var(--green-mid)">
+        <div style="font-size:28px;font-weight:900;color:var(--green)">${total}</div>
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600">Platform Users</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--accent-bg);border-radius:10px;border:1px solid var(--green-mid)">
+        <div style="font-size:28px;font-weight:900;color:var(--green)">${founders}</div>
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600">Founders</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--accent-bg);border-radius:10px;border:1px solid var(--green-mid)">
+        <div style="font-size:28px;font-weight:900;color:var(--green)">${investors}</div>
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600">Investors</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--accent-bg);border-radius:10px;border:1px solid var(--green-mid)">
+        <div style="font-size:28px;font-weight:900;color:var(--green)">${thisMonth}</div>
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600">This Month</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3 style="margin:0 0 4px">\U0001f680 Growth Roadmap</h3>
+    <div class="sub" style="margin-bottom:14px">Three phases to category leadership</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+      <div style="padding:16px;border:2px solid var(--green);border-radius:10px;background:var(--accent-bg)">
+        <span class="badge b-green" style="margin-bottom:8px">Phase 1 \u2014 Now</span>
+        <h4 style="margin:0 0 6px;font-size:14px">Intelligence Platform</h4>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Curated AgTech market data, investor & accelerator directory, founder resources, ecosystem maps, and smart connections matching engine. Live and growing.</div>
+      </div>
+      <div style="padding:16px;border:1px solid var(--border);border-radius:10px">
+        <span class="badge b-blue" style="margin-bottom:8px">Phase 2 \u2014 Next</span>
+        <h4 style="margin:0 0 6px;font-size:14px">Multi-Ecosystem CRM</h4>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Private workspaces for ecosystem managers \u2014 pipeline tracking, relationship management, document vault, and opt-in cross-ecosystem data sharing. Replaces Airtable + Google Drive.</div>
+      </div>
+      <div style="padding:16px;border:1px solid var(--border);border-radius:10px">
+        <span class="badge b-purple" style="margin-bottom:8px">Phase 3 \u2014 Scale</span>
+        <h4 style="margin:0 0 6px;font-size:14px">Thesis-Driven Fund</h4>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Proprietary deal flow from the platform powers a data-driven AgTech fund. Every startup tracked, every introduction made, every pipeline conversion becomes investment intelligence.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;border-left:4px solid #6366f1">
+    <h3 style="margin:0 0 4px">\U0001f4b0 The Opportunity</h3>
+    <div class="sub" style="margin-bottom:14px">Early-stage investment in the platform powering AgTech ecosystem coordination</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:16px">
+      <div style="padding:16px;background:var(--hover);border-radius:10px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Equity Available</div>
+        <div style="font-size:28px;font-weight:900;color:#6366f1">5\u201320%</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Flexible based on investment size</div>
+      </div>
+      <div style="padding:16px;background:var(--hover);border-radius:10px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Use of Funds</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.6;margin-top:8px">Product development<br>Founder salary<br>Ecosystem partnerships<br>Market expansion</div>
+      </div>
+      <div style="padding:16px;background:var(--hover);border-radius:10px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Revenue Model</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.6;margin-top:8px">Free tier (current)<br>Pro tier (CRM seats)<br>Fund returns (Phase 3)</div>
+      </div>
+    </div>
+    <div style="padding:14px;background:linear-gradient(135deg, rgba(99,102,241,.06), rgba(99,102,241,.02));border:1px solid rgba(99,102,241,.2);border-radius:10px">
+      <div style="font-size:13px;line-height:1.7;color:var(--text-muted)"><strong style="color:var(--text)">Why now:</strong> AgTech VC investment hit $5.7B in 2024 across 736 startups, but the ecosystem infrastructure connecting founders to capital is still held together with spreadsheets. FounderOps Center is building the connective tissue \u2014 and every user, every ecosystem node, every introduction made on the platform increases the value of the network and the quality of deal flow for future fund investments.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;text-align:center;padding:28px">
+    <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px">Interested in learning more? Let's talk.</p>
+    <button onclick="window.open('mailto:russellcolevop@gmail.com?subject=FounderOps%20Center%20-%20Investment%20Inquiry&body=Hi%20Russell%2C%0A%0AI%20reviewed%20the%20investor%20opportunity%20on%20FounderOps%20Center%20and%20would%20like%20to%20discuss%20further.%0A%0A','_blank')" style="padding:13px 36px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.25)">\U0001f4e7 Email Russell About Investing</button>
+  </div>`;
+}
+
+async function grantInvestorAccess(userId) {
+  const p = _allProfiles.find(x => x.id === userId);
+  if (!p) return;
+  const tags = (p.admin_tags || []).filter(t => t !== 'investor_access');
+  tags.push('investor_access');
+  const { error } = await _supabase.from('profiles').update({ admin_tags: tags }).eq('id', userId);
+  if (error) { console.error('grantInvestor error:', error); toast('Error granting access'); return; }
+  p.admin_tags = tags;
+  toast('\U0001f4bc Investor access granted to ' + (p.full_name || p.email));
+  render('admin');
+}
+
+async function revokeInvestorAccess(userId) {
+  const p = _allProfiles.find(x => x.id === userId);
+  if (!p) return;
+  const tags = (p.admin_tags || []).filter(t => t !== 'investor_access');
+  const { error } = await _supabase.from('profiles').update({ admin_tags: tags }).eq('id', userId);
+  if (error) { console.error('revokeInvestor error:', error); toast('Error revoking access'); return; }
+  p.admin_tags = tags;
+  toast('\U0001f512 Investor access revoked for ' + (p.full_name || p.email));
+  render('admin');
+}
+
+// ══════════════════════════════════════════════════════════════
 // AUTONOMOUS MATCHING ENGINE
 // ══════════════════════════════════════════════════════════════
 let _introductions = [];
-let adminTab = 'directory'; // 'directory' | 'connections' | 'roadmap'
+let adminTab = 'directory'; // 'directory' | 'connections' | 'roadmap' | 'investor'
 
 async function loadIntroductions() {
   const { data, error } = await _supabase.from('introductions').select('*').order('created_at', { ascending: false });
