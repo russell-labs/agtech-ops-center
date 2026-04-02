@@ -2461,15 +2461,18 @@ function showBlockedScreen() {
 // ══════════════════════════════════════════════════════════════
 
 const BADGE_DEFS = [
+  // ── Platform badges (auto-earned) ──
   { id:'verified_profile', icon:'✅', label:'Verified Profile', desc:'Complete all required profile fields', check: p => calcCompleteness(p) >= 100 },
   { id:'linkedin_connected', icon:'🔗', label:'LinkedIn Connected', desc:'Add your LinkedIn profile URL', check: p => !!(p.linkedin_url && p.linkedin_url.includes('linkedin.com')) },
-  { id:'stage_declared', icon:'🎯', label:'Stage Declared', desc:'Declare your company stage or investment focus', check: p => !!(p.company_stage || (p.investment_stages && p.investment_stages.length > 0) || p.expertise_areas?.length > 0) },
   { id:'first_feedback', icon:'💬', label:'First Feedback', desc:'Submit your first piece of feedback', check: p => !!(p.badges && p.badges.includes('first_feedback')) },
-  { id:'deck_ready', icon:'📊', label:'Deck Ready', desc:'Upload or link your pitch deck', check: p => !!(p.badges && p.badges.includes('deck_ready')) },
-  { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Complete your first pilot agreement', check: p => !!(p.badges && p.badges.includes('first_pilot')) },
-  { id:'active_contributor', icon:'⭐', label:'Active Contributor', desc:'Be active on the platform for 30+ days', check: p => { if (!p.created_at) return false; const days = (Date.now() - new Date(p.created_at).getTime()) / 864e5; return days >= 30; } },
-  { id:'revenue_milestone', icon:'💰', label:'Revenue Milestone', desc:'Report first revenue (founders)', check: p => !!(p.badges && p.badges.includes('revenue_milestone')) },
-  { id:'network_builder', icon:'🤝', label:'Network Builder', desc:'Get 3+ successful introductions', check: p => !!(p.badges && p.badges.includes('network_builder')) },
+  // ── Startup journey milestones (self-declared or admin-granted) ──
+  { id:'idea_stage', icon:'💡', label:'Idea Stage', desc:'Exploring an idea or doing research', check: p => !!(p.company_stage === 'idea' || (p.badges && p.badges.includes('idea_stage'))) },
+  { id:'mvp_built', icon:'🛠️', label:'MVP Built', desc:'Built a minimum viable product or prototype', check: p => !!(p.company_stage === 'mvp' || (p.badges && p.badges.includes('mvp_built'))) },
+  { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Launched a pilot with real customers', check: p => !!(p.badges && p.badges.includes('first_pilot')) },
+  { id:'first_revenue', icon:'💰', label:'First Revenue', desc:'Generated first revenue from customers', check: p => !!(p.company_stage === 'revenue' || (p.badges && p.badges.includes('first_revenue'))) },
+  { id:'funding_closed', icon:'🏦', label:'Funding Closed', desc:'Completed a funding round', check: p => !!(p.badges && p.badges.includes('funding_closed')) },
+  { id:'product_market_fit', icon:'📈', label:'Product-Market Fit', desc:'Achieved meaningful traction and product-market fit', check: p => !!(p.badges && p.badges.includes('product_market_fit')) },
+  { id:'scaling', icon:'🚀', label:'Scaling', desc:'Scaling customers and operations', check: p => !!(p.company_stage === 'scaling' || (p.badges && p.badges.includes('scaling'))) },
 ];
 
 const TIER_DEFS = [
@@ -2557,7 +2560,7 @@ async function syncProfileMeta(profile) {
   const completeness = calcCompleteness(profile);
   const autoBadges = calcBadges(profile);
   // Merge auto-earned + manually-granted badges
-  const existingManual = (profile.badges || []).filter(b => ['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b));
+  const existingManual = (profile.badges || []).filter(b => ['first_feedback','idea_stage','mvp_built','first_pilot','first_revenue','funding_closed','product_market_fit','scaling'].includes(b));
   const merged = [...new Set([...autoBadges, ...existingManual])];
   const tier = calcTier(merged);
   const needsUpdate = completeness !== profile.profile_completeness || tier !== profile.tier || JSON.stringify(merged.sort()) !== JSON.stringify((profile.badges||[]).sort());
@@ -3029,7 +3032,7 @@ function pgProfile() {
   const completeness = calcCompleteness(p);
   const earnedBadges = calcBadges(p);
   // Merge auto + manual badges
-  const allBadges = [...new Set([...earnedBadges, ...(p.badges||[]).filter(b=>['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b))])];
+  const allBadges = [...new Set([...earnedBadges, ...(p.badges||[]).filter(b=>['first_feedback','idea_stage','mvp_built','first_pilot','first_revenue','funding_closed','product_market_fit','scaling'].includes(b))])];
   const tier = calcTier(allBadges);
   const td = tierDef(tier);
   const introTierPref = p.intro_tier_pref || 'explorer';
@@ -3212,8 +3215,8 @@ function pgAdmin(){
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${BADGE_DEFS.map(b => {
             const has = (p.badges||[]).includes(b.id);
-            const isManual = ['first_feedback','deck_ready','first_pilot','revenue_milestone','network_builder'].includes(b.id);
-            return `<span class="badge-item ${has?'earned':'locked'}" style="font-size:10px;padding:3px 8px;cursor:${isManual?'pointer':'default'}" ${isManual ? `onclick="event.stopPropagation();${has?'revokeBadge':'grantBadge'}('${p.id}','${b.id}')"` : ''} title="${b.desc}${isManual?' (click to toggle)':' (auto-earned)'}">${b.icon} ${b.label}</span>`;
+            const isToggleable = ['first_feedback','idea_stage','mvp_built','first_pilot','first_revenue','funding_closed','product_market_fit','scaling'].includes(b.id);
+            return `<span class="badge-item ${has?'earned':'locked'}" style="font-size:10px;padding:3px 8px;cursor:${isToggleable?'pointer':'default'}" ${isToggleable ? `onclick="event.stopPropagation();${has?'revokeBadge':'grantBadge'}('${p.id}','${b.id}')"` : ''} title="${b.desc}${isToggleable?' (click to toggle)':' (auto-earned)'}">${b.icon} ${b.label}</span>`;
           }).join('')}</div>
           <div style="font-size:10px;color:var(--text-faint)">Profile: ${calcCompleteness(p)}% complete · ${(p.badges||[]).length} badges · Intro pref: ${tierDef(p.intro_tier_pref||'explorer').label}+</div>
         </div>
