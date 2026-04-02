@@ -707,7 +707,7 @@ _supabase.auth.onAuthStateChange((event, session) => {
     // Hide profile/admin nav buttons
     const pb = document.getElementById('nav-profile-btn'); if (pb) pb.style.display = 'none';
     const ab = document.getElementById('nav-admin-btn'); if (ab) ab.style.display = 'none';
-    // Show signed-out landing
+    // Show clean full-screen signed-out landing
     showSignedOutPage();
   }
 });
@@ -718,6 +718,9 @@ function applyUser(user, isNew) {
   const avatar = user.user_metadata?.avatar_url || null;
   currentUser = { id: user.id, email, name, avatar, method: 'google' };
   isAdmin = isUserAdmin(email);
+
+  // Hide landing page if showing
+  hideLanding();
 
   // Update topbar button
   const btn = document.getElementById('topbar-user-btn');
@@ -765,23 +768,8 @@ function applyUser(user, isNew) {
 }
 
 function notifyNewUser(name, email) {
-  // Opens a pre-filled email to Russell when a brand-new user signs in
-  const subject = encodeURIComponent('🆕 New Founder Ops Center signup: ' + name);
-  const body = encodeURIComponent(
-    'A new user just signed in to Founder Ops Center!\n\n' +
-    'Name: ' + name + '\n' +
-    'Email: ' + email + '\n' +
-    'Time: ' + new Date().toLocaleString() + '\n\n' +
-    'View all users in the admin panel at founderopscenter.com'
-  );
-  // Silent notification — opens mailto in background tab
-  const a = document.createElement('a');
-  a.href = 'mailto:russellcolevop@gmail.com?subject=' + subject + '&body=' + body;
-  a.target = '_blank';
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => a.remove(), 1000);
+  // Log new signups silently — admin dashboard shows all users
+  console.log('🆕 New signup:', name, email, new Date().toISOString());
 }
 
 function openSignOutMenu() {
@@ -794,16 +782,102 @@ async function signOut() {
 }
 
 function showSignedOutPage() {
-  document.getElementById('page').innerHTML = `<div style="text-align:center;padding:60px 20px;max-width:520px;margin:0 auto">
-    <div style="font-size:56px;margin-bottom:16px">🌾</div>
-    <h2 style="font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px">You've been signed out</h2>
-    <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:28px">Thanks for visiting the AgTech Founder Ops Center. Sign back in anytime to access your profile, resources, and connections.</p>
-    <button onclick="openModal('signin-modal')" style="padding:13px 36px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">Sign Back In</button>
-    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
-      <p style="font-size:12px;color:var(--text-faint);line-height:1.7">Built by <strong style="color:var(--text-muted)">Russell Cole</strong> — AgTech Ecosystem Connector<br>
-      <a href="https://www.linkedin.com/in/russellcole/" target="_blank" style="color:var(--green);text-decoration:none">Connect on LinkedIn ↗</a></p>
+  showLandingPage(true);
+}
+
+function showLandingPage(isSignedOut) {
+  // Hide sidebar and topbar for a clean full-screen landing
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.querySelector('.fab').style.display = 'none';
+
+  // Remove existing landing if any
+  const existing = document.getElementById('landing-page');
+  if (existing) existing.remove();
+
+  const landing = document.createElement('div');
+  landing.id = 'landing-page';
+  landing.innerHTML = `
+  <div style="min-height:100vh;background:var(--bg);display:flex;flex-direction:column">
+    <!-- Top bar -->
+    <div style="padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🌾</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--text)">Founder Ops Center</div>
+          <div style="font-size:10px;color:var(--text-muted)">founderopscenter.com</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button onclick="toggleTheme()" id="landing-theme-btn" style="padding:7px 14px;background:var(--hover);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-muted)">🌙</button>
+        <button onclick="enterApp()" style="padding:9px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">${isSignedOut ? 'Sign Back In' : 'Get Started'} →</button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;max-width:800px;margin:0 auto">
+      ${isSignedOut ? '<div style="display:inline-block;padding:6px 16px;background:var(--hover);border-radius:20px;font-size:12px;color:var(--text-muted);margin-bottom:16px">✅ You\'ve been signed out</div>' : ''}
+      <h1 style="font-size:clamp(28px,5vw,44px);font-weight:900;color:var(--text);line-height:1.2;margin:0 0 16px">The Intelligence Platform for<br><span style="color:var(--green)">AgTech Founders</span></h1>
+      <p style="font-size:clamp(14px,2vw,17px);color:var(--text-muted);line-height:1.7;margin:0 0 32px;max-width:580px">Market data, ecosystem mapping, founder resources, and a curated network of investors, advisors, and farmers — all in one place. Built by Russell Cole to connect the AgTech ecosystem.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
+        <button onclick="enterApp()" style="padding:14px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(34,197,94,.3)">${isSignedOut ? 'Sign Back In' : 'Create Free Account'} →</button>
+        <button onclick="enterAppGuest()" style="padding:14px 32px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Browse as Guest</button>
+      </div>
+
+      <!-- Feature cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;max-width:700px;text-align:left">
+        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="font-size:24px;margin-bottom:8px">🌐</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Market Intelligence</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Live stats on AgTech investment, segments, and crop markets across Canada and beyond.</div>
+        </div>
+        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="font-size:24px;margin-bottom:8px">🚀</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Founder's Journey</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Step-by-step guides from idea validation through Series A — with templates and resources.</div>
+        </div>
+        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="font-size:24px;margin-bottom:8px">🤝</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Smart Connections</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">AI-powered matching connects founders with investors, advisors, and farmers who fit.</div>
+        </div>
+        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="font-size:24px;margin-bottom:8px">🌾</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Farmer Network</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Connect directly with farmers open to piloting new tech — the demand side of innovation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:20px 32px;border-top:1px solid var(--border);text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:var(--text)">Russell Cole</span>
+        <span style="font-size:11px;color:var(--text-faint)">·</span>
+        <span style="font-size:12px;color:var(--text-muted)">AgTech Ecosystem Connector</span>
+      </div>
+      <a href="https://www.linkedin.com/in/russellcole/" target="_blank" style="font-size:12px;color:var(--green);text-decoration:none">Connect on LinkedIn ↗</a>
     </div>
   </div>`;
+  document.body.appendChild(landing);
+}
+
+function enterApp() {
+  hideLanding();
+  openModal('signin-modal');
+}
+
+function enterAppGuest() {
+  hideLanding();
+  render('overview');
+}
+
+function hideLanding() {
+  const landing = document.getElementById('landing-page');
+  if (landing) landing.remove();
+  document.getElementById('sidebar').style.display = '';
+  document.getElementById('main').style.display = '';
+  document.querySelector('.fab').style.display = '';
 }
 
 // ── LINKS REGISTRY ────────────────────────────────────────────────
@@ -2226,7 +2300,28 @@ function wizToggleChip(field, val) {
 
 function wizNext() {
   wizCollectInputs();
-  if (wizStep === 0 && !wizData.persona) { toast('Please select who you are'); return; }
+  // ── Step validation ──
+  if (wizStep === 0) {
+    if (!wizData.persona) { toast('⚠️ Please select who you are'); return; }
+  } else if (wizStep === 1) {
+    // Basics: location and at least 1 agtech focus required for all
+    if (!wizData.location.trim()) { toast('⚠️ Location is required'); return; }
+    if (!wizData.agtech_focus.length) { toast('⚠️ Select at least one AgTech focus area'); return; }
+  } else if (wizStep === 2) {
+    // Details: persona-specific required fields
+    if (wizData.persona === 'founder') {
+      if (!wizData.company_name.trim()) { toast('⚠️ Company name is required'); return; }
+      if (!wizData.company_stage) { toast('⚠️ Please select your company stage'); return; }
+      if (!wizData.what_building.trim()) { toast('⚠️ Tell us what you\'re building'); return; }
+      if (!wizData.biggest_needs.length) { toast('⚠️ Select at least one need'); return; }
+    } else if (wizData.persona === 'investor') {
+      if (!wizData.investment_stages.length) { toast('⚠️ Select at least one investment stage'); return; }
+    } else if (wizData.persona === 'farmer') {
+      if (!wizData.biggest_needs.length) { toast('⚠️ Select at least one interest'); return; }
+    } else if (wizData.persona === 'researcher') {
+      if (!wizData.institution.trim()) { toast('⚠️ Institution is required'); return; }
+    }
+  }
   wizStep++;
   wizRender();
 }
@@ -2809,12 +2904,15 @@ function render(page){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────
-render('overview');
-
-// Show onboarding for first-time visitors
-if(!localStorage.getItem('foc_onboarded')){
-  setTimeout(showOnboarding, 900);
-}
+// Check if user is already signed in; if not, show landing page
+(async () => {
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (session?.user) {
+    render('overview');
+  } else {
+    showLandingPage(false);
+  }
+})();
 </script>
 </body>
 </html>
