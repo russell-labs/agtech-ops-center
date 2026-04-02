@@ -2432,6 +2432,20 @@ function promptBlockUser(userId, userName) {
   blockUser(userId, reason);
 }
 
+async function deleteUser(userId, userName) {
+  if (!confirm('⚠️ Permanently delete ' + userName + '?\n\nThis will remove their profile from the database. They can re-register with a fresh account.\n\nThis cannot be undone.')) return;
+  if (!confirm('Are you absolutely sure you want to delete ' + userName + '?')) return;
+  // Delete profile row (auth user remains in Supabase Auth but profile is gone)
+  const { error } = await _supabase.from('profiles').delete().eq('id', userId);
+  if (error) { console.error('deleteUser error:', error); toast('❌ Error deleting user: ' + error.message); return; }
+  // Also clean up any introductions involving this user
+  await _supabase.from('introductions').delete().or('from_user.eq.' + userId + ',to_user.eq.' + userId);
+  // Remove from local cache
+  _allProfiles = _allProfiles.filter(x => x.id !== userId);
+  toast('🗑️ ' + userName + ' deleted');
+  render('admin');
+}
+
 function showBlockedScreen() {
   document.getElementById('page').innerHTML = `<div style="text-align:center;padding:80px 20px">
     <div style="font-size:64px;margin-bottom:16px">🚫</div>
@@ -3220,8 +3234,12 @@ function pgAdmin(){
             ? `<div style="display:flex;align-items:center;gap:8px">
                 <span style="font-size:11px;color:#dc2626;font-weight:700">🚫 Blocked${p.blocked_reason ? ' — '+p.blocked_reason : ''}</span>
                 <button onclick="event.stopPropagation();unblockUser('${p.id}')" style="padding:5px 14px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✅ Unblock</button>
+                <button onclick="event.stopPropagation();deleteUser('${p.id}','${(p.full_name||p.email).replace(/'/g,"\\'")}')" style="padding:5px 14px;background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🗑️ Delete</button>
               </div>`
-            : `<button onclick="event.stopPropagation();promptBlockUser('${p.id}','${(p.full_name||p.email).replace(/'/g,"\\'")}')" style="padding:5px 14px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🚫 Block User</button>`
+            : `<div style="display:flex;align-items:center;gap:8px">
+                <button onclick="event.stopPropagation();promptBlockUser('${p.id}','${(p.full_name||p.email).replace(/'/g,"\\'")}')" style="padding:5px 14px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🚫 Block User</button>
+                <button onclick="event.stopPropagation();deleteUser('${p.id}','${(p.full_name||p.email).replace(/'/g,"\\'")}')" style="padding:5px 14px;background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🗑️ Delete</button>
+              </div>`
           ) : ''}
         </div>
       </div>`;
