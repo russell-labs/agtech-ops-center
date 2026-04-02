@@ -437,6 +437,73 @@
     .vc-grid { grid-template-columns: 1fr !important; }
     .funding-row { grid-template-columns: 1fr !important; }
   }
+
+  /* ── LANDING PAGE ── */
+  #landing-page { position:fixed;inset:0;z-index:9999;background:var(--bg);overflow-y:auto; }
+  .lp-nav { padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10;backdrop-filter:blur(12px);border-bottom:1px solid var(--border); }
+  .lp-logo { display:flex;align-items:center;gap:10px; }
+  .lp-logo-mark { width:34px;height:34px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:900; }
+  .lp-logo-text { font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px; }
+  .lp-nav-btns { display:flex;gap:8px;align-items:center; }
+  .lp-btn-ghost { padding:8px 16px;background:none;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);font-family:inherit; }
+  .lp-btn-ghost:hover { border-color:var(--green);color:var(--green); }
+  .lp-btn-primary { padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit; }
+  .lp-btn-primary:hover { opacity:.9; }
+
+  .lp-hero { max-width:720px;margin:0 auto;padding:60px 24px 40px;text-align:center; }
+  .lp-badge { display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:20px;font-size:11px;font-weight:600;color:var(--green);margin-bottom:20px; }
+  .lp-h1 { font-size:clamp(30px,5.5vw,48px);font-weight:900;color:var(--text);line-height:1.15;margin:0 0 18px;letter-spacing:-.5px; }
+  .lp-h1 span { background:linear-gradient(135deg,#16a34a,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+  .lp-sub { font-size:clamp(14px,2vw,17px);color:var(--text-muted);line-height:1.75;margin:0 auto 32px;max-width:540px; }
+  .lp-cta-row { display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:12px; }
+  .lp-cta-big { padding:14px 36px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(34,197,94,.25);transition:transform .15s,box-shadow .15s; }
+  .lp-cta-big:hover { transform:translateY(-1px);box-shadow:0 6px 24px rgba(34,197,94,.35); }
+  .lp-cta-sec { padding:14px 36px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s; }
+  .lp-cta-sec:hover { border-color:var(--green); }
+  .lp-trust { font-size:11px;color:var(--text-faint);margin-top:14px; }
+
+  .lp-features { max-width:900px;margin:0 auto;padding:20px 24px 48px; }
+  .lp-section-label { text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-faint);margin-bottom:20px; }
+  .lp-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:16px; }
+  .lp-card { background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:24px;transition:border-color .2s,box-shadow .2s; }
+  .lp-card:hover { border-color:var(--green-mid);box-shadow:0 4px 16px rgba(34,197,94,.08); }
+  .lp-card-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px; }
+  .lp-card h3 { font-size:14px;font-weight:700;color:var(--text);margin:0 0 6px; }
+  .lp-card p { font-size:12px;color:var(--text-muted);line-height:1.6;margin:0; }
+
+  .lp-stats { max-width:900px;margin:0 auto;padding:0 24px 48px; }
+  .lp-stats-row { display:flex;justify-content:center;gap:40px;flex-wrap:wrap;padding:28px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border); }
+  .lp-stat { text-align:center; }
+  .lp-stat-val { font-size:28px;font-weight:900;color:var(--green); }
+  .lp-stat-lbl { font-size:11px;color:var(--text-muted);margin-top:2px; }
+
+  .lp-who { max-width:900px;margin:0 auto;padding:0 24px 48px; }
+  .lp-who-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:12px; }
+  .lp-who-card { text-align:center;padding:20px 12px;border-radius:12px;border:1px solid var(--border);background:var(--bg); }
+  .lp-who-card .lp-who-icon { font-size:28px;margin-bottom:8px; }
+  .lp-who-card .lp-who-title { font-size:12px;font-weight:700;color:var(--text); }
+  .lp-who-card .lp-who-desc { font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4; }
+
+  .lp-bottom-cta { text-align:center;padding:48px 24px;background:var(--accent-bg);border-top:1px solid var(--green-mid); }
+  .lp-bottom-cta h2 { font-size:clamp(20px,3vw,28px);font-weight:800;color:var(--text);margin:0 0 10px; }
+  .lp-bottom-cta p { font-size:14px;color:var(--text-muted);margin:0 0 24px; }
+
+  .lp-footer { padding:18px 28px;text-align:center;font-size:11px;color:var(--text-faint);border-top:1px solid var(--border); }
+  .lp-footer a { color:var(--green);text-decoration:none; }
+
+  @media(max-width:700px){
+    .lp-nav { padding:10px 16px; }
+    .lp-hero { padding:36px 16px 28px; }
+    .lp-grid { grid-template-columns:1fr; }
+    .lp-who-grid { grid-template-columns:1fr 1fr; }
+    .lp-stats-row { gap:24px; }
+    .lp-cta-big, .lp-cta-sec { padding:12px 24px;font-size:14px;width:100%; }
+    .lp-cta-row { flex-direction:column;align-items:stretch; }
+    .lp-nav-btns .lp-btn-ghost { display:none; }
+  }
+  @media(max-width:400px){
+    .lp-who-grid { grid-template-columns:1fr; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -798,66 +865,107 @@ function showLandingPage(isSignedOut) {
   const landing = document.createElement('div');
   landing.id = 'landing-page';
   landing.innerHTML = `
-  <div style="min-height:100vh;background:var(--bg);display:flex;flex-direction:column">
-    <!-- Top bar -->
-    <div style="padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🌾</div>
-        <div>
-          <div style="font-size:15px;font-weight:800;color:var(--text)">Founder Ops Center</div>
-          <div style="font-size:10px;color:var(--text-muted)">founderopscenter.com</div>
-        </div>
+  <!-- Nav -->
+  <nav class="lp-nav">
+    <div class="lp-logo">
+      <div class="lp-logo-mark">F</div>
+      <div class="lp-logo-text">Founder Ops Center</div>
+    </div>
+    <div class="lp-nav-btns">
+      <button class="lp-btn-ghost" onclick="enterAppGuest()">Explore as Guest</button>
+      <button class="lp-btn-primary" onclick="enterApp()">${isSignedOut ? 'Sign Back In' : 'Sign In'}</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="lp-hero">
+    ${isSignedOut
+      ? '<div class="lp-badge">You\'ve been signed out — welcome back anytime</div>'
+      : '<div class="lp-badge"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green)"></span> Now in early access — Canada-first, expanding globally</div>'
+    }
+    <h1 class="lp-h1">Navigate AgTech<br>with <span>better intelligence</span></h1>
+    <p class="lp-sub">Market data, ecosystem maps, curated resources, and an AI-powered network that connects founders with the investors, advisors, and farmers who matter. Built by AgTech founders, for AgTech founders.</p>
+    <div class="lp-cta-row">
+      <button class="lp-cta-big" onclick="enterApp()">${isSignedOut ? 'Sign Back In' : 'Join Free'} &rarr;</button>
+      <button class="lp-cta-sec" onclick="enterAppGuest()">Browse the Platform</button>
+    </div>
+    <div class="lp-trust">Free to join &middot; Google sign-in &middot; No credit card required</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="lp-stats">
+    <div class="lp-stats-row">
+      <div class="lp-stat"><div class="lp-stat-val">8</div><div class="lp-stat-lbl">Resource categories</div></div>
+      <div class="lp-stat"><div class="lp-stat-val">50+</div><div class="lp-stat-lbl">Accelerators & programs</div></div>
+      <div class="lp-stat"><div class="lp-stat-val">100+</div><div class="lp-stat-lbl">VC & funding sources</div></div>
+      <div class="lp-stat"><div class="lp-stat-val">7</div><div class="lp-stat-lbl">Regions planned</div></div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="lp-features">
+    <div class="lp-section-label">What you get</div>
+    <div class="lp-grid">
+      <div class="lp-card">
+        <div class="lp-card-icon" style="background:var(--accent-bg)">📊</div>
+        <h3>Market Intelligence</h3>
+        <p>Investment trends, segment breakdowns, and crop market data updated with the latest available figures. Know where the money is flowing.</p>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button onclick="toggleTheme()" id="landing-theme-btn" style="padding:7px 14px;background:var(--hover);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-muted)">🌙</button>
-        <button onclick="enterApp()" style="padding:9px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">${isSignedOut ? 'Sign Back In' : 'Get Started'} →</button>
+      <div class="lp-card">
+        <div class="lp-card-icon" style="background:#eff6ff">🗺️</div>
+        <h3>Ecosystem Mapping</h3>
+        <p>VCs, accelerators, government programs, research institutions — mapped and organized so you know exactly who to talk to.</p>
+      </div>
+      <div class="lp-card">
+        <div class="lp-card-icon" style="background:#fef3c7">🤝</div>
+        <h3>Smart Connections</h3>
+        <p>AI-powered matching scores your profile against investors, advisors, and farmers to surface the introductions that actually matter.</p>
+      </div>
+      <div class="lp-card">
+        <div class="lp-card-icon" style="background:#f0fdf4">🌾</div>
+        <h3>Farmer Network</h3>
+        <p>The demand side of AgTech. Connect with farmers open to piloting new technology — validate your product where it counts.</p>
       </div>
     </div>
+  </div>
 
-    <!-- Hero -->
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;max-width:800px;margin:0 auto">
-      ${isSignedOut ? '<div style="display:inline-block;padding:6px 16px;background:var(--hover);border-radius:20px;font-size:12px;color:var(--text-muted);margin-bottom:16px">✅ You\'ve been signed out</div>' : ''}
-      <h1 style="font-size:clamp(28px,5vw,44px);font-weight:900;color:var(--text);line-height:1.2;margin:0 0 16px">The Intelligence Platform for<br><span style="color:var(--green)">AgTech Founders</span></h1>
-      <p style="font-size:clamp(14px,2vw,17px);color:var(--text-muted);line-height:1.7;margin:0 0 32px;max-width:580px">Market data, ecosystem mapping, founder resources, and a curated network of investors, advisors, and farmers — all in one place. Built by Russell Cole to connect the AgTech ecosystem.</p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
-        <button onclick="enterApp()" style="padding:14px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(34,197,94,.3)">${isSignedOut ? 'Sign Back In' : 'Create Free Account'} →</button>
-        <button onclick="enterAppGuest()" style="padding:14px 32px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Browse as Guest</button>
+  <!-- Who it's for -->
+  <div class="lp-who">
+    <div class="lp-section-label">Built for the entire ecosystem</div>
+    <div class="lp-who-grid">
+      <div class="lp-who-card">
+        <div class="lp-who-icon">🚀</div>
+        <div class="lp-who-title">Founders</div>
+        <div class="lp-who-desc">Find funding, advisors, and pilot partners</div>
       </div>
-
-      <!-- Feature cards -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;max-width:700px;text-align:left">
-        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
-          <div style="font-size:24px;margin-bottom:8px">🌐</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Market Intelligence</div>
-          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Live stats on AgTech investment, segments, and crop markets across Canada and beyond.</div>
-        </div>
-        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
-          <div style="font-size:24px;margin-bottom:8px">🚀</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Founder's Journey</div>
-          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Step-by-step guides from idea validation through Series A — with templates and resources.</div>
-        </div>
-        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
-          <div style="font-size:24px;margin-bottom:8px">🤝</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Smart Connections</div>
-          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">AI-powered matching connects founders with investors, advisors, and farmers who fit.</div>
-        </div>
-        <div style="background:var(--hover);border:1px solid var(--border);border-radius:12px;padding:18px">
-          <div style="font-size:24px;margin-bottom:8px">🌾</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Farmer Network</div>
-          <div style="font-size:11px;color:var(--text-muted);line-height:1.5">Connect directly with farmers open to piloting new tech — the demand side of innovation.</div>
-        </div>
+      <div class="lp-who-card">
+        <div class="lp-who-icon">💰</div>
+        <div class="lp-who-title">Investors</div>
+        <div class="lp-who-desc">Discover deal flow and market insights</div>
+      </div>
+      <div class="lp-who-card">
+        <div class="lp-who-icon">🌾</div>
+        <div class="lp-who-title">Farmers</div>
+        <div class="lp-who-desc">Access new tech and pilot programs</div>
+      </div>
+      <div class="lp-who-card">
+        <div class="lp-who-icon">🧭</div>
+        <div class="lp-who-title">Advisors</div>
+        <div class="lp-who-desc">Connect with startups that need you</div>
       </div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div style="padding:20px 32px;border-top:1px solid var(--border);text-align:center">
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:700;color:var(--text)">Russell Cole</span>
-        <span style="font-size:11px;color:var(--text-faint)">·</span>
-        <span style="font-size:12px;color:var(--text-muted)">AgTech Ecosystem Connector</span>
-      </div>
-      <a href="https://www.linkedin.com/in/russellcole/" target="_blank" style="font-size:12px;color:var(--green);text-decoration:none">Connect on LinkedIn ↗</a>
-    </div>
+  <!-- Bottom CTA -->
+  <div class="lp-bottom-cta">
+    <h2>Ready to navigate AgTech smarter?</h2>
+    <p>Join a growing network of founders, investors, and farmers building the future of agriculture.</p>
+    <button class="lp-cta-big" onclick="enterApp()">${isSignedOut ? 'Sign Back In' : 'Get Started — It\'s Free'} &rarr;</button>
+  </div>
+
+  <!-- Footer -->
+  <div class="lp-footer">
+    Built by AgTech founders &middot; <a href="https://www.linkedin.com/company/founder-ops-center/" target="_blank">LinkedIn</a> &middot; &copy; ${new Date().getFullYear()} Founder Ops Center
   </div>`;
   document.body.appendChild(landing);
 }
