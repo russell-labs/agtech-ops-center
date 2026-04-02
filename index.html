@@ -518,10 +518,10 @@
         <div class="logo-sub">founderopscenter.com</div>
       </div>
     </div>
-    <div class="sidebar-tagline">Tools, data, and insights for agricultural technology founders worldwide.</div>
+    <div class="sidebar-tagline">AgTech ecosystem intelligence for founders, investors, and operators.</div>
   </div>
   <div class="sidebar-how">
-    <button class="how-btn" onclick="openModal('how-modal')">ℹ️ How to Use This Resource</button>
+    <button class="how-btn" onclick="openModal('how-modal')">ℹ️ About FounderOps Center</button>
   </div>
   <div class="sidebar-section">
     <div class="section-label">Global Resources</div>
@@ -593,11 +593,13 @@
 <div class="overlay" id="how-modal" onclick="if(event.target===this)closeModal('how-modal')">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('how-modal')">✕</button>
-    <h3>How to Use This Resource</h3>
-    <p>This Operations Center is designed for AgTech founders navigating the agricultural technology landscape.</p>
-    <p><strong>Global Resources</strong> — Core content available for all regions: market overview, founder guidance, glossary, templates, and media.</p>
-    <p><strong>Region-Specific Data</strong> — Select your country from the dropdown to see localized ecosystem data, industry segments, crops, and support programs. Currently Canada-focused with more regions coming.</p>
-    <p>Click any card or accordion header to expand detailed information. Content is maintained and updated by Russell and the team.</p>
+    <h3>Welcome to FounderOps Center</h3>
+    <p>FounderOps Center is your AgTech ecosystem intelligence platform — built to help founders, investors, and operators navigate the agricultural technology landscape with clarity and confidence.</p>
+    <p><strong>Explore the Ecosystem</strong> — Browse the global AgTech overview, discover key players, events, funding programs, and thought leaders shaping the industry.</p>
+    <p><strong>Your Founder's Journey</strong> — Step-by-step guidance from idea validation through scaling, tailored to your stage and focus area.</p>
+    <p><strong>Smart Connections</strong> — Get matched with relevant people in the ecosystem based on your profile, interests, and goals.</p>
+    <p><strong>Region-Specific Data</strong> — Select your country to see localized ecosystem data, industry segments, crops, and support programs. Currently Canada-focused with more regions coming soon.</p>
+    <p>Create a free account to unlock the full platform. Your profile helps us personalize your experience and connect you with the right people.</p>
   </div>
 </div>
 
@@ -1369,27 +1371,25 @@ function pgOverview(){return `
     <div class="mini-grid"><div class="mini-item"><strong>Family Farms 90%+</strong><span>Produce 80% of food value</span></div>
     <div class="mini-item"><strong>Large Farms 1%</strong><span>Control 70% of farmland</span></div></div>
     <div class="src-row">🔗 <a href="https://www.fao.org/family-farming" target="_blank">FAO — Family Farming</a></div>`)}
-  ${statCard('$2.28T','Global Agri-Food Exports','2024','stat-exports',`
-    <h4>$2.28 Trillion USD — Global Agri-Food Exports (2024)</h4>
-    <p>Export value in 2023 was <strong>1.7× higher than 2010</strong>. Agriculture's share of merchandise trade: 7% (2010) → 8% (2023).</p>
-    <ul><li><strong>The Americas</strong> — largest net food exporters</li>
-    <li><strong>Asia</strong> — largest net food importer</li>
-    <li><strong>EU:</strong> €235.4B (2024) — top global trader</li>
-    <li><strong>USA:</strong> major grains, soybeans, meat exporter</li>
-    <li><strong>Brazil &amp; Netherlands:</strong> leading exporters</li></ul>
-    <div class="src-row">🔗 <a href="https://www.wto.org/english/res_e/statis_e/its2024_e/its24_highlights_e.htm" target="_blank">WTO Trade Statistics 2024</a> &nbsp;·&nbsp; <a href="https://agriculture.canada.ca/en/sector/overview" target="_blank">AAFC Sector Overview</a></div>`)}
-  ${statCard('$26B–$40B','AgTech Market Value','2026 Est.','stat-market',`
-    <h4>Global AgTech Market Value 2026: $26B–$40B USD</h4>
-    <p><strong>Market Growth Timeline:</strong></p>
-    <ul><li>2020: $9B market value / $7.9B VC investment</li>
-    <li>2021: $18.12B market valuation</li>
-    <li>2022: $22.14B estimated value</li>
-    <li>2023: $27B+ (19% rise from 2022)</li>
-    <li>2024: $21.68B–$28.16B, $3.8B equity capital raised</li>
-    <li>2025: $23.42B–$32.83B (actual)</li>
-    <li>2026: $26B–$40B projected (12–15% CAGR)</li></ul>
+  ${statCard('~$2T','Global Agri-Food Exports','2024','stat-exports',`
+    <h4>~$2 Trillion USD — Global Agri-Food Exports (2024)</h4>
+    <p>Global agricultural exports reached <strong>$1.9T in 2023</strong> (FAO), up 1.7× from 2010. Expected to exceed <strong>$2T in 2024</strong>.</p>
+    <ul><li><strong>USA:</strong> $142B — largest single exporter (8.7% of total)</li>
+    <li><strong>Brazil:</strong> $127B — second largest (7.8%)</li>
+    <li><strong>The Americas</strong> — largest net food-exporting region</li>
+    <li><strong>Asia</strong> — largest net food-importing region</li>
+    <li><strong>EU:</strong> top trading bloc by combined volume</li></ul>
+    <div class="src-row">🔗 <a href="https://www.fao.org/statistics/highlights-archive/highlights-detail/trade-of-agricultural-commodities-2010-2023/en" target="_blank">FAO Trade Statistics 2023</a> &nbsp;·&nbsp; <a href="https://www.wto.org/english/tratop_e/agric_e/ag_imp_exp_charts_e.htm" target="_blank">WTO Agricultural Trade</a></div>`)}
+  ${statCard('$15B–$32B','AgTech Market Value','2024 Est.','stat-market',`
+    <h4>Global AgTech Market Value: $15B–$32B USD (2024)</h4>
+    <p>Estimates vary by scope and source. Key reference points:</p>
+    <ul><li><strong>Research and Markets:</strong> $17.5B (2024), 18.4% CAGR 2019–2024</li>
+    <li><strong>Expert Market Research:</strong> $15.5B (2024), 15% CAGR forecast</li>
+    <li><strong>Zion Market Research:</strong> $32.1B (2024), 16.9% CAGR forecast</li>
+    <li><strong>VC Investment (2024):</strong> $5.7B equity raised across 736 startups (Crunchbase)</li>
+    <li><strong>Agrifoodtech total (2024):</strong> ~$16B including foodtech (AgFunder)</li></ul>
     <p style="margin-top:8px"><strong>Growth Drivers:</strong> AI &amp; robotics adoption · Sustainability mandates · Supply chain resilience · Precision ag at scale</p>
-    <div class="src-row">🔗 <a href="https://www.businesswire.com/news/home/20260112577688/en/" target="_blank">ResearchAndMarkets — Global AgTech Report 2026–2036</a> &nbsp;·&nbsp; <a href="https://agfunder.com/research/" target="_blank">AgFunder Annual Report</a></div>`)}
+    <div class="src-row">🔗 <a href="https://www.globalagtechinitiative.com/digital-farming/2024-agtech-venture-capital-investment-and-exit-round-up/" target="_blank">Global AgTech Initiative — 2024 VC Roundup</a> &nbsp;·&nbsp; <a href="https://agfunder.com/research/" target="_blank">AgFunder Annual Report</a></div>`)}
 </div>
 
 <div class="card"><h3>🌍 Global Innovation Hotspots</h3><div class="sub">Leading regions driving agricultural technology innovation worldwide</div>
@@ -1578,7 +1578,7 @@ ${tabs('progs',[
   {label:'Grants & Funding',content:`
     ${prog('Sustainable CAP','Federal-provincial agri-food funding (2023–2028)','Up to $3.5 billion over 5 years for programs strengthening competitiveness, innovation and resiliency in the agriculture and agri-food sector.',['b-green:Canada','b-blue:Federal','b-yellow:$3.5B total'])}
     ${prog('AgriInnovate','Repayable contributions for commercialization','Up to $10 million in repayable contributions to accelerate commercialization of innovative agri-food products and technologies.',['b-green:Canada','b-yellow:Up to $10M'])}
-    ${prog('SDTC','Cleantech funding including ag innovations','Supports development and demonstration of clean technology solutions, including agricultural technologies addressing environmental challenges.',['b-green:Canada','b-purple:Cleantech'])}`},
+    ${prog('NRC IRAP (formerly SDTC)','Cleantech funding including ag innovations','SDTC was wound down in 2024. Clean technology agricultural projects are now supported through NRC IRAP and the Clean Growth Hub.',['b-green:Canada','b-purple:Cleantech'])}`},
   {label:'General Programs',content:`
     ${prog('Founder Institute','Global early-stage accelerator','The world\'s largest pre-seed startup accelerator, helping founders build enduring technology companies. Strong for first-time founders.',['b-blue:Global','b-green:Pre-seed'])}
     ${prog('North Forge','Manitoba incubator for science-based innovation','Manitoba\'s leading technology incubator supporting startups in agricultural technology, cleantech, and other science-based sectors.',['b-green:Manitoba','b-yellow:Science-based'])}
@@ -1826,17 +1826,17 @@ function pgEcosystem(){return `
 <div class="grid3">
 <div class="market-card"><h4>Precision Agriculture</h4><p>Variable-rate application, GPS guidance. Mainstream in the Prairies.</p>
 <span class="tech-tag">GPS Guidance</span><span class="tech-tag">VRT</span><span class="tech-tag">Yield Mapping</span>
-<div class="market-val">CA$1.5–2B market by 2027</div></div>
+<div class="market-val">~CA$2–3B market est. by 2027 (Grand View Research)</div></div>
 <div class="market-card"><h4>Farm Automation</h4><p>Robotic milking, autonomous machinery, AI-driven operations.</p>
 <span class="tech-tag">Robotics</span><span class="tech-tag">Autonomous</span><span class="tech-tag">AI-driven</span>
-<div class="market-val">+18% YoY growth</div></div>
+<div class="market-val">High growth — labour shortages driving adoption</div></div>
 <div class="market-card"><h4>Smart Farming</h4><p>Test farms and demonstration sites driving adoption.</p>
 <span class="tech-tag">IoT Sensors</span><span class="tech-tag">Machine Learning</span><span class="tech-tag">Data Analytics</span>
 <div style="font-size:11px;color:var(--text-faint);margin-top:7px;font-weight:600">Adoption limited by rural connectivity</div></div>
 </div></div>
 <div class="card"><h3>🔭 Trends to Watch</h3>
 <div class="trend-grid">
-<div class="trend-item"><h4>AI in Agronomy</h4><p>CA$200–350M market by 2026. Early adoption, high growth potential in crop disease detection and yield prediction.</p><span class="badge b-blue">Very High Priority</span></div>
+<div class="trend-item"><h4>AI in Agronomy</h4><p>Rapidly emerging market. Early adoption with high growth potential in crop disease detection, yield prediction, and automated scouting.</p><span class="badge b-blue">Very High Priority</span></div>
 <div class="trend-item"><h4>Farm Cybersecurity</h4><p>Growing need for security in connected farm systems. Emerging specialist market with limited competition.</p><span class="badge b-yellow">Emerging</span></div>
 <div class="trend-item"><h4>Carbon-Smart Farming</h4><p>Canada voluntary carbon credit market with strong government incentives for regenerative practices.</p><span class="badge b-green">Policy-driven</span></div>
 </div></div>`;}
@@ -1849,7 +1849,7 @@ function pgSegments(){
     {id:'prec',n:'Precision Farming & Digital Tools',d:'Data-driven farming, IoT sensors, satellite imagery, and farm management software.',g:'+12% YoY',
       opp:'Scalable digital tools for Prairie farms averaging 1,000+ acres.',
       cos:['Deveron','Semios','BinSentry','Farmers Edge','Conservis'],
-      market:'CA$1.5–2B market by 2027 — Prairie-led adoption.',
+      market:'~CA$2–3B market est. by 2027 — Prairie-led adoption (Grand View Research).',
       challenge:'Rural connectivity gaps limit real-time data use.'},
     {id:'auto',n:'Automation & Robotics',d:'Autonomous machinery, robotic systems, and AI-driven farm operations.',g:'+18% YoY',
       opp:'Labour shortages in grain and horticulture are driving fast adoption.',
@@ -1874,13 +1874,13 @@ function pgSegments(){
     {id:'alt',n:'Alternative Proteins & Cannabis Technology',d:'Plant-based proteins, cultured meat, novel ingredients, and cannabis sector innovations.',g:'+6.8% YoY',
       opp:'Canada\'s pulse and oilseed crops are ideal feedstock for protein extraction.',
       cos:['Protein Industries Canada','Merit Functional Foods','Roquette','NWF Agriculture'],
-      market:'PIC Supercluster has deployed $540M+ across plant protein projects.',
+      market:'PIC Supercluster — federal $153M+ matched by private sector across plant protein projects.',
       challenge:'Consumer adoption slowed post-2022; sector maturing and consolidating.'},
   ];
   segs.forEach(s=>{ SEG_DETAILS[s.id]={name:s.n,growth:s.g,opp:s.opp,cos:s.cos,market:s.market,challenge:s.challenge}; });
   return `<div class="page-hdr"><h1>Canadian AgTech Industry Segments</h1>
 <p>Overview of Canada's agtech sectors with notable companies, growth metrics, and founder opportunities. Click any card for details.</p></div>
-<div class="ca-banner">🇨🇦 Canada — Data current as of Q1 2026 &nbsp;·&nbsp; Growth rates reflect YoY Canadian market trends</div>
+<div class="ca-banner">🇨🇦 Canada — Data current as of Q1 2026 &nbsp;·&nbsp; Growth estimates from multiple industry reports; ranges may vary by source</div>
 <div class="seg-grid">${segs.map(s=>`
 <div class="seg-card" onclick="toggleSeg('${s.id}')">
   <h4>${s.n}</h4>
@@ -1941,9 +1941,9 @@ ${tabs('res',[
   {label:'Government Funding',content:`
     ${r('Sustainable CAP','Federal-provincial agri-food innovation funding (2023–2028)','Up to $3.5 billion over 5 years for programs that strengthen competitiveness, innovation and resiliency in the agriculture, agri-food and agri-based products sector.')}
     ${r('AgriInnovate','Repayable contributions for commercialization acceleration','Up to $10 million in repayable contributions to accelerate commercialization of innovative agri-food products, services, processes and technologies.')}
-    ${r('Protein Industries Canada','Innovation supercluster for plant protein and processing','One of Canada\'s five Innovation Superclusters, investing over $540 million in plant protein and agri-food projects across the Prairies.')}
+    ${r('Protein Industries Canada','Innovation supercluster for plant protein and processing','One of Canada\'s five Innovation Superclusters. Federal investment of ~$153M matched by private sector, funding plant protein and agri-food projects across the Prairies.')}
     ${r('SDTC','Now NRC IRAP — Cleantech &amp; ag innovation funding','SDTC was wound down in 2024. Clean technology agricultural projects are now supported through NRC Industrial Research Assistance Program (IRAP) and the Clean Growth Hub.')}
-    ${r('Farm Credit Canada','$7B investment coalition for ag &amp; food innovation by 2030','FCC Capital has committed C$2B directly and convened a 20+ partner coalition totalling C$7B for Canadian agriculture and food innovation by 2030. Invests across equipment, processing, and agtech startups at seed through growth stages.')}
+    ${r('Farm Credit Canada','$5B coalition + $2B FCC Capital for ag &amp; food innovation by 2030','FCC Capital committed C$2B directly (May 2025), then convened a 20+ partner coalition pledging an additional C$5B — totalling C$7B for Canadian agriculture and food innovation by 2030.')}
     ${r('BDC Capital','Venture capital for Canadian tech companies','Business Development Bank of Canada\'s investment arm actively funds agtech and foodtech companies across Canada.')}`},
   {label:'Industry Networks',content:`
     ${r('Pan-Canadian Smart Farm Network','Collaborative network of smart farms across 3 provinces','A network of applied research farms across Canada working together to advance smart agriculture technologies and practices.')}
