@@ -454,20 +454,17 @@
     <div style="width:48px;height:48px;background:var(--green);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px">🌱</div>
     <h3 style="font-size:20px;margin-bottom:6px">Welcome to Founder Ops Center</h3>
     <p style="color:var(--text-muted);font-size:13px;margin-bottom:24px">Sign in to access your dashboard</p>
+
     <button onclick="signIn('google')" style="width:100%;padding:11px 16px;background:#fff;border:1.5px solid #dadce0;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;color:#3c4043;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 1px 4px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='none'">
       <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continue with Google
     </button>
+
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
       <div style="flex:1;height:1px;background:var(--border)"></div>
       <span style="font-size:11px;color:var(--text-faint);font-weight:500">OR</span>
       <div style="flex:1;height:1px;background:var(--border)"></div>
     </div>
-    <input type="email" id="signin-email" placeholder="Enter your email" class="form-input" style="margin-bottom:10px">
-    <button onclick="signIn('email')" style="width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Send Magic Link →</button>
-    <p style="margin-top:16px;font-size:11px;color:var(--text-faint)">No password needed — we'll email you a sign-in link</p>
-  </div>
-</div>
 
     <input type="email" id="signin-email" placeholder="Enter your email" class="form-input" style="margin-bottom:10px">
     <button onclick="signIn('email')" style="width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Send Magic Link →</button>
@@ -921,7 +918,70 @@ function openBookingEmail(){
 }
 
 // ── DOCUMENT DOWNLOAD ─────────────────────────────────────────────
-function dlDoc(name){ toast('📄 Sign in to download: ' + name); }
+// Files live at https://founderopscenter.com/docs/<filename>
+// Add a filename here once you upload the file to the /docs folder in GitHub.
+const DOC_URLS = {
+  // ── Investor Materials ──
+  'Pitch Deck Template':                  'docs/pitch-deck-template.pptx',
+  'SAFE Agreement':                       'docs/safe-agreement.pdf',
+  'Data Room Organization Template':      'docs/data-room-organization.pdf',
+  'Cap Table (Excel)':                    'docs/cap-table.xlsx',
+  'Financial Model (Excel)':              'docs/financial-model.xlsx',
+  'Universal Shareholder Agreement':      'docs/shareholder-agreement.pdf',
+  'Product Roadmap Template':             null,
+  'GTM Strategy Template':                null,
+  'Sales Script: LinkedIn Invite to Connect':          'docs/sales-script-linkedin-invite.pdf',
+  'Sales Script: First Message After Connecting':      'docs/sales-script-first-message.pdf',
+  'Sales Script: Third Message if No Response':        'docs/sales-script-followup.pdf',
+  'Sales Script: Booking a Call / In-Person Meeting':  'docs/sales-script-booking.pdf',
+  'Competitive Evaluation (SWOT Excel)':  null,
+  // ── Internal Company Contracts ──
+  'Founder Stock Purchase Agreement':     'docs/founder-stock-purchase-agreement.pdf',
+  'Vesting Schedule Template':            'docs/vesting-schedule.pdf',
+  'IP Assignment Agreement':              'docs/ip-assignment-agreement.pdf',
+  'Confidentiality Agreement (NDA)':      'docs/nda.pdf',
+  'Advisory Board Agreement':             'docs/advisory-board-agreement.pdf',
+  'Employment Offer Letter':              'docs/employment-offer-letter.pdf',
+  'Independent Contractor Agreement':     'docs/independent-contractor-agreement.pdf',
+  'Employee Handbook':                    null,
+  // ── Customer Agreements ──
+  'Master Service Agreement (MSA)':       'docs/master-service-agreement.pdf',
+  'SaaS Subscription Agreement':          'docs/saas-subscription-agreement.pdf',
+  'Service Level Agreement (SLA)':        'docs/service-level-agreement.pdf',
+  'Statement of Work (SOW) Template':     'docs/statement-of-work.pdf',
+  'Data Processing Addendum (DPA)':       'docs/data-processing-addendum.pdf',
+  'Pilot Agreement Template':             'docs/pilot-agreement.pdf',
+  // ── Operational Templates ──
+  'Board Meeting Deck Template':          null,
+  'OKR Planning Template':                null,
+  'Hiring & Interview Scorecard':         null,
+  'Customer Discovery Call Script':       'docs/customer-discovery-call-script.pdf',
+  'User Story Mapping Template':          null,
+  'Sprint Retrospective Template':        null,
+  'Budget Planning Template':             null,
+};
+
+function dlDoc(name){
+  if (!currentUser) {
+    openModal('signin-modal');
+    toast('📄 Sign in to access documents');
+    return;
+  }
+  const path = DOC_URLS[name];
+  if (!path) {
+    toast('🔜 Coming soon — ' + name);
+    return;
+  }
+  // Trigger download via hidden anchor
+  const a = document.createElement('a');
+  a.href = path;
+  a.download = '';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast('⬇️ Downloading ' + name + '...');
+}
 
 // ── STAT MODAL ────────────────────────────────────────────────────
 const STAT_DETAILS = {};
@@ -1276,9 +1336,20 @@ function pgGlossary(){
 // PAGE: DOCUMENTS
 // ════════════════════════════════════════════════
 function pgDocuments(){
-  const d=(title,desc)=>`<div class="doc-row"><div><h4>${title}</h4><p>${desc}</p></div><button class="dl-btn" onclick="dlDoc('${title.replace(/'/g,'')}')">↓ Download</button></div>`;
+  const d=(title,desc)=>{
+    const avail = DOC_URLS[title] !== undefined ? DOC_URLS[title] !== null : false;
+    const badge = avail
+      ? `<span style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-light);border-radius:4px;padding:2px 7px;margin-right:8px;">Available</span>`
+      : `<span style="font-size:10px;font-weight:600;color:var(--text-muted);background:var(--hover);border-radius:4px;padding:2px 7px;margin-right:8px;">Coming Soon</span>`;
+    const enc = encodeURIComponent(title);
+    const btn = avail
+      ? `<button class="dl-btn" onclick="dlDoc(decodeURIComponent('${enc}'))">⬇ Download</button>`
+      : `<button class="dl-btn" style="opacity:.4;" onclick="dlDoc(decodeURIComponent('${enc}'))">⬇ Download</button>`;
+    return `<div class="doc-row"><div><div style="display:flex;align-items:center;margin-bottom:2px">${badge}<h4 style="display:inline">${title}</h4></div><p>${desc}</p></div>${btn}</div>`;
+  };
+  const signedIn = !!currentUser;
   return `<div class="page-hdr"><h1>Founder Documents &amp; Templates</h1>
-<p>Essential templates and agreements for building and scaling your AgTech startup.</p></div>
+<p>Essential templates and agreements for building and scaling your AgTech startup.${!signedIn ? ' <a href="#" onclick="openModal(\'signin-modal\');return false;" style="color:var(--green);font-weight:600;">Sign in</a> to download.' : ''}</p></div>
 <div class="card">
 ${acc('di','Investor Materials','Pitch decks, financial models, and fundraising documents',`<div style="padding:2px 16px">
 ${d('Pitch Deck Template','Professional pitch deck template for AgTech startups')}
@@ -1577,17 +1648,24 @@ function avatarHtml(email, method){
 }
 
 async function signIn(method){
-  if(method==='google'){
-    const {error}=await _supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://founderopscenter.com'}});
-    if(error) toast('Sign in error: '+error.message);
+  if(method === 'google'){
+    const { error } = await _supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if(error) toast('Sign in error: ' + error.message);
     return;
   }
-  const email=(document.getElementById('signin-email')||{}).value?.trim()||(document.getElementById('onboard-email')||{}).value?.trim()||'';
-  if(!email){toast('Please enter your email');return;}
-  if(!/\S+@\S+\.\S+/.test(email)){toast('Please enter a valid email');return;}
-  const {error}=await _supabase.auth.signInWithOtp({email,options:{emailRedirectTo:'https://founderopscenter.com'}});
-  if(error){toast('Error: '+error.message);return;}
-  toast('✅ Magic link sent! Check your email.');
+  // Email magic link fallback
+  const email = (document.getElementById('signin-email')||{}).value?.trim() ||
+                (document.getElementById('onboard-email')||{}).value?.trim() || '';
+  if(!email){ toast('Please enter your email address'); return; }
+  if(!/\S+@\S+\.\S+/.test(email)){ toast('Please enter a valid email address'); return; }
+  const { error } = await _supabase.auth.signInWithOtp({
+    email, options: { emailRedirectTo: window.location.origin }
+  });
+  if(error){ toast('Error: ' + error.message); return; }
+  toast('✅ Magic link sent! Check your email to sign in.');
   closeModal('signin-modal');
 }
 
