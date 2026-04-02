@@ -376,6 +376,7 @@
   .admin-user-meta { display:flex;flex-wrap:wrap;gap:6px;margin-top:6px; }
   .admin-tag { padding:3px 9px;border-radius:10px;font-size:10px;font-weight:600; }
   .tag-founder { background:#dcfce7;color:#166534; } html.dark .tag-founder { background:#14532d;color:#86efac; }
+  .tag-farmer { background:#fef9c3;color:#854d0e; } html.dark .tag-farmer { background:#713f12;color:#fde047; }
   .tag-investor { background:#dbeafe;color:#1e40af; } html.dark .tag-investor { background:#1e3a5f;color:#93c5fd; }
   .tag-advisor { background:#fef3c7;color:#92400e; } html.dark .tag-advisor { background:#78350f;color:#fde68a; }
   .tag-researcher { background:#ede9fe;color:#5b21b6; } html.dark .tag-researcher { background:#3b0764;color:#c4b5fd; }
@@ -700,9 +701,14 @@ _supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     applyUser(session.user, event === 'SIGNED_IN');
   } else if (event === 'SIGNED_OUT') {
-    currentUser = null; isAdmin = false;
+    currentUser = null; isAdmin = false; _userProfile = null; _allProfiles = [];
     const btn = document.getElementById('topbar-user-btn');
     if (btn) { btn.textContent = '→ Sign In'; btn.onclick = () => openModal('signin-modal'); }
+    // Hide profile/admin nav buttons
+    const pb = document.getElementById('nav-profile-btn'); if (pb) pb.style.display = 'none';
+    const ab = document.getElementById('nav-admin-btn'); if (ab) ab.style.display = 'none';
+    // Show signed-out landing
+    showSignedOutPage();
   }
 });
 
@@ -785,6 +791,19 @@ function openSignOutMenu() {
 async function signOut() {
   await _supabase.auth.signOut();
   toast('👋 Signed out');
+}
+
+function showSignedOutPage() {
+  document.getElementById('page').innerHTML = `<div style="text-align:center;padding:60px 20px;max-width:520px;margin:0 auto">
+    <div style="font-size:56px;margin-bottom:16px">🌾</div>
+    <h2 style="font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px">You've been signed out</h2>
+    <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:28px">Thanks for visiting the AgTech Founder Ops Center. Sign back in anytime to access your profile, resources, and connections.</p>
+    <button onclick="openModal('signin-modal')" style="padding:13px 36px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px">Sign Back In</button>
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+      <p style="font-size:12px;color:var(--text-faint);line-height:1.7">Built by <strong style="color:var(--text-muted)">Russell Cole</strong> — AgTech Ecosystem Connector<br>
+      <a href="https://www.linkedin.com/in/russellcole/" target="_blank" style="color:var(--green);text-decoration:none">Connect on LinkedIn ↗</a></p>
+    </div>
+  </div>`;
 }
 
 // ── LINKS REGISTRY ────────────────────────────────────────────────
@@ -1992,12 +2011,15 @@ function showBlockedScreen() {
 const PERSONAS = [
   { id:'founder', icon:'🚀', label:'Founder', desc:'Building an AgTech startup' },
   { id:'investor', icon:'💰', label:'Investor', desc:'Investing in AgTech' },
+  { id:'farmer', icon:'🌾', label:'Farmer / Grower', desc:'Farming or ranching operations' },
   { id:'advisor', icon:'🧭', label:'Advisor / Mentor', desc:'Guiding startups' },
   { id:'researcher', icon:'🔬', label:'Researcher', desc:'Academic or R&D' },
   { id:'industry_pro', icon:'🏭', label:'Industry Professional', desc:'Working in agriculture' },
   { id:'service_provider', icon:'⚖️', label:'Service Provider', desc:'Legal, finance, marketing' },
   { id:'government', icon:'🏛️', label:'Government / Policy', desc:'Ag policy & regulation' }
 ];
+const FARM_TYPES = ['Row Crops','Greenhouse / Indoor','Livestock','Dairy','Orchard / Vineyard','Mixed Farming','Organic','Specialty Crops'];
+const FARM_INTERESTS = ['Trying new technology','Joining pilot programs','Connecting with startups','Learning about innovations','Finding funding/grants','Sustainability practices'];
 const AGTECH_FOCUS = ['Crop Technology','Precision Agriculture','Livestock Tech','Supply Chain','AgBiotech','Sustainability / Climate','Indoor / Vertical Farming','Farm Management Software','Robotics & Automation','Soil & Water Tech','Food Safety','Marketplace / E-Commerce'];
 const FOUNDER_NEEDS = ['Funding','Technical Talent','Industry Connections','Mentorship','Customers / Pilots','Go-to-Market Strategy','Regulatory Guidance','Co-Founder'];
 const COMPANY_STAGES = [{id:'idea',label:'Idea / Research'},{id:'mvp',label:'MVP / Prototype'},{id:'revenue',label:'Early Revenue'},{id:'scaling',label:'Scaling / Growth'}];
@@ -2094,6 +2116,22 @@ function wizRender() {
         <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=true;wizRender()">Yes, actively looking</div>
         <div class="chip ${!wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=false;wizRender()">Not at this time</div>
       </div>`;
+    } else if (wizData.persona === 'farmer') {
+      body = `<label class="wiz-label">Farm Type</label>
+      <div class="chip-grid">${FARM_TYPES.map(f => `<div class="chip ${(wizData.agtech_focus||[]).includes(f)?'selected':''}" onclick="wizToggleChip('agtech_focus','${f}')">${f}</div>`).join('')}</div>
+      <label class="wiz-label">Farm Size (acres or description)</label>
+      <input class="wiz-input" id="wiz-farm-size" value="${wizData.team_size||''}" placeholder="e.g. 500 acres, Small family farm, 3 greenhouses">
+      <label class="wiz-label">Location / Region</label>
+      <input class="wiz-input" id="wiz-farm-loc" value="${wizData.location||''}" placeholder="e.g. Southern Alberta, Fraser Valley, PEI">
+      <label class="wiz-label">What technology are you currently using?</label>
+      <textarea class="wiz-textarea" id="wiz-farm-tech" placeholder="e.g. GPS guidance, soil sensors, drone imaging, manual scouting...">${wizData.what_building||''}</textarea>
+      <label class="wiz-label">What are you most interested in?</label>
+      <div class="chip-grid">${FARM_INTERESTS.map(f => `<div class="chip ${(wizData.biggest_needs||[]).includes(f)?'selected':''}" onclick="wizToggleChip('biggest_needs','${f}')">${f}</div>`).join('')}</div>
+      <label class="wiz-label">Open to piloting new AgTech products on your farm?</label>
+      <div class="chip-grid">
+        <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=true;wizRender()">Yes, actively looking</div>
+        <div class="chip ${!wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=false;wizRender()">Maybe, depends on the product</div>
+      </div>`;
     } else if (wizData.persona === 'service_provider') {
       body = `<label class="wiz-label">Type of Service</label>
       <input class="wiz-input" id="wiz-service" value="${wizData.service_type||''}" placeholder="e.g. IP Law, Accounting, Marketing Agency">
@@ -2151,6 +2189,10 @@ function wizCollectInputs() {
       wizData.company_name = v('wiz-company');
       wizData.what_building = v('wiz-building');
       wizData.team_size = v('wiz-team');
+    } else if (wizData.persona === 'farmer') {
+      wizData.team_size = v('wiz-farm-size');
+      wizData.location = v('wiz-farm-loc');
+      wizData.what_building = v('wiz-farm-tech');
     } else if (wizData.persona === 'investor') {
       wizData.check_size = v('wiz-check');
       wizData.portfolio_agtech = v('wiz-portfolio');
@@ -2253,6 +2295,12 @@ function pgProfile() {
     ${field('Looking to Help', p.advisor_interests)}`;
   } else if (p.persona === 'researcher') {
     detailSection = `${field('Institution', p.institution)}${field('Research Focus', p.research_focus)}${field('Open to Collaboration', p.open_to_collab ? 'Yes' : 'No')}`;
+  } else if (p.persona === 'farmer') {
+    detailSection = `
+    ${field('Farm Size', p.team_size)}
+    ${field('Current Technology', p.what_building)}
+    ${field('Open to Pilots', p.open_to_collab ? 'Yes, actively looking' : 'Maybe, depends on product')}
+    <div class="profile-field"><label>Interests</label><div class="profile-chips">${chips(p.biggest_needs)}</div></div>`;
   } else if (p.persona === 'service_provider') {
     detailSection = `${field('Service Type', p.service_type)}${field('Startup Experience', p.startup_experience ? 'Yes' : 'No')}`;
   }
@@ -2328,7 +2376,8 @@ function pgAdmin(){
   const investors = profiles.filter(p=>p.persona==='investor').length;
   const advisors = profiles.filter(p=>p.persona==='advisor').length;
   const researchers = profiles.filter(p=>p.persona==='researcher').length;
-  const others = total - founders - investors - advisors - researchers;
+  const farmers = profiles.filter(p=>p.persona==='farmer').length;
+  const others = total - founders - investors - advisors - researchers - farmers;
   const thisWeek = profiles.filter(p=>new Date(p.created_at) >= new Date(Date.now()-7*864e5)).length;
   const needFunding = profiles.filter(p=>(p.biggest_needs||[]).includes('Funding')).length;
   const needConnections = profiles.filter(p=>(p.biggest_needs||[]).includes('Industry Connections')).length;
@@ -2418,6 +2467,7 @@ function pgAdmin(){
     <div class="admin-mini-stat"><div class="ams-val">${investors}</div><div class="ams-lbl">Investors</div></div>
     <div class="admin-mini-stat"><div class="ams-val">${advisors}</div><div class="ams-lbl">Advisors</div></div>
     <div class="admin-mini-stat"><div class="ams-val">${researchers}</div><div class="ams-lbl">Researchers</div></div>
+    <div class="admin-mini-stat"><div class="ams-val">${farmers}</div><div class="ams-lbl">Farmers</div></div>
     <div class="admin-mini-stat"><div class="ams-val">${thisWeek}</div><div class="ams-lbl">This Week</div></div>
     <div class="admin-mini-stat"><div class="ams-val">${needFunding}</div><div class="ams-lbl">Need Funding</div></div>
     <div class="admin-mini-stat"><div class="ams-val">${needConnections}</div><div class="ams-lbl">Need Connections</div></div>
@@ -2436,6 +2486,7 @@ function pgAdmin(){
       ${filterBtn('all','All',total)}
       ${filterBtn('founder','🚀 Founders',founders)}
       ${filterBtn('investor','💰 Investors',investors)}
+      ${filterBtn('farmer','🌾 Farmers',farmers)}
       ${filterBtn('advisor','🧭 Advisors',advisors)}
       ${filterBtn('researcher','🔬 Researchers',researchers)}
       ${filterBtn('industry_pro','🏭 Industry',profiles.filter(p=>p.persona==='industry_pro').length)}
