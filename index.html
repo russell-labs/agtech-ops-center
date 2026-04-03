@@ -137,6 +137,58 @@
   .inv-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
   .inv-table tr:last-child td { border-bottom: none; }
 
+  /* ── CONNECTIONS & INTROS ── */
+  .conn-discover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .conn-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: box-shadow .2s, border-color .2s; position: relative; }
+  .conn-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: var(--green-mid); }
+  .conn-card.locked { opacity: .55; pointer-events: none; }
+  .conn-card .cc-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .conn-card .cc-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
+  .conn-card .cc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .conn-card .cc-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .conn-card .cc-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .conn-card .cc-reasons { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .conn-card .cc-reason { font-size: 10px; padding: 2px 8px; background: var(--hover); border-radius: 10px; color: var(--text-muted); }
+  .conn-card .cc-score { position: absolute; top: 14px; right: 14px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #fff; }
+  .conn-card .cc-actions { display: flex; gap: 8px; }
+  .conn-btn { padding: 7px 16px; border: none; border-radius: 7px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all .15s; }
+  .conn-btn.primary { background: var(--green); color: #fff; }
+  .conn-btn.primary:hover { background: var(--green-dark); }
+  .conn-btn.secondary { background: var(--hover); color: var(--text-muted); border: 1px solid var(--border); }
+  .conn-btn.secondary:hover { background: var(--border); }
+  .conn-btn.danger { background: rgba(239,68,68,.1); color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+  .conn-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .intro-pipeline { display: flex; flex-direction: column; gap: 12px; }
+  .intro-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; transition: border-color .2s; }
+  .intro-item:hover { border-color: var(--green-mid); }
+  .intro-item .ii-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .intro-item .ii-persons { display: flex; align-items: center; gap: 6px; flex: 1; flex-wrap: wrap; }
+  .intro-item .ii-person { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; background: var(--hover); color: var(--text); }
+  .intro-item .ii-status { padding: 4px 12px; border-radius: 14px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .intro-item .ii-timeline { display: flex; gap: 0; margin: 10px 0; align-items: center; }
+  .ii-step { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; position: relative; }
+  .ii-step .ii-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; z-index: 1; }
+  .ii-step .ii-dot.done { background: var(--green); color: #fff; }
+  .ii-step .ii-dot.active { background: #3b82f6; color: #fff; animation: iiPulse 2s infinite; }
+  .ii-step .ii-dot.pending { background: var(--hover); color: var(--text-faint); border: 2px solid var(--border); }
+  .ii-step .ii-label { font-size: 9px; color: var(--text-faint); font-weight: 600; text-align: center; }
+  .ii-line { flex: 1; height: 2px; background: var(--border); margin: 0 -4px; position: relative; top: -10px; z-index: 0; }
+  .ii-line.done { background: var(--green); }
+  @keyframes iiPulse { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.3)} 50%{box-shadow:0 0 0 6px rgba(59,130,246,0)} }
+
+  .outcome-form { background: var(--hover); border-radius: 8px; padding: 14px; margin-top: 10px; }
+  .outcome-form textarea { width: 100%; min-height: 60px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: inherit; resize: vertical; background: var(--surface); color: var(--text); }
+  .outcome-stars { display: flex; gap: 4px; margin: 8px 0; }
+  .outcome-stars .star { font-size: 20px; cursor: pointer; transition: transform .15s; }
+  .outcome-stars .star:hover { transform: scale(1.2); }
+
+  .conn-empty { text-align: center; padding: 40px 20px; color: var(--text-faint); }
+  .conn-empty .ce-icon { font-size: 40px; margin-bottom: 12px; }
+  .conn-tier-gate { background: linear-gradient(135deg, rgba(245,158,11,.06), rgba(245,158,11,.02)); border: 1px dashed rgba(245,158,11,.3); border-radius: 10px; padding: 16px; text-align: center; margin-bottom: 12px; }
+
+  .intro-pause-banner { background: linear-gradient(135deg, rgba(239,68,68,.08), rgba(239,68,68,.03)); border: 1px solid rgba(239,68,68,.2); border-radius: 10px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+
   /* ── VC GRID ── */
   .vc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
   .vc-item { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 11px; }
@@ -598,6 +650,7 @@
     </div>
     <button class="book-btn" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
     <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
+    <button id="nav-connections-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('connections',this)">🤝 My Connections</button>
     <button id="nav-roadmap-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('roadmap',this)">🗺️ Product Roadmap</button>
     <button id="nav-admin-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="goAdmin()">🔐 Admin Panel</button>
   </div>
@@ -814,6 +867,7 @@ _supabase.auth.onAuthStateChange((event, session) => {
     const pb = document.getElementById('nav-profile-btn'); if (pb) pb.style.display = 'none';
     const ab = document.getElementById('nav-admin-btn'); if (ab) ab.style.display = 'none';
     const rb = document.getElementById('nav-roadmap-btn'); if (rb) rb.style.display = 'none';
+    const cb = document.getElementById('nav-connections-btn'); if (cb) cb.style.display = 'none';
     // Show clean full-screen signed-out landing
     showSignedOutPage();
   }
@@ -844,7 +898,9 @@ function applyUser(user, isNew) {
   const profileBtn = document.getElementById('nav-profile-btn');
   const adminBtn = document.getElementById('nav-admin-btn');
   const roadmapBtn = document.getElementById('nav-roadmap-btn');
+  const connectionsBtn = document.getElementById('nav-connections-btn');
   if (profileBtn) profileBtn.style.display = 'flex';
+  if (connectionsBtn && !isAdmin) connectionsBtn.style.display = 'flex';
   if (adminBtn && isAdmin) adminBtn.style.display = 'flex';
   // Roadmap nav only for non-admin users with access (admin sees it in the admin dashboard tabs)
 
@@ -3035,7 +3091,7 @@ function showWizard() {
   wizData = {
     persona: '', organization: '', job_title: '', linkedin_url: '', location: '',
     company_name: '', company_stage: '', what_building: '', funding_status: '', team_size: '',
-    biggest_needs: [], investment_stages: [], check_size: '', deal_interests: '',
+    biggest_needs: [], investment_stages: [], check_size: '', portfolio_agtech: '', deal_interests: '',
     expertise_areas: [], advising_count: '', advisor_interests: '',
     institution: '', research_focus: '', open_to_collab: false,
     service_type: '', startup_experience: false,
@@ -3063,6 +3119,7 @@ function editWizard() {
     biggest_needs: Array.isArray(p.biggest_needs) ? [...p.biggest_needs] : [],
     investment_stages: Array.isArray(p.investment_stages) ? [...p.investment_stages] : [],
     check_size: p.check_size || '',
+    portfolio_agtech: p.portfolio_agtech || '',
     deal_interests: p.deal_interests || '',
     expertise_areas: Array.isArray(p.expertise_areas) ? [...p.expertise_areas] : [],
     advising_count: p.advising_count || '',
@@ -3813,7 +3870,7 @@ function pgRoadmap() {
   <div class="card" style="margin-top:16px;border-left:4px solid var(--green)">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">✅</span><h3 style="margin:0">Shipped — Ecosystem Intelligence Foundation</h3></div>
     <span class="badge b-green" style="margin-bottom:12px">Live</span>
-    <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">The core platform is live with verified profiles, persona-specific milestone journeys, structured evidence collection, and engagement tracking. Every feature below is built and deployed.</p>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-muted)">The core platform is live with verified profiles, persona-specific milestone journeys, structured evidence collection, engagement tracking, and a full tier-gated introduction system with outcome accountability. Every feature below is built and deployed.</p>
 
     <div style="margin-top:16px">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
@@ -3841,15 +3898,23 @@ function pgRoadmap() {
           <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">📊 Ecosystem Quality Metrics (Admin)</div>
           <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Admin dashboard shows real-time ecosystem health: tier distribution, check-in rates, milestone velocity, engagement quality scores, and per-persona pool depth. Data-driven ecosystem management instead of guesswork.</div>
         </div>
+        <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">🤝 Tier-Gated Introduction System</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Users discover AI-scored matches filtered by tier level. Request introductions through the platform, track progress via a visual pipeline (Suggested → Introduced → Outcome → Connected), and report outcomes with star ratings. Users who don't report outcomes within 30 days get their intro privileges paused — creating accountability and closing the data loop.</div>
+        </div>
+        <div style="padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px">🔒 Connection Discovery with Tier Gating</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Users see blurred previews of connections they can't yet access, with clear messaging on how many badges they need to unlock them. This creates powerful upward pull — every locked connection is a reason to claim another milestone and level up. Quality controls who sees whom.</div>
+        </div>
       </div>
     </div>
 
     <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <h4 style="font-size:13px;margin:0 0 8px;color:var(--text)">Why This Matters</h4>
       <div style="font-size:12px;line-height:1.8;color:var(--text-muted)">
-        <strong>The data moat:</strong> Every milestone claimed with evidence creates proprietary intelligence no other platform has. After 100 founders progress through milestones, the platform knows which stages are hardest, which sectors move fastest, and where capital is needed most.<br>
-        <strong>Self-maintaining quality:</strong> Quarterly check-ins + tier gating means the ecosystem stays fresh without manual curation. Stale profiles fade, active participants rise. Investors see only verified, engaged founders.<br>
-        <strong>Network effects:</strong> Each new participant increases the value for everyone else. A founder's milestone evidence helps investors assess deal quality. An investor's portfolio data helps founders target the right capital. The system gets smarter with every interaction.
+        <strong>The data moat:</strong> Every milestone claimed with evidence creates proprietary intelligence no other platform has. Every introduction tracked with outcome reports adds connection intelligence. After 100 founders progress through milestones and 50 introductions are completed, the platform knows which stages are hardest, which matches actually convert, and where capital is needed most.<br>
+        <strong>Self-maintaining quality:</strong> Quarterly check-ins + tier gating + intro accountability means the ecosystem stays fresh without manual curation. Stale profiles fade, active participants rise. Users who don't report outcomes lose intro access. Investors see only verified, engaged founders.<br>
+        <strong>Network effects:</strong> Each new participant increases the value for everyone else. A founder's milestone evidence helps investors assess deal quality. An investor's portfolio data helps founders target the right capital. Every completed introduction makes the matching algorithm smarter. The system compounds with every interaction.
       </div>
     </div>
   </div>
@@ -4050,6 +4115,47 @@ function pgInvestorOpportunity() {
       })()}
     </div>
     <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin:0"><strong style="color:var(--text)">Why this matters:</strong> Every user progresses through persona-specific milestones — founders track from incorporation through PMF and scaling, investors verify their portfolio and deal activity, farmers document tech adoption. Each milestone collects structured evidence, creating the richest AgTech participant dataset in the market. Higher-tier users are proven, active participants — not vanity signups.</p>
+  </div>
+
+  <div class="card" style="margin-top:16px;border-left:4px solid #3b82f6">
+    <h3 style="margin:0 0 4px">🤝 Connection Intelligence</h3>
+    <div class="sub" style="margin-bottom:14px">Tier-gated introductions with accountability tracking</div>
+    ${(() => {
+      const intros = _introductions || [];
+      const totalIntros = intros.length;
+      const introduced = intros.filter(i=>i.status==='introduced'||i.status==='connected'||i.status==='outcome_reported').length;
+      const connected = intros.filter(i=>i.status==='connected').length;
+      const reported = intros.filter(i=>i.outcome_type).length;
+      const avgRating = reported ? (intros.filter(i=>i.outcome_rating).reduce((s,i)=>s+i.outcome_rating,0) / intros.filter(i=>i.outcome_rating).length).toFixed(1) : '—';
+      const userRequested = intros.filter(i=>i.requested_by).length;
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">
+        <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:24px;font-weight:900;color:#3b82f6">${totalIntros}</div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600">Total Intros</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:24px;font-weight:900;color:var(--green)">${connected}</div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600">Connected</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:24px;font-weight:900;color:#f59e0b">${reported}</div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600">Outcomes Reported</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:24px;font-weight:900;color:#7c3aed">${avgRating}</div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600">Avg Rating</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:24px;font-weight:900;color:var(--green)">${userRequested}</div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600">User-Requested</div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:24px;font-weight:900;color:var(--green)">${totalIntros ? Math.round((connected/totalIntros)*100) : 0}%</div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600">Conversion Rate</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin:0"><strong style="color:var(--text)">How it works:</strong> Users discover tier-gated matches and request introductions. Both parties report outcomes within 30 days or lose intro privileges. This creates a closed feedback loop — every connection is tracked, rated, and accountable. Investors see verified deal flow, founders get warm intros, and the platform builds proprietary network intelligence no competitor can replicate.</p>`;
+    })()}
   </div>
 
   <div class="card" style="margin-top:16px">
@@ -4395,6 +4501,408 @@ async function saveIntroLater(aId, bId, score, reasons) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// USER-FACING CONNECTIONS PAGE
+// ══════════════════════════════════════════════════════════════
+let _userIntros = []; // intros involving the current user
+let connTab = 'discover'; // 'discover' | 'active' | 'history'
+
+async function loadUserIntros() {
+  if (!currentUser) return [];
+  const { data, error } = await _supabase.from('introductions').select('*')
+    .or(`person_a.eq.${currentUser.id},person_b.eq.${currentUser.id}`)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('loadUserIntros:', error); return []; }
+  return data || [];
+}
+
+function getIntroPauseStatus(p) {
+  // Check if user has pending outcome reports (intros marked 'introduced' > 30 days ago with no outcome)
+  if (!p || !_userIntros.length) return { paused: false, pendingCount: 0 };
+  const now = Date.now();
+  const pending = _userIntros.filter(i => {
+    if (i.status !== 'introduced') return false;
+    const introDate = new Date(i.introduced_at || i.created_at).getTime();
+    const daysSince = (now - introDate) / 864e5;
+    return daysSince > 30 && !i.outcome_a && !i.outcome_b;
+  });
+  return { paused: pending.length > 0, pendingCount: pending.length };
+}
+
+function getOtherPerson(intro) {
+  if (!currentUser) return null;
+  const otherId = intro.person_a === currentUser.id ? intro.person_b : intro.person_a;
+  return _allProfiles.find(p => p.id === otherId);
+}
+
+function introStatusPipeline(status) {
+  const steps = ['suggested','introduced','outcome','connected'];
+  const labels = { suggested:'Suggested', introduced:'Introduced', outcome:'Reviewed', connected:'Connected' };
+  const icons = { suggested:'💡', introduced:'🤝', outcome:'📝', connected:'✅' };
+  const current = status === 'declined' ? -1 : steps.indexOf(status === 'connected' ? 'connected' : status === 'outcome_reported' ? 'outcome' : status);
+
+  return `<div class="ii-timeline">${steps.map((s, i) => {
+    const cls = i < current ? 'done' : i === current ? 'active' : 'pending';
+    const sep = i < steps.length - 1 ? `<div class="ii-line ${i < current ? 'done' : ''}"></div>` : '';
+    return `<div class="ii-step"><div class="ii-dot ${cls}">${i <= current ? icons[s] : (i+1)}</div><div class="ii-label">${labels[s]}</div></div>${sep}`;
+  }).join('')}</div>`;
+}
+
+function connTabBar(active) {
+  const tabs = [
+    { id:'discover', icon:'🔍', label:'Discover' },
+    { id:'active', icon:'🤝', label:'Active Intros' },
+    { id:'history', icon:'📋', label:'History' }
+  ];
+  return `<div style="display:flex;gap:4px;background:var(--hover);padding:4px;border-radius:10px;margin-bottom:18px;overflow-x:auto">
+    ${tabs.map(t => `<button onclick="connTab='${t.id}';render('connections')" style="flex:1;padding:9px 16px;border:none;border-radius:8px;font-size:12px;font-weight:${active===t.id?'700':'500'};cursor:pointer;background:${active===t.id?'var(--surface)':'none'};color:${active===t.id?'var(--text)':'var(--text-muted)'};white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;${active===t.id?'box-shadow:0 1px 4px rgba(0,0,0,.08)':''}">${t.icon} ${t.label}</button>`).join('')}
+  </div>`;
+}
+
+function pgUserConnections() {
+  if (!currentUser) return `<div class="admin-lock"><h2>🤝 Sign In Required</h2><p>Sign in to discover connections in the AgTech ecosystem.</p>
+    <button onclick="openModal('signin-modal')" style="padding:11px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Sign In</button></div>`;
+
+  const p = _userProfile;
+  if (!p || !p.onboarding_complete) return `<div class="admin-lock"><h2>🤝 Complete Your Profile First</h2><p>Finish your profile to unlock connections and introductions.</p>
+    <button onclick="showWizard()" style="padding:11px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Set Up Profile →</button></div>`;
+
+  // Load data if needed
+  if (!_allProfiles.length || !_userIntros.length) {
+    const promises = [];
+    if (!_allProfiles.length) promises.push(loadAllProfiles().then(r => { _allProfiles = r; }));
+    promises.push(loadUserIntros().then(r => { _userIntros = r; }));
+    if (promises.length) {
+      Promise.all(promises).then(() => render('connections'));
+      return `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading your connections...</p></div>`;
+    }
+  }
+
+  const pauseStatus = getIntroPauseStatus(p);
+  let pauseBanner = '';
+  if (pauseStatus.paused) {
+    pauseBanner = `<div class="intro-pause-banner">
+      <div style="font-size:28px">⏸️</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:#ef4444;margin-bottom:2px">Intro Requests Paused</div>
+        <div style="font-size:12px;color:var(--text-muted)">You have ${pauseStatus.pendingCount} introduction${pauseStatus.pendingCount!==1?'s':''} awaiting your outcome report. Complete them to request new introductions.</div>
+        <button onclick="connTab='active';render('connections')" style="margin-top:6px;padding:6px 14px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Review Now →</button>
+      </div>
+    </div>`;
+  }
+
+  // Active intros count for tab badge
+  const activeCount = _userIntros.filter(i => ['suggested','introduced','pending'].includes(i.status)).length;
+  const pendingOutcomeCount = _userIntros.filter(i => {
+    if (i.status !== 'introduced') return false;
+    const d = (Date.now() - new Date(i.introduced_at || i.created_at).getTime()) / 864e5;
+    return d > 14;
+  }).length;
+
+  let content = '';
+  if (connTab === 'discover') content = connDiscoverTab(p, pauseStatus);
+  else if (connTab === 'active') content = connActiveTab(p);
+  else content = connHistoryTab(p);
+
+  return `<div class="page-hdr">
+    <h1>🤝 My Connections</h1>
+    <p>Discover relevant people in the ecosystem, request introductions, and track your interactions.</p>
+  </div>
+  ${pauseBanner}
+  ${connTabBar(connTab)}
+  ${content}`;
+}
+
+function connDiscoverTab(p, pauseStatus) {
+  const tierOrder = ['explorer','builder','operator','leader'];
+  const myTier = tierOrder.indexOf(p.tier || 'explorer');
+  const active = _allProfiles.filter(pr => !pr.blocked && pr.onboarding_complete && pr.id !== p.id && pr.blocked_reason !== 'DELETED_BY_ADMIN');
+
+  // Get matches for this user specifically
+  const matches = [];
+  for (const other of active) {
+    const otherTier = tierOrder.indexOf(other.tier || 'explorer');
+    const otherPref = tierOrder.indexOf(other.intro_tier_pref || 'explorer');
+    const meetsOtherPref = myTier >= otherPref;
+    const result = scoreMatch(p, other);
+    if (result.score >= 15) {
+      matches.push({ other, score: result.score, reasons: result.reasons, meetsOtherPref, tierGap: otherPref - myTier });
+    }
+  }
+  matches.sort((a, b) => b.score - a.score);
+
+  // Split into requestable and tier-gated
+  const existingPairs = new Set(_userIntros.map(i => [i.person_a, i.person_b].sort().join('|')));
+  const requestable = matches.filter(m => m.meetsOtherPref && !existingPairs.has([p.id, m.other.id].sort().join('|')));
+  const tierGated = matches.filter(m => !m.meetsOtherPref && !existingPairs.has([p.id, m.other.id].sort().join('|')));
+
+  // Stat bar
+  const statsHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--green)">${requestable.length}</div>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600">Available Matches</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:#3b82f6">${_userIntros.filter(i=>['suggested','introduced'].includes(i.status)).length}</div>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600">Active Intros</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:#7c3aed">${_userIntros.filter(i=>i.status==='connected').length}</div>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600">Connected</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:${p.tier==='leader'?'#f59e0b':p.tier==='operator'?'#7e22ce':p.tier==='builder'?'#a16207':'#0369a1'}">${tierDef(p.tier||'explorer').icon}</div>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600">Your Tier: ${tierDef(p.tier||'explorer').label}</div>
+    </div>
+  </div>`;
+
+  // Requestable match cards
+  const matchCards = requestable.slice(0, 20).map(m => {
+    const o = m.other;
+    const scoreColor = m.score >= 60 ? 'var(--green)' : m.score >= 40 ? '#f59e0b' : '#94a3b8';
+    const td = tierDef(o.tier || 'explorer');
+    return `<div class="conn-card">
+      <div class="cc-score" style="background:${scoreColor}">${m.score}%</div>
+      <div class="cc-hdr">
+        <div class="cc-avatar">${o.avatar_url ? `<img src="${o.avatar_url}">` : (o.full_name||'?')[0].toUpperCase()}</div>
+        <div>
+          <div class="cc-name">${o.full_name || 'Anonymous'} <span style="font-size:11px;color:${td.color};font-weight:600">${td.icon}</span></div>
+          <div class="cc-meta">${personaIcon(o.persona)} ${personaLabel(o.persona)}${o.organization ? ' · ' + o.organization : ''}${o.location ? ' · ' + o.location : ''}</div>
+        </div>
+      </div>
+      <div class="cc-reasons">${m.reasons.map(r => `<span class="cc-reason">${r}</span>`).join('')}</div>
+      ${o.persona === 'founder' && o.what_building ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;padding:8px;background:var(--hover);border-radius:6px"><strong style="color:var(--text)">Building:</strong> ${o.what_building.substring(0,120)}${o.what_building.length>120?'...':''}</div>` : ''}
+      ${o.persona === 'investor' && o.check_size ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;padding:8px;background:var(--hover);border-radius:6px"><strong style="color:var(--text)">Check Size:</strong> ${o.check_size}${o.investment_stages?.length ? ' · Stages: ' + o.investment_stages.join(', ') : ''}</div>` : ''}
+      <div class="cc-actions">
+        <button class="conn-btn primary" ${pauseStatus.paused ? 'disabled title="Complete pending outcome reports first"' : ''} onclick="requestIntro('${o.id}',${m.score},${JSON.stringify(m.reasons).replace(/"/g,'&quot;')})">🤝 Request Intro</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Tier-gated teaser cards
+  let tierGatedHtml = '';
+  if (tierGated.length > 0) {
+    const uniqueTierGated = tierGated.slice(0, 6);
+    tierGatedHtml = `<div class="card" style="margin-top:18px">
+      <h3>🔒 Unlock More Connections</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">${tierGated.length} potential match${tierGated.length!==1?'es':''} require a higher tier. Claim more milestones on your profile to level up and unlock these connections.</p>
+      <div class="conn-discover-grid">
+        ${uniqueTierGated.map(m => {
+          const o = m.other;
+          const neededTier = tierDef(o.intro_tier_pref || 'explorer');
+          return `<div class="conn-card locked">
+            <div class="cc-hdr">
+              <div class="cc-avatar" style="background:var(--border)">🔒</div>
+              <div>
+                <div class="cc-name" style="filter:blur(4px)">${o.full_name || 'Anonymous'}</div>
+                <div class="cc-meta">${personaIcon(o.persona)} ${personaLabel(o.persona)}${o.location ? ' · ' + o.location : ''}</div>
+              </div>
+            </div>
+            <div class="conn-tier-gate">
+              <div style="font-size:11px;font-weight:700;color:#f59e0b">${neededTier.icon} Requires ${neededTier.label} tier or above</div>
+              <div style="font-size:10px;color:var(--text-faint);margin-top:3px">You need ${Math.max(0, neededTier.min - (calcBadges(p).length))} more badge${Math.max(0, neededTier.min - (calcBadges(p).length))!==1?'s':''} to unlock</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  return `${statsHtml}
+  <div class="card">
+    <h3>🔍 Recommended Connections</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">AI-matched based on your persona, stage, needs, focus areas, and location. Request an introduction and Russell will connect you.</p>
+    ${requestable.length ? `<div class="conn-discover-grid">${matchCards}</div>` : `<div class="conn-empty"><div class="ce-icon">🌱</div><p>No available matches yet. As more people join the ecosystem, you'll see connections here.<br>In the meantime, complete your profile and claim milestones to improve your match quality.</p></div>`}
+  </div>
+  ${tierGatedHtml}`;
+}
+
+function connActiveTab(p) {
+  const active = _userIntros.filter(i => ['suggested','introduced','pending'].includes(i.status));
+  if (!active.length) return `<div class="conn-empty"><div class="ce-icon">🤝</div><p>No active introductions right now.<br>Head to the <strong>Discover</strong> tab to find relevant connections!</p></div>`;
+
+  const now = Date.now();
+  return `<div class="card">
+    <h3 style="margin-bottom:4px">Active Introductions</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Track your introductions from request through connection. Report outcomes to keep your intro privileges active.</p>
+    <div class="intro-pipeline">
+      ${active.map(intro => {
+        const other = getOtherPerson(intro);
+        if (!other) return '';
+        const td = tierDef(other.tier || 'explorer');
+        const introDate = new Date(intro.introduced_at || intro.created_at);
+        const daysSince = Math.floor((now - introDate.getTime()) / 864e5);
+        const needsOutcome = intro.status === 'introduced' && daysSince > 14;
+        const urgentOutcome = intro.status === 'introduced' && daysSince > 30;
+        const reasons = intro.match_reasons || [];
+
+        return `<div class="intro-item" style="${urgentOutcome ? 'border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.02)' : needsOutcome ? 'border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.02)' : ''}">
+          <div class="ii-hdr">
+            <div class="ii-persons">
+              <span class="ii-person">${other.avatar_url ? `<img src="${other.avatar_url}" style="width:18px;height:18px;border-radius:50%">` : personaIcon(other.persona)} ${other.full_name || 'Anonymous'} <span style="color:${td.color};font-size:10px">${td.icon}</span></span>
+              ${other.organization ? `<span style="font-size:10px;color:var(--text-faint)">${other.organization}</span>` : ''}
+            </div>
+            <div class="ii-status" style="background:${intro.status==='suggested'?'rgba(245,158,11,.1);color:#f59e0b':intro.status==='introduced'?'rgba(59,130,246,.1);color:#3b82f6':'rgba(148,163,184,.1);color:var(--text-faint)'}">${intro.status === 'suggested' ? '⏳ Pending' : intro.status === 'introduced' ? '🤝 Introduced' : '📋 In Progress'}</div>
+          </div>
+
+          ${introStatusPipeline(intro.status)}
+
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            ${reasons.map(r => `<span style="font-size:10px;padding:2px 8px;background:var(--hover);border-radius:10px;color:var(--text-muted)">${r}</span>`).join('')}
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-faint);margin-bottom:${needsOutcome ? '8' : '0'}px">
+            <span>📅 ${introDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+            <span>·</span>
+            <span>${daysSince} day${daysSince!==1?'s':''} ago</span>
+            ${intro.match_score ? `<span>·</span><span>Match: ${intro.match_score}%</span>` : ''}
+          </div>
+
+          ${needsOutcome ? `<div class="outcome-form" id="outcome-form-${intro.id}">
+            <div style="font-size:12px;font-weight:700;color:${urgentOutcome ? '#ef4444' : '#f59e0b'};margin-bottom:8px">${urgentOutcome ? '🚨 Outcome report overdue — your intro requests will be paused until you report' : '⏰ How did this intro go? Report to keep your intro privileges active'}</div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:6px">How would you rate this connection?</div>
+              <div class="outcome-stars" id="stars-${intro.id}">
+                ${[1,2,3,4,5].map(n => `<span class="star" data-val="${n}" onclick="setOutcomeStars('${intro.id}',${n})">☆</span>`).join('')}
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px">What happened?</div>
+              <select id="outcome-type-${intro.id}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text);margin-bottom:6px">
+                <option value="">Select outcome...</option>
+                <option value="meeting_scheduled">📅 Meeting scheduled</option>
+                <option value="had_meeting">💬 Had a meeting</option>
+                <option value="ongoing_discussion">🔄 Ongoing discussion</option>
+                <option value="collaboration_started">🤝 Collaboration started</option>
+                <option value="investment_discussion">💰 Investment discussion</option>
+                <option value="pilot_started">🌱 Pilot started</option>
+                <option value="no_fit">❌ Not a fit right now</option>
+                <option value="no_response">📭 No response from other party</option>
+              </select>
+            </div>
+            <textarea id="outcome-notes-${intro.id}" placeholder="Brief notes on how it went (optional)..."></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="conn-btn primary" onclick="submitOutcome('${intro.id}')">Submit Report</button>
+              ${!urgentOutcome ? `<button class="conn-btn secondary" onclick="document.getElementById('outcome-form-${intro.id}').style.display='none'">Later</button>` : ''}
+            </div>
+          </div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function connHistoryTab(p) {
+  const completed = _userIntros.filter(i => ['connected','declined','outcome_reported'].includes(i.status));
+  if (!completed.length) return `<div class="conn-empty"><div class="ce-icon">📋</div><p>Your completed introductions will appear here.<br>Each interaction builds your network reputation.</p></div>`;
+
+  return `<div class="card">
+    <h3 style="margin-bottom:4px">Connection History</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Past introductions and their outcomes. Quality interactions improve your ecosystem standing.</p>
+    <div class="intro-pipeline">
+      ${completed.map(intro => {
+        const other = getOtherPerson(intro);
+        if (!other) return '';
+        const td = tierDef(other.tier || 'explorer');
+        const introDate = new Date(intro.created_at);
+        const statusEmoji = intro.status === 'connected' ? '✅' : intro.status === 'declined' ? '❌' : '📝';
+        const statusLabel = intro.status === 'connected' ? 'Connected' : intro.status === 'declined' ? 'Declined' : 'Reported';
+        const statusColor = intro.status === 'connected' ? 'var(--green)' : intro.status === 'declined' ? '#ef4444' : '#3b82f6';
+        const stars = intro.outcome_rating || 0;
+
+        return `<div class="intro-item">
+          <div class="ii-hdr">
+            <div class="ii-persons">
+              <span class="ii-person">${personaIcon(other.persona)} ${other.full_name || 'Anonymous'} <span style="color:${td.color};font-size:10px">${td.icon}</span></span>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:${statusColor}">${statusEmoji} ${statusLabel}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text-faint);margin-top:4px">
+            <span>📅 ${introDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+            ${intro.match_score ? `<span>Match: ${intro.match_score}%</span>` : ''}
+            ${stars > 0 ? `<span>${'★'.repeat(stars)}${'☆'.repeat(5-stars)}</span>` : ''}
+            ${intro.outcome_type ? `<span style="padding:2px 8px;background:var(--hover);border-radius:10px">${intro.outcome_type.replace(/_/g,' ')}</span>` : ''}
+          </div>
+          ${intro.outcome_notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;font-style:italic;padding:6px 10px;background:var(--hover);border-radius:6px">"${intro.outcome_notes}"</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+let _outcomeStars = {};
+function setOutcomeStars(introId, val) {
+  _outcomeStars[introId] = val;
+  const container = document.getElementById('stars-' + introId);
+  if (container) {
+    container.querySelectorAll('.star').forEach(s => {
+      s.textContent = parseInt(s.dataset.val) <= val ? '★' : '☆';
+      s.style.color = parseInt(s.dataset.val) <= val ? '#f59e0b' : 'var(--text-faint)';
+    });
+  }
+}
+
+async function requestIntro(otherId, score, reasons) {
+  const pause = getIntroPauseStatus(_userProfile);
+  if (pause.paused) { toast('⏸️ Complete pending outcome reports first'); return; }
+
+  const other = _allProfiles.find(p => p.id === otherId);
+  if (!other) return;
+
+  // Create introduction record (admin will facilitate)
+  const reasonsParsed = typeof reasons === 'string' ? JSON.parse(reasons) : reasons;
+  const { data, error } = await _supabase.from('introductions').insert({
+    person_a: currentUser.id,
+    person_b: otherId,
+    match_score: score,
+    match_reasons: reasonsParsed,
+    status: 'suggested',
+    requested_by: currentUser.id,
+    requested_at: new Date().toISOString()
+  }).select().single();
+
+  if (error) { console.error('requestIntro error:', error); toast('❌ Error requesting intro'); return; }
+  _userIntros.unshift(data);
+  if (_introductions) _introductions.unshift(data);
+  toast('🤝 Introduction requested! Russell will connect you soon.');
+  connTab = 'active';
+  render('connections');
+}
+
+async function submitOutcome(introId) {
+  const typeEl = document.getElementById('outcome-type-' + introId);
+  const notesEl = document.getElementById('outcome-notes-' + introId);
+  const outcomeType = typeEl ? typeEl.value : '';
+  const outcomeNotes = notesEl ? notesEl.value.trim() : '';
+  const stars = _outcomeStars[introId] || 0;
+
+  if (!outcomeType) { toast('Please select an outcome type'); return; }
+
+  const isMyA = _userIntros.find(i => i.id === introId)?.person_a === currentUser.id;
+  const update = {
+    status: outcomeType === 'no_fit' || outcomeType === 'no_response' ? 'declined' : outcomeType === 'collaboration_started' || outcomeType === 'investment_discussion' || outcomeType === 'pilot_started' ? 'connected' : 'outcome_reported',
+    outcome_type: outcomeType,
+    outcome_notes: outcomeNotes,
+    outcome_rating: stars,
+    outcome_reported_at: new Date().toISOString()
+  };
+  // Store which party reported
+  if (isMyA) update.outcome_a = true; else update.outcome_b = true;
+
+  const { error } = await _supabase.from('introductions').update(update).eq('id', introId);
+  if (error) { console.error('submitOutcome error:', error); toast('❌ Error saving outcome'); return; }
+
+  // Update local data
+  const local = _userIntros.find(i => i.id === introId);
+  if (local) Object.assign(local, update);
+  const adminLocal = _introductions?.find(i => i.id === introId);
+  if (adminLocal) Object.assign(adminLocal, update);
+
+  delete _outcomeStars[introId];
+  toast(update.status === 'connected' ? '✅ Connection confirmed! Great work.' : update.status === 'declined' ? '📝 Thanks for the feedback.' : '📝 Outcome recorded. Keep connecting!');
+  render('connections');
+}
+
 // ── ROUTER ────────────────────────────────────────────────────────
 function pgRoadmapStandalone() {
   // For non-admin users with roadmap access
@@ -4408,7 +4916,8 @@ const pages = {
   overview: pgOverview, journey: pgJourney, glossary: pgGlossary,
   documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem,
   segments: pgSegments, crops: pgCrops, resources: pgResources,
-  admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone
+  admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone,
+  connections: pgUserConnections
 };
 
 // Pages guests can see in full
