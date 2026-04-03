@@ -375,9 +375,14 @@
   html.dark .tier-operator { background:#581c87;color:#d8b4fe;border-color:#7e22ce; }
   .tier-leader { background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b; }
   html.dark .tier-leader { background:linear-gradient(135deg,#78350f,#92400e);color:#fde68a;border-color:#f59e0b; }
-  .badge-item { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;background:var(--hover);border:1px solid var(--border);color:var(--text); }
+  .badge-item { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;background:var(--hover);border:1px solid var(--border);color:var(--text);position:relative;cursor:pointer; }
   .badge-item.earned { background:var(--accent-bg);border-color:var(--green-mid);color:var(--green); }
-  .badge-item.locked { opacity:.45; }
+  .badge-item.locked { opacity:.55; }
+  .badge-item .badge-tip { display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--bg-deep,#1a1a2e);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:11px;font-weight:400;white-space:nowrap;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;max-width:280px;white-space:normal;line-height:1.5; }
+  .badge-item .badge-tip::after { content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border); }
+  .badge-item:hover .badge-tip { display:block; }
+  .badge-claim-overlay { position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center; }
+  .badge-claim-box { background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:28px 24px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto; }
   .completeness-bar { width:100%;height:8px;background:var(--hover);border-radius:4px;overflow:hidden;margin:6px 0; }
   .completeness-fill { height:100%;border-radius:4px;transition:width .4s ease; }
   .completeness-fill.low { background:#ef4444; }
@@ -2433,17 +2438,43 @@ function promptBlockUser(userId, userName) {
 }
 
 async function deleteUser(userId, userName) {
-  if (!confirm('⚠️ Permanently delete ' + userName + '?\n\nThis will remove their profile from the database. They can re-register with a fresh account.\n\nThis cannot be undone.')) return;
+  if (!confirm('⚠️ Permanently delete ' + userName + '?\n\nThis will wipe their profile data and block the account. They can re-register with a fresh account.\n\nThis cannot be undone.')) return;
   if (!confirm('Are you absolutely sure you want to delete ' + userName + '?')) return;
-  // Delete profile row (auth user remains in Supabase Auth but profile is gone)
-  const { error } = await _supabase.from('profiles').delete().eq('id', userId);
+  // Wipe profile data + block + mark deleted (update works within RLS; delete may not)
+  const wiped = {
+    full_name: '[deleted]', persona: '', organization: '', job_title: '', linkedin_url: '',
+    location: '', company_name: '', company_stage: '', what_building: '', funding_status: '',
+    team_size: '', biggest_needs: [], investment_stages: [], check_size: '', deal_interests: '',
+    expertise_areas: [], institution: '', research_focus: '', service_type: '',
+    agtech_focus: [], goals_platform: '', goals_general: '', how_heard: '',
+    avatar_url: '', badges: [], tier: 'explorer', profile_completeness: 0,
+    blocked: true, blocked_reason: 'DELETED_BY_ADMIN', blocked_at: new Date().toISOString(),
+    onboarding_complete: false
+  };
+  const { error } = await _supabase.from('profiles').update(wiped).eq('id', userId);
   if (error) { console.error('deleteUser error:', error); toast('❌ Error deleting user: ' + error.message); return; }
-  // Also clean up any introductions involving this user
-  await _supabase.from('introductions').delete().or('from_user.eq.' + userId + ',to_user.eq.' + userId);
-  // Remove from local cache
+  // Remove from local cache so they disappear from admin view
   _allProfiles = _allProfiles.filter(x => x.id !== userId);
   toast('🗑️ ' + userName + ' deleted');
   render('admin');
+}
+
+async function resetMyAccount() {
+  if (!confirm('⚠️ Reset your own account?\n\nThis will wipe your profile data and take you through the onboarding wizard again.\n\nYour account will remain — just your profile gets cleared.')) return;
+  const wiped = {
+    persona: '', organization: '', job_title: '', linkedin_url: '',
+    location: '', company_name: '', company_stage: '', what_building: '', funding_status: '',
+    team_size: '', biggest_needs: [], investment_stages: [], check_size: '', deal_interests: '',
+    expertise_areas: [], institution: '', research_focus: '', service_type: '',
+    agtech_focus: [], goals_platform: '', goals_general: '', how_heard: '',
+    badges: [], tier: 'explorer', profile_completeness: 0,
+    onboarding_complete: false, admin_notes: '', admin_tags: []
+  };
+  const { error } = await _supabase.from('profiles').update(wiped).eq('id', currentUser.id);
+  if (error) { toast('❌ Error: ' + error.message); return; }
+  _userProfile = { ..._userProfile, ...wiped };
+  toast('🔄 Account reset — reloading...');
+  setTimeout(() => location.reload(), 1000);
 }
 
 function showBlockedScreen() {
@@ -2460,26 +2491,113 @@ function showBlockedScreen() {
 // PROFILE COMPLETENESS, BADGES & TIERS
 // ══════════════════════════════════════════════════════════════
 
-const BADGE_DEFS = [
-  // ── Platform badges (auto-earned) ──
+// ── COMMON BADGES (all personas) ──
+const COMMON_BADGES = [
   { id:'verified_profile', icon:'✅', label:'Verified Profile', desc:'Complete all required profile fields', check: p => calcCompleteness(p) >= 100 },
   { id:'linkedin_connected', icon:'🔗', label:'LinkedIn Connected', desc:'Add your LinkedIn profile URL', check: p => !!(p.linkedin_url && p.linkedin_url.includes('linkedin.com')) },
-  { id:'first_feedback', icon:'💬', label:'First Feedback', desc:'Submit your first piece of feedback', check: p => !!(p.badges && p.badges.includes('first_feedback')) },
-  // ── Startup journey milestones (self-declared or admin-granted) ──
-  { id:'idea_stage', icon:'💡', label:'Idea Stage', desc:'Exploring an idea or doing research', check: p => !!(p.company_stage === 'idea' || (p.badges && p.badges.includes('idea_stage'))) },
-  { id:'mvp_built', icon:'🛠️', label:'MVP Built', desc:'Built a minimum viable product or prototype', check: p => !!(p.company_stage === 'mvp' || (p.badges && p.badges.includes('mvp_built'))) },
-  { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Launched a pilot with real customers', check: p => !!(p.badges && p.badges.includes('first_pilot')) },
-  { id:'first_revenue', icon:'💰', label:'First Revenue', desc:'Generated first revenue from customers', check: p => !!(p.company_stage === 'revenue' || (p.badges && p.badges.includes('first_revenue'))) },
-  { id:'funding_closed', icon:'🏦', label:'Funding Closed', desc:'Completed a funding round', check: p => !!(p.badges && p.badges.includes('funding_closed')) },
-  { id:'product_market_fit', icon:'📈', label:'Product-Market Fit', desc:'Achieved meaningful traction and product-market fit', check: p => !!(p.badges && p.badges.includes('product_market_fit')) },
-  { id:'scaling', icon:'🚀', label:'Scaling', desc:'Scaling customers and operations', check: p => !!(p.company_stage === 'scaling' || (p.badges && p.badges.includes('scaling'))) },
+  { id:'first_feedback', icon:'💬', label:'First Feedback', desc:'Submit platform feedback', check: p => !!(p.badges && p.badges.includes('first_feedback')) },
 ];
+
+// ── PERSONA-SPECIFIC MILESTONES ──
+const PERSONA_BADGES = {
+  founder: [
+    { id:'team_signed', icon:'📝', label:'Founding Team Signed', desc:'Co-founder or team agreements in place' },
+    { id:'incorporated', icon:'🏢', label:'Business Incorporated', desc:'Legally incorporated your company' },
+    { id:'mvp_built', icon:'🛠️', label:'MVP Built', desc:'Built a minimum viable product or prototype', autoCheck: p => p.company_stage === 'mvp' },
+    { id:'first_pilot', icon:'🌱', label:'First Pilot', desc:'Piloting with real customers' },
+    { id:'first_revenue', icon:'💰', label:'First Revenue', desc:'Generated first revenue', autoCheck: p => p.company_stage === 'revenue' },
+    { id:'recurring_revenue', icon:'🔄', label:'Recurring Revenue', desc:'Established recurring revenue streams' },
+    { id:'funding_closed', icon:'🏦', label:'Funding Closed', desc:'Completed a funding round' },
+    { id:'product_market_fit', icon:'📈', label:'Product-Market Fit', desc:'Achieved meaningful traction and PMF' },
+    { id:'scaling', icon:'🚀', label:'Scaling', desc:'Scaling customers and operations', autoCheck: p => p.company_stage === 'scaling' },
+  ],
+  investor: [
+    { id:'fund_affiliated', icon:'🏛️', label:'Fund Affiliated', desc:'Part of a VC fund, angel group, or family office' },
+    { id:'thesis_declared', icon:'🎯', label:'Thesis Declared', desc:'Defined your AgTech investment thesis', autoCheck: p => !!(p.investment_stages && p.investment_stages.length > 0) },
+    { id:'first_check', icon:'✍️', label:'First Check Written', desc:'Made at least one investment in a startup' },
+    { id:'agtech_portfolio', icon:'🌾', label:'AgTech Portfolio', desc:'Active investments in AgTech companies' },
+    { id:'board_seat', icon:'🪑', label:'Board Seat Held', desc:'Serving on a startup board of directors' },
+    { id:'deal_flow_active', icon:'📊', label:'Deal Flow Active', desc:'Actively sourcing and reviewing deals' },
+    { id:'portfolio_builder', icon:'💼', label:'Portfolio Builder', desc:'3+ startup investments made' },
+    { id:'lead_investor', icon:'🏆', label:'Lead Investor', desc:'Led a funding round' },
+    { id:'ecosystem_champion', icon:'🌐', label:'Ecosystem Champion', desc:'Actively mentoring portfolio founders beyond capital' },
+  ],
+  advisor: [
+    { id:'expertise_declared', icon:'🧠', label:'Expertise Declared', desc:'Defined areas of expertise', autoCheck: p => !!(p.expertise_areas && p.expertise_areas.length > 0) },
+    { id:'fast_signed', icon:'📝', label:'Advisor Agreement', desc:'Signed a FAST or advisory agreement' },
+    { id:'first_mentee', icon:'🎓', label:'First Mentee', desc:'Actively mentoring a founder' },
+    { id:'thought_leader', icon:'📢', label:'Thought Leader', desc:'Publishing content or speaking on AgTech topics' },
+    { id:'intro_maker', icon:'🤝', label:'Intro Maker', desc:'Made 3+ meaningful introductions' },
+    { id:'industry_veteran', icon:'🏅', label:'Industry Veteran', desc:'10+ years of domain experience' },
+    { id:'trusted_advisor', icon:'⭐', label:'Trusted Advisor', desc:'Advising 3+ startups simultaneously' },
+    { id:'program_judge', icon:'🎯', label:'Program Judge', desc:'Judging or selecting for accelerators/incubators' },
+    { id:'board_advisor', icon:'🪑', label:'Board Advisor', desc:'Serving on a startup advisory board' },
+  ],
+  researcher: [
+    { id:'research_declared', icon:'🔬', label:'Research Declared', desc:'Defined your research focus area', autoCheck: p => !!(p.research_focus && p.research_focus.trim()) },
+    { id:'published_work', icon:'📄', label:'Published Work', desc:'Published AgTech-related research' },
+    { id:'grant_funded', icon:'💰', label:'Grant Funded', desc:'Received research grant funding' },
+    { id:'industry_collab', icon:'🤝', label:'Industry Collab', desc:'Collaborating with an AgTech startup' },
+    { id:'ip_generated', icon:'🧬', label:'IP Generated', desc:'Filed patents or generated intellectual property' },
+    { id:'tech_transfer', icon:'🔁', label:'Tech Transfer', desc:'Moving research toward commercialization' },
+    { id:'student_mentor', icon:'🎓', label:'Student Mentor', desc:'Mentoring students in AgTech research' },
+    { id:'data_contributor', icon:'📊', label:'Data Contributor', desc:'Sharing datasets or tools with the ecosystem' },
+    { id:'open_innovator', icon:'🌐', label:'Open Innovator', desc:'Open-source contributions to AgTech' },
+  ],
+  farmer: [
+    { id:'farm_profiled', icon:'🌾', label:'Farm Profiled', desc:'Farm type, size, and region declared', autoCheck: p => !!(p.location && p.location.trim()) },
+    { id:'tech_curious', icon:'🔍', label:'Tech Curious', desc:'Exploring new AgTech solutions' },
+    { id:'first_trial', icon:'🧪', label:'First Tech Trial', desc:'Tried a new AgTech product on your farm' },
+    { id:'pilot_partner', icon:'🤝', label:'Pilot Partner', desc:'Partnered with a startup for a field pilot' },
+    { id:'data_driven', icon:'📊', label:'Data-Driven', desc:'Using data and analytics in farm operations' },
+    { id:'sustainability', icon:'🌱', label:'Sustainability Champion', desc:'Adopted sustainable farming practices' },
+    { id:'innovation_adopter', icon:'💡', label:'Innovation Adopter', desc:'Using 3+ AgTech solutions on your farm' },
+    { id:'community_voice', icon:'🗣️', label:'Community Voice', desc:'Sharing insights and feedback with the ecosystem' },
+    { id:'early_adopter', icon:'🚀', label:'Early Adopter', desc:'Among the first to try new AgTech products' },
+  ],
+  service_provider: [
+    { id:'service_listed', icon:'🏷️', label:'Service Listed', desc:'Service type and expertise declared', autoCheck: p => !!(p.service_type && p.service_type.trim()) },
+    { id:'startup_ready', icon:'🚀', label:'Startup-Ready', desc:'Experience working with early-stage startups' },
+    { id:'first_agtech_client', icon:'🌾', label:'First AgTech Client', desc:'Completed work with an AgTech company' },
+    { id:'portfolio_showcased', icon:'📋', label:'Portfolio Showcased', desc:'Case studies or client references available' },
+    { id:'ecosystem_partner', icon:'🤝', label:'Ecosystem Partner', desc:'Partnered with accelerators or incubators' },
+    { id:'domain_expert', icon:'🧠', label:'AgTech Domain Expert', desc:'Deep AgTech sector knowledge' },
+    { id:'trusted_vendor', icon:'⭐', label:'Trusted Vendor', desc:'3+ AgTech client engagements completed' },
+    { id:'thought_contributor', icon:'📢', label:'Thought Contributor', desc:'Publishing insights relevant to AgTech startups' },
+    { id:'referral_source', icon:'🔗', label:'Referral Source', desc:'Referred startups or investors to the ecosystem' },
+  ],
+  government: [
+    { id:'role_defined', icon:'🏛️', label:'Role Defined', desc:'Organization and mandate declared', autoCheck: p => !!(p.organization && p.organization.trim()) },
+    { id:'program_advocate', icon:'📢', label:'Program Advocate', desc:'Promoting AgTech programs and initiatives' },
+    { id:'grant_facilitator', icon:'💰', label:'Grant Facilitator', desc:'Helping founders access government funding' },
+    { id:'ecosystem_connector', icon:'🤝', label:'Ecosystem Connector', desc:'Connecting startups with public resources' },
+    { id:'incubator_manager', icon:'🎯', label:'Incubator/Accelerator', desc:'Managing or selecting startups for programs' },
+    { id:'policy_shaper', icon:'📜', label:'Policy Shaper', desc:'Influencing AgTech policy and regulation' },
+    { id:'trade_mission', icon:'🌐', label:'Trade Mission', desc:'Facilitating international AgTech connections' },
+    { id:'data_publisher', icon:'📊', label:'Data Publisher', desc:'Publishing open data useful to AgTech sector' },
+    { id:'champion', icon:'🏆', label:'AgTech Champion', desc:'Recognized advocate for the AgTech ecosystem' },
+  ],
+  industry_pro: [
+    { id:'role_defined', icon:'🏢', label:'Role Defined', desc:'Organization and title declared', autoCheck: p => !!(p.organization && p.job_title) },
+    { id:'domain_expert', icon:'🧠', label:'Domain Expert', desc:'Deep expertise in AgTech supply chain or operations' },
+    { id:'startup_scout', icon:'🔍', label:'Startup Scout', desc:'Identifying and evaluating AgTech startups' },
+    { id:'pilot_sponsor', icon:'🌱', label:'Pilot Sponsor', desc:'Sponsored or facilitated a startup pilot' },
+    { id:'procurement_ready', icon:'🛒', label:'Procurement Ready', desc:'Can influence purchasing decisions for AgTech' },
+    { id:'corp_innovator', icon:'💡', label:'Corporate Innovator', desc:'Driving innovation within your organization' },
+    { id:'partnership_maker', icon:'🤝', label:'Partnership Maker', desc:'Formed strategic partnerships with startups' },
+    { id:'industry_speaker', icon:'🎤', label:'Industry Speaker', desc:'Speaking at AgTech events and conferences' },
+    { id:'market_opener', icon:'🌐', label:'Market Opener', desc:'Helping startups access new markets or channels' },
+  ],
+};
+
+// Backwards-compatible BADGE_DEFS — combines common + all persona badges for lookups
+const BADGE_DEFS = [...COMMON_BADGES, ...Object.values(PERSONA_BADGES).flat().filter((b, i, arr) => arr.findIndex(x => x.id === b.id) === i)];
 
 const TIER_DEFS = [
   { id:'explorer', icon:'🔍', label:'Explorer', min:0, color:'#0369a1' },
   { id:'builder', icon:'🔨', label:'Builder', min:3, color:'#a16207' },
-  { id:'operator', icon:'⚡', label:'Operator', min:5, color:'#7e22ce' },
-  { id:'leader', icon:'👑', label:'Leader', min:7, color:'#f59e0b' },
+  { id:'operator', icon:'⚡', label:'Operator', min:6, color:'#7e22ce' },
+  { id:'leader', icon:'👑', label:'Leader', min:9, color:'#f59e0b' },
 ];
 
 function calcCompleteness(p) {
@@ -2505,9 +2623,18 @@ function calcCompleteness(p) {
   return Math.round((filled / all.length) * 100);
 }
 
+function getBadgesForPersona(persona) {
+  return [...COMMON_BADGES, ...(PERSONA_BADGES[persona] || [])];
+}
+
 function calcBadges(p) {
   if (!p) return [];
-  return BADGE_DEFS.filter(b => b.check(p)).map(b => b.id);
+  const defs = getBadgesForPersona(p.persona);
+  return defs.filter(b => {
+    if (b.check) return b.check(p); // common badges with check function
+    if (b.autoCheck && b.autoCheck(p)) return true; // persona badges with auto-check
+    return !!(p.badges && p.badges.includes(b.id)); // manually granted
+  }).map(b => b.id);
 }
 
 function calcTier(badges) {
@@ -2548,10 +2675,18 @@ function getMissingFields(p) {
   return all.filter(f => { const v = p[f]; return !(Array.isArray(v) ? v.length > 0 : (v && String(v).trim())); }).map(f => labels[f] || f);
 }
 
-function badgesGridHtml(earnedBadges) {
-  return `<div style="display:flex;flex-wrap:wrap;gap:6px">${BADGE_DEFS.map(b => {
+function badgesGridHtml(earnedBadges, persona) {
+  const defs = getBadgesForPersona(persona);
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px">${defs.map(b => {
     const earned = earnedBadges.includes(b.id);
-    return `<span class="badge-item ${earned?'earned':'locked'}" title="${b.desc}">${b.icon} ${b.label}</span>`;
+    const isAuto = !!b.check;
+    const clickAction = !earned && !isAuto ? `onclick="openBadgeClaim('${b.id}')"` : '';
+    const tipText = earned
+      ? `<strong>✅ Earned!</strong><br>${b.desc}`
+      : isAuto
+        ? `<strong>${b.label}</strong><br>${b.desc}<br><em style='color:var(--text-faint)'>Auto-earned when conditions are met</em>`
+        : `<strong>${b.label}</strong><br>${b.desc}<br><em style='color:var(--green)'>Click to claim this milestone</em>`;
+    return `<span class="badge-item ${earned?'earned':'locked'}" ${clickAction}>${b.icon} ${b.label}<span class="badge-tip">${tipText}</span></span>`;
   }).join('')}</div>`;
 }
 
@@ -2559,8 +2694,9 @@ async function syncProfileMeta(profile) {
   if (!profile) return profile;
   const completeness = calcCompleteness(profile);
   const autoBadges = calcBadges(profile);
-  // Merge auto-earned + manually-granted badges
-  const existingManual = (profile.badges || []).filter(b => ['first_feedback','idea_stage','mvp_built','first_pilot','first_revenue','funding_closed','product_market_fit','scaling'].includes(b));
+  // Merge auto-earned + manually-granted badges (preserve any previously granted persona badge)
+  const allKnownIds = getBadgesForPersona(profile.persona).map(b => b.id);
+  const existingManual = (profile.badges || []).filter(b => allKnownIds.includes(b));
   const merged = [...new Set([...autoBadges, ...existingManual])];
   const tier = calcTier(merged);
   const needsUpdate = completeness !== profile.profile_completeness || tier !== profile.tier || JSON.stringify(merged.sort()) !== JSON.stringify((profile.badges||[]).sort());
@@ -2626,6 +2762,138 @@ async function checkAutoSuspend(profile) {
   return false;
 }
 
+// ── BADGE CLAIM WORKFLOW ──────────────────────────────────────
+// Evidence prompts for each badge — what we ask when a user claims a milestone
+const BADGE_EVIDENCE = {
+  // Founder
+  team_signed: { label:'Who are your co-founders or key team members?', placeholder:'e.g. Jane Doe (CTO), John Smith (COO) — signed co-founder agreements' },
+  incorporated: { label:'Where and when was your company incorporated?', placeholder:'e.g. Incorporated in Ontario, Canada — March 2025' },
+  mvp_built: { label:'Describe your MVP and current state', placeholder:'e.g. Working prototype with 3 core features, demo available at...' },
+  first_pilot: { label:'Who are you piloting with?', placeholder:'e.g. 2 farms in Southern Ontario testing our soil sensor platform' },
+  first_revenue: { label:'Tell us about your first revenue', placeholder:'e.g. First paying customer in Jan 2025, $2K MRR from 3 farms' },
+  recurring_revenue: { label:'Describe your recurring revenue', placeholder:'e.g. $15K MRR from 12 SaaS subscriptions, 90% retention rate' },
+  funding_closed: { label:'What funding have you raised?', placeholder:'e.g. Closed $500K pre-seed from 3 angels and SVB, March 2025' },
+  product_market_fit: { label:'What signals show product-market fit?', placeholder:'e.g. NPS of 72, 40%+ week-over-week organic growth, 95% retention' },
+  scaling: { label:'How are you scaling?', placeholder:'e.g. Expanding to 3 new provinces, hired 5 people, 100+ customers' },
+  // Investor
+  fund_affiliated: { label:'What fund or group are you with?', placeholder:'e.g. Managing Partner at AgriVentures Fund ($50M AUM)' },
+  first_check: { label:'Tell us about your first investment', placeholder:'e.g. Invested $100K in CropTech Inc. (seed round, 2024)' },
+  agtech_portfolio: { label:'List your AgTech portfolio companies', placeholder:'e.g. CropTech Inc., FarmSense AI, GreenField Robotics' },
+  board_seat: { label:'What board(s) do you serve on?', placeholder:'e.g. Board of Directors at CropTech Inc. since 2024' },
+  deal_flow_active: { label:'How are you sourcing deals?', placeholder:'e.g. Review 20+ decks/month, active on AgFunder, part of SVG network' },
+  portfolio_builder: { label:'How many investments have you made?', placeholder:'e.g. 5 investments across seed & Series A in AgTech' },
+  lead_investor: { label:'What round(s) have you led?', placeholder:'e.g. Led $2M seed round for FarmSense AI in Q3 2025' },
+  ecosystem_champion: { label:'How do you support founders beyond capital?', placeholder:'e.g. Weekly office hours, intro to 50+ industry contacts, hiring support' },
+  // Advisor
+  fast_signed: { label:'What advisory agreements do you have?', placeholder:'e.g. FAST agreement with CropTech Inc., 0.5% equity vesting over 2 years' },
+  first_mentee: { label:'Who are you mentoring?', placeholder:'e.g. Mentoring Sarah Chen, founder of AgriBot — weekly 30-min calls' },
+  thought_leader: { label:'Share a link to your content', placeholder:'e.g. https://linkedin.com/posts/... — article on AgTech trends with 5K views' },
+  intro_maker: { label:'Describe introductions you\'ve facilitated', placeholder:'e.g. Connected 5 founders with VCs, 2 resulted in term sheets' },
+  industry_veteran: { label:'Describe your industry experience', placeholder:'e.g. 15 years in precision agriculture, former VP at John Deere' },
+  trusted_advisor: { label:'How many startups are you advising?', placeholder:'e.g. Currently advising 4 AgTech startups across seed to Series A' },
+  program_judge: { label:'What programs do you judge for?', placeholder:'e.g. Judge for Plug and Play AgTech batch selection, Y Combinator reviewer' },
+  board_advisor: { label:'What advisory boards do you sit on?', placeholder:'e.g. Advisory board member for AgriTech Alliance and CropSense AI' },
+  // Researcher
+  published_work: { label:'Share your published research', placeholder:'e.g. "Soil microbiome analysis using ML" — Nature AgTech, 2025' },
+  grant_funded: { label:'What grants have you received?', placeholder:'e.g. NSERC Discovery Grant ($250K, 2024-2027) for precision agriculture ML' },
+  industry_collab: { label:'Who are you collaborating with?', placeholder:'e.g. Joint research with CropSense AI on computer vision for crop disease' },
+  ip_generated: { label:'Describe your IP', placeholder:'e.g. Patent filed for novel soil sensor calibration method (US 2025/...)' },
+  tech_transfer: { label:'Describe your commercialization path', placeholder:'e.g. Licensing agreement with AgriTech Corp for our biosensor technology' },
+  student_mentor: { label:'Who are you mentoring?', placeholder:'e.g. Supervising 3 PhD students in agricultural robotics' },
+  data_contributor: { label:'What data/tools have you shared?', placeholder:'e.g. Open-sourced our crop yield dataset (10K samples) on Kaggle' },
+  open_innovator: { label:'Describe your open-source contributions', placeholder:'e.g. Maintainer of AgriCV library — 500+ GitHub stars' },
+  // Farmer
+  tech_curious: { label:'What AgTech are you exploring?', placeholder:'e.g. Looking into drone imaging and automated irrigation systems' },
+  first_trial: { label:'What technology did you trial?', placeholder:'e.g. Tested CropSense AI soil sensors on 50 acres of corn last season' },
+  pilot_partner: { label:'Who are you piloting with?', placeholder:'e.g. Partnering with FarmBot Inc. for autonomous weeding trial on 200 acres' },
+  data_driven: { label:'How do you use data in your operations?', placeholder:'e.g. Using satellite imagery + soil data to optimize fertilizer application' },
+  sustainability: { label:'What sustainable practices have you adopted?', placeholder:'e.g. Cover cropping, reduced tillage, 30% less chemical inputs since 2023' },
+  innovation_adopter: { label:'What AgTech solutions are you using?', placeholder:'e.g. GPS guidance, drone imaging, soil sensors, and automated irrigation' },
+  community_voice: { label:'How do you share with the ecosystem?', placeholder:'e.g. Spoke at 2 AgTech meetups, hosted 3 farm tours for startups' },
+  early_adopter: { label:'What were you early to adopt?', placeholder:'e.g. First farm in our region to use autonomous drone spraying (2024)' },
+  // Service Provider
+  startup_ready: { label:'Describe your startup experience', placeholder:'e.g. Worked with 15+ early-stage startups on IP strategy over 5 years' },
+  first_agtech_client: { label:'Who was your first AgTech client?', placeholder:'e.g. Provided legal services for CropTech Inc. seed round in 2024' },
+  portfolio_showcased: { label:'Share case studies or references', placeholder:'e.g. Case study: Helped AgriBot reduce legal costs 40% through standardized contracts' },
+  ecosystem_partner: { label:'What programs do you partner with?', placeholder:'e.g. Official legal partner for Plug and Play AgTech accelerator' },
+  domain_expert: { label:'Describe your AgTech expertise', placeholder:'e.g. 8 years specializing in AgTech IP law, published guide on farmer data rights' },
+  trusted_vendor: { label:'How many AgTech clients have you served?', placeholder:'e.g. Completed engagements with 5 AgTech startups and 2 farming co-ops' },
+  thought_contributor: { label:'Share your published insights', placeholder:'e.g. Monthly newsletter on AgTech legal trends, 2K subscribers' },
+  referral_source: { label:'What referrals have you made?', placeholder:'e.g. Referred 3 startups to VCs and 2 investors to promising founders' },
+  // Government
+  program_advocate: { label:'What programs do you promote?', placeholder:'e.g. Managing outreach for Ontario AgTech Innovation Fund' },
+  grant_facilitator: { label:'How do you help with funding access?', placeholder:'e.g. Helped 10 startups apply for SR&ED credits and IRAP funding' },
+  ecosystem_connector: { label:'What connections have you facilitated?', placeholder:'e.g. Connected 20+ startups with university research labs and industry partners' },
+  incubator_manager: { label:'What program do you manage?', placeholder:'e.g. Program Director for AgTech Accelerator at Innovation Hub Toronto' },
+  policy_shaper: { label:'Describe your policy work', placeholder:'e.g. Contributing to Ontario\'s AgTech Innovation Strategy 2025-2030' },
+  trade_mission: { label:'What international connections have you made?', placeholder:'e.g. Led AgTech trade delegation to Netherlands, 15 companies participated' },
+  data_publisher: { label:'What data do you publish?', placeholder:'e.g. Open data portal with 50+ agricultural datasets for startups' },
+  champion: { label:'Describe your advocacy', placeholder:'e.g. Keynoted 3 AgTech conferences, published national AgTech strategy report' },
+  // Industry Pro
+  startup_scout: { label:'How do you find AgTech startups?', placeholder:'e.g. Evaluate 10+ AgTech startups/quarter for potential partnerships' },
+  pilot_sponsor: { label:'What pilots have you sponsored?', placeholder:'e.g. Sponsored 2 startup pilots in our supply chain, $50K combined budget' },
+  procurement_ready: { label:'Describe your procurement influence', placeholder:'e.g. Manage $5M annual technology procurement budget for agricultural division' },
+  corp_innovator: { label:'How do you drive innovation?', placeholder:'e.g. Founded internal AgTech innovation lab, launched startup partnership program' },
+  partnership_maker: { label:'What partnerships have you formed?', placeholder:'e.g. Signed strategic partnership with 2 AgTech startups for distribution' },
+  industry_speaker: { label:'Where have you spoken?', placeholder:'e.g. Keynote at AgTech Summit 2025, panelist at Farm Progress Show' },
+  market_opener: { label:'How do you help startups access markets?', placeholder:'e.g. Introduced 3 startups to our 500+ farm customer network' },
+};
+
+function openBadgeClaim(badgeId) {
+  if (!currentUser || !_userProfile) { toast('Sign in to claim milestones'); return; }
+  const persona = _userProfile.persona;
+  const defs = getBadgesForPersona(persona);
+  const badge = defs.find(b => b.id === badgeId);
+  if (!badge) return;
+  const evidence = BADGE_EVIDENCE[badgeId];
+  const existingEvidence = (_userProfile.badge_evidence || {})[badgeId] || '';
+
+  const html = `<div class="badge-claim-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="badge-claim-box">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:40px;margin-bottom:8px">${badge.icon}</div>
+        <h3 style="margin:0 0 4px;font-size:18px">${badge.label}</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin:0">${badge.desc}</p>
+      </div>
+      ${evidence ? `
+        <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:6px">${evidence.label}</label>
+        <textarea id="badge-claim-evidence" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;font-family:inherit" placeholder="${evidence.placeholder}">${existingEvidence}</textarea>
+      ` : `<p style="font-size:13px;color:var(--text-muted)">Ready to claim this milestone?</p>`}
+      <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+        <button onclick="this.closest('.badge-claim-overlay').remove()" style="padding:10px 20px;background:var(--hover);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--text)">Cancel</button>
+        <button onclick="submitBadgeClaim('${badgeId}')" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🏅 Claim Milestone</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function submitBadgeClaim(badgeId) {
+  const evidenceEl = document.getElementById('badge-claim-evidence');
+  const evidenceText = evidenceEl ? evidenceEl.value.trim() : '';
+  // Save evidence to profile
+  const existingEvidence = _userProfile.badge_evidence || {};
+  existingEvidence[badgeId] = evidenceText;
+  // Grant badge + save evidence
+  const badges = [...new Set([...(_userProfile.badges||[]), badgeId])];
+  const tier = calcTier(badges);
+  const { error } = await _supabase.from('profiles').update({
+    badges, tier, badge_evidence: existingEvidence
+  }).eq('id', currentUser.id);
+  if (!error) {
+    _userProfile.badges = badges;
+    _userProfile.tier = tier;
+    _userProfile.badge_evidence = existingEvidence;
+    const badge = getBadgesForPersona(_userProfile.persona).find(b => b.id === badgeId);
+    toast('🏅 Milestone claimed: ' + (badge ? badge.label : badgeId));
+    render(currentPage);
+  } else {
+    toast('❌ Error claiming badge');
+  }
+  // Remove overlay
+  document.querySelector('.badge-claim-overlay')?.remove();
+}
+
 async function grantBadge(userId, badgeId) {
   const p = _allProfiles.find(x => x.id === userId) || _userProfile;
   if (!p) return;
@@ -2678,7 +2946,7 @@ const EXPERTISE_LIST = ['Finance & Fundraising','Product & Engineering','Marketi
 
 let wizStep = 0;
 let wizData = {};
-const WIZ_STEPS = ['persona','basics','details','goals'];
+const WIZ_STEPS = ['persona','basics','details','goals','consent'];
 
 function showWizard() {
   wizStep = 0;
@@ -2689,7 +2957,8 @@ function showWizard() {
     expertise_areas: [], advising_count: '', advisor_interests: '',
     institution: '', research_focus: '', open_to_collab: false,
     service_type: '', startup_experience: false,
-    agtech_focus: [], goals_platform: '', goals_general: '', how_heard: ''
+    agtech_focus: [], goals_platform: '', goals_general: '', how_heard: '',
+    consent_accepted: false
   };
   wizRender();
 }
@@ -2724,7 +2993,8 @@ function editWizard() {
     agtech_focus: Array.isArray(p.agtech_focus) ? [...p.agtech_focus] : [],
     goals_platform: p.goals_platform || '',
     goals_general: p.goals_general || '',
-    how_heard: p.how_heard || ''
+    how_heard: p.how_heard || '',
+    consent_accepted: !!p.consent_accepted
   };
   // If persona is already set, skip straight to basics (step 2)
   if (wizData.persona) wizStep = 1;
@@ -2846,13 +3116,57 @@ function wizRender() {
     <textarea class="wiz-textarea" id="wiz-goals-general" oninput="wizData.goals_general=this.value" placeholder="e.g. Launch MVP by Q3, raise $500K seed round, scale to 100 farms...">${wizData.goals_general||''}</textarea>
     <label class="wiz-label">How did you hear about us?</label>
     <input class="wiz-input" id="wiz-heard" value="${wizData.how_heard||''}" oninput="wizData.how_heard=this.value" placeholder="e.g. LinkedIn, friend referral, Google search">`;
+  } else if (step === 'consent') {
+    const personaValue = {
+      founder: 'curated deal flow visibility, investor introductions at the right stage, a trusted network of advisors, and structured milestone tracking that proves your traction to the market',
+      investor: 'pre-qualified AgTech deal flow with milestone-verified founder profiles, structured due diligence data, and warm introductions to the highest-potential startups in the ecosystem',
+      advisor: 'meaningful connections with founders who match your expertise, recognition for your contributions through our milestone system, and a network of co-advisors across the AgTech landscape',
+      researcher: 'pathways to commercialize your research through startup collaborations, visibility to founders who need your expertise, and a network bridging academia and industry',
+      farmer: 'early access to AgTech innovations, pilot partnerships with startups building tools for your operation, and a direct voice shaping the products being built for agriculture',
+      service_provider: 'qualified leads from AgTech founders who need your services, ecosystem visibility, and trusted partner status through our milestone verification system',
+      government: 'real-time visibility into your AgTech ecosystem\'s health, data-driven insights for program design, and a direct channel to the founders and investors in your region',
+      industry_pro: 'access to innovative startups solving problems in your supply chain, partnership opportunities, and the ability to influence AgTech innovation from the inside'
+    }[wizData.persona] || 'access to the AgTech ecosystem, curated connections, and milestone-based progression that unlocks deeper opportunities as you contribute';
+
+    body = `<div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:32px;margin-bottom:6px">🤝</div>
+      <h3 style="margin:0 0 4px;font-size:16px">Welcome to the Ecosystem</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0">One last step — here's what you're joining and what you get</p>
+    </div>
+
+    <div style="padding:14px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">🎯 What You Get</div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin:0">As a member, you receive ${personaValue}.</p>
+    </div>
+
+    <div style="padding:14px;background:var(--hover);border:1px solid var(--border);border-radius:10px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">🏅 How Milestones Work</div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin:0">Your profile includes journey milestones specific to your role. As you claim milestones and provide evidence of your progress, your tier increases — unlocking introductions to higher-tier members, priority visibility, and future premium features. The more you contribute, the more you unlock.</p>
+    </div>
+
+    <div style="padding:14px;background:var(--hover);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;max-height:140px;overflow-y:auto">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">📋 Terms of Participation</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.7">
+        <p style="margin:0 0 8px">By joining FounderOps Center, you agree to:</p>
+        <p style="margin:0 0 6px"><strong>Profile Accuracy:</strong> Information you provide is accurate and you will keep your profile current. Milestone claims should reflect genuine progress.</p>
+        <p style="margin:0 0 6px"><strong>Respectful Engagement:</strong> You will engage professionally with other ecosystem members. Introductions facilitated through the platform are privileged and should be treated accordingly.</p>
+        <p style="margin:0 0 6px"><strong>Data Use:</strong> Your profile information helps Russell Cole and the FounderOps Center team facilitate connections and improve the platform. We may share your profile with other verified members for the purpose of introductions and ecosystem matching. We will never sell your data to third parties.</p>
+        <p style="margin:0 0 6px"><strong>Evolving Platform:</strong> FounderOps Center is growing. Some features may become premium in the future. As an early member, you will be notified in advance of any changes and given priority access to new features.</p>
+        <p style="margin:0"><strong>Community Standards:</strong> We reserve the right to suspend or remove accounts that violate community guidelines, misrepresent information, or engage in behavior harmful to the ecosystem.</p>
+      </div>
+    </div>
+
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px;border:2px solid ${wizData.consent_accepted?'var(--green)':'var(--border)'};border-radius:10px;background:${wizData.consent_accepted?'var(--accent-bg)':'var(--hover)'};transition:all .2s" onclick="wizData.consent_accepted=!wizData.consent_accepted;wizRender()">
+      <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${wizData.consent_accepted?'var(--green)':'var(--border)'};background:${wizData.consent_accepted?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:14px;color:#fff;transition:all .2s">${wizData.consent_accepted?'✓':''}</div>
+      <span style="font-size:12px;color:var(--text);line-height:1.6"><strong>I agree</strong> to the Terms of Participation and understand that FounderOps Center is an evolving platform. I'm excited to contribute to the AgTech ecosystem.</span>
+    </label>`;
   }
 
   root.innerHTML = `<div class="wiz-overlay">
     <div class="wiz-box">
       <div class="wiz-header">
         <h2>Set Up Your Profile</h2>
-        <p>Step ${wizStep+1} of ${total} — ${['Who you are','Basic info','Your details','Goals & context'][wizStep]}</p>
+        <p>Step ${wizStep+1} of ${total} — ${['Who you are','Basic info','Your details','Goals & context','Join the ecosystem'][wizStep]}</p>
       </div>
       <div class="wiz-progress">${dots}</div>
       <div class="wiz-body">${body}</div>
@@ -2959,12 +3273,15 @@ function closeWizard() { document.getElementById('wiz-root').innerHTML = ''; }
 async function wizSave() {
   wizCollectInputs();
   if (!currentUser) { toast('Please sign in first'); return; }
+  if (!wizData.consent_accepted) { toast('⚠️ Please agree to the Terms of Participation to continue'); return; }
   const profile = {
     id: currentUser.id,
     email: currentUser.email,
     full_name: currentUser.name,
     avatar_url: currentUser.avatar || null,
     onboarding_complete: true,
+    consent_accepted: true,
+    consent_accepted_at: new Date().toISOString(),
     ...wizData
   };
   const { data, error } = await upsertProfile(profile);
@@ -3031,8 +3348,9 @@ function pgProfile() {
 
   const completeness = calcCompleteness(p);
   const earnedBadges = calcBadges(p);
-  // Merge auto + manual badges
-  const allBadges = [...new Set([...earnedBadges, ...(p.badges||[]).filter(b=>['first_feedback','idea_stage','mvp_built','first_pilot','first_revenue','funding_closed','product_market_fit','scaling'].includes(b))])];
+  // Merge auto + manual badges (preserve any known badge for this persona)
+  const knownIds = getBadgesForPersona(p.persona).map(b => b.id);
+  const allBadges = [...new Set([...earnedBadges, ...(p.badges||[]).filter(b => knownIds.includes(b))])];
   const tier = calcTier(allBadges);
   const td = tierDef(tier);
   const introTierPref = p.intro_tier_pref || 'explorer';
@@ -3086,7 +3404,7 @@ function pgProfile() {
     </div>
     <div style="display:flex;gap:4px;margin-bottom:14px">${TIER_DEFS.map(t => `<div style="flex:1;height:6px;border-radius:3px;background:${allBadges.length >= t.min ? t.color : 'var(--hover)'};transition:background .3s"></div>`).join('')}</div>
     <h4 style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Badges</h4>
-    ${badgesGridHtml(allBadges)}
+    ${badgesGridHtml(allBadges, p.persona)}
   </div>
 
   ${isInvestorOrAdvisor ? `<div class="card" style="margin-top:14px">
@@ -3134,7 +3452,7 @@ function pgAdmin(){
     return `<div class="page-hdr"><h1>🔐 Admin Dashboard</h1><p>Loading user profiles...</p></div><div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Fetching profiles from Supabase...</p></div>`;
   }
 
-  const profiles = _allProfiles;
+  const profiles = _allProfiles.filter(p => p.blocked_reason !== 'DELETED_BY_ADMIN');
   const blocked = profiles.filter(p=>p.blocked).length;
 
   const filtered = profiles.filter(p => {
@@ -3213,10 +3531,10 @@ function pgAdmin(){
             <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint)">🏅 Badges & Tier</span>
             ${tierHtml(p.tier || 'explorer')}
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${BADGE_DEFS.map(b => {
-            const has = (p.badges||[]).includes(b.id);
-            const isToggleable = ['first_feedback','idea_stage','mvp_built','first_pilot','first_revenue','funding_closed','product_market_fit','scaling'].includes(b.id);
-            return `<span class="badge-item ${has?'earned':'locked'}" style="font-size:10px;padding:3px 8px;cursor:${isToggleable?'pointer':'default'}" ${isToggleable ? `onclick="event.stopPropagation();${has?'revokeBadge':'grantBadge'}('${p.id}','${b.id}')"` : ''} title="${b.desc}${isToggleable?' (click to toggle)':' (auto-earned)'}">${b.icon} ${b.label}</span>`;
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${getBadgesForPersona(p.persona).map(b => {
+            const has = (p.badges||[]).includes(b.id) || (b.check && b.check(p)) || (b.autoCheck && b.autoCheck(p));
+            const isAuto = !!b.check; // common badges with check are auto-only
+            return `<span class="badge-item ${has?'earned':'locked'}" style="font-size:10px;padding:3px 8px;cursor:${isAuto?'default':'pointer'}" ${!isAuto ? `onclick="event.stopPropagation();${has?'revokeBadge':'grantBadge'}('${p.id}','${b.id}')"` : ''} title="${b.desc}${isAuto?' (auto-earned)':' (click to toggle)'}">${b.icon} ${b.label}</span>`;
           }).join('')}</div>
           <div style="font-size:10px;color:var(--text-faint)">Profile: ${calcCompleteness(p)}% complete · ${(p.badges||[]).length} badges · Intro pref: ${tierDef(p.intro_tier_pref||'explorer').label}+</div>
         </div>
@@ -3318,6 +3636,7 @@ function pgAdmin(){
         <input class="admin-search" placeholder="🔍 Search users..." value="${adminSearch}" oninput="adminSearch=this.value;render('admin')">
         <button onclick="adminExportCSV()" style="padding:7px 14px;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">↓ Export CSV</button>
         <button onclick="_allProfiles=[];render('admin')" style="padding:7px 14px;background:var(--hover);border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">↻ Refresh</button>
+        <button onclick="resetMyAccount()" style="padding:7px 14px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🔄 Reset My Account</button>
       </div>
     </div>
     <div class="admin-filters">
@@ -3578,6 +3897,50 @@ function pgInvestorOpportunity() {
         <div style="font-size:10px;margin-top:4px;color:${thisMonth>prevMonth?'var(--green)':'var(--text-muted)'};font-weight:700">${delta(thisMonth,prevMonth)} vs prior 30d</div>
       </div>
     </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;border-left:4px solid #f59e0b">
+    <h3 style="margin:0 0 4px">📊 Ecosystem Quality & Engagement</h3>
+    <div class="sub" style="margin-bottom:14px">Milestone-based engagement proves this isn't just signups — it's verified, active participants</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
+      ${(() => {
+        const tiers = {explorer:0,builder:0,operator:0,leader:0};
+        const withEvidence = _allProfiles.filter(p => p.badge_evidence && Object.keys(p.badge_evidence).length > 0).length;
+        const avgBadges = _allProfiles.length ? (_allProfiles.reduce((s,p) => s+(p.badges||[]).length, 0) / _allProfiles.length).toFixed(1) : '0';
+        _allProfiles.forEach(p => { const t = p.tier || 'explorer'; if(tiers[t]!==undefined) tiers[t]++; });
+        const founderMilestones = _allProfiles.filter(p=>p.persona==='founder').reduce((s,p) => s+(p.badges||[]).filter(b=>!['verified_profile','linkedin_connected','first_feedback'].includes(b)).length, 0);
+        return `
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:#0369a1">${tiers.explorer}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">🔍 Explorers</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:#a16207">${tiers.builder}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">🔨 Builders</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:#7e22ce">${tiers.operator}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">⚡ Operators</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:#f59e0b">${tiers.leader}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">👑 Leaders</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:var(--green)">${avgBadges}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">Avg Badges/User</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:var(--green)">${founderMilestones}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">Journey Milestones</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:24px;font-weight:900;color:var(--green)">${withEvidence}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:600">With Evidence</div>
+          </div>`;
+      })()}
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin:0"><strong style="color:var(--text)">Why this matters:</strong> Every user progresses through persona-specific milestones — founders track from incorporation through PMF and scaling, investors verify their portfolio and deal activity, farmers document tech adoption. Each milestone collects structured evidence, creating the richest AgTech participant dataset in the market. Higher-tier users are proven, active participants — not vanity signups.</p>
   </div>
 
   <div class="card" style="margin-top:16px">
