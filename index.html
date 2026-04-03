@@ -3412,7 +3412,13 @@ function closeWizard() { document.getElementById('wiz-root').innerHTML = ''; }
 async function wizSave() {
   wizCollectInputs();
   if (!currentUser) { toast('Please sign in first'); return; }
+  if (!wizData.persona) { toast('⚠️ Please select who you are'); wizStep = 0; wizRender(); return; }
   if (!wizData.consent_accepted) { toast('⚠️ Please agree to the Terms of Participation to continue'); return; }
+
+  // Show saving state on the button
+  const saveBtns = document.querySelectorAll('.wiz-btn.wiz-btn-primary');
+  saveBtns.forEach(b => { b.disabled = true; b.textContent = '⏳ Saving...'; });
+
   const profile = {
     id: currentUser.id,
     email: currentUser.email,
@@ -3424,15 +3430,25 @@ async function wizSave() {
     ...wizData
   };
   const { data, error } = await upsertProfile(profile);
-  if (error) { toast('Error saving profile — please try again'); return; }
+  if (error) {
+    saveBtns.forEach(b => { b.disabled = false; b.textContent = 'Complete Profile →'; });
+    const msg = error.message || '';
+    if (msg.includes('permission') || msg.includes('policy')) toast('❌ Permission error — please sign out and sign back in');
+    else if (msg.includes('network') || msg.includes('fetch')) toast('❌ Network error — check your connection and try again');
+    else toast('❌ Error saving profile — please try again');
+    console.error('wizSave error:', error);
+    return;
+  }
   _userProfile = data || profile;
   // Sync badges and tier for newly created profile
   _userProfile = await syncProfileMeta(_userProfile);
   closeWizard();
   toast('🎉 Profile created! Russell will review and connect you with the right people.');
-  // Show profile nav
+  // Show profile nav + connections nav
   const pbtn = document.getElementById('nav-profile-btn');
   if (pbtn) pbtn.style.display = 'flex';
+  const cbtn = document.getElementById('nav-connections-btn');
+  if (cbtn && !isAdmin) cbtn.style.display = 'flex';
   render(currentPage);
 }
 
@@ -4614,6 +4630,8 @@ function pgUserConnections() {
 }
 
 function connDiscoverTab(p, pauseStatus) {
+  // Guard: ensure data is loaded before rendering (prevents duplicate intro requests during async load)
+  if (!_allProfiles.length) return `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading matches...</p></div>`;
   const tierOrder = ['explorer','builder','operator','leader'];
   const myTier = tierOrder.indexOf(p.tier || 'explorer');
   const active = _allProfiles.filter(pr => !pr.blocked && pr.onboarding_complete && pr.id !== p.id && pr.blocked_reason !== 'DELETED_BY_ADMIN');
@@ -4861,7 +4879,15 @@ async function requestIntro(otherId, score, reasons) {
     requested_at: new Date().toISOString()
   }).select().single();
 
-  if (error) { console.error('requestIntro error:', error); toast('❌ Error requesting intro'); return; }
+  if (error) {
+    console.error('requestIntro error:', error);
+    const msg = error.message || '';
+    if (msg.includes('policy') || msg.includes('permission')) toast('❌ Permission denied — try signing out and back in');
+    else if (msg.includes('duplicate') || msg.includes('unique')) toast('❌ You\'ve already requested this introduction');
+    else if (msg.includes('network') || msg.includes('fetch')) toast('❌ Network error — check your connection');
+    else toast('❌ Error requesting intro — please try again');
+    return;
+  }
   _userIntros.unshift(data);
   if (_introductions) _introductions.unshift(data);
   toast('🤝 Introduction requested! Russell will connect you soon.');
