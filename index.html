@@ -189,6 +189,50 @@
 
   .intro-pause-banner { background: linear-gradient(135deg, rgba(239,68,68,.08), rgba(239,68,68,.03)); border: 1px solid rgba(239,68,68,.2); border-radius: 10px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
 
+  /* ── ACTION CENTER & COMMUNITY HUB ── */
+  .ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .ac-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: box-shadow .2s, border-color .2s; }
+  .ac-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: var(--green-mid); }
+  .ac-card .ac-icon { font-size: 28px; margin-bottom: 8px; }
+  .ac-card .ac-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .ac-card .ac-org { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .ac-card .ac-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+  .ac-tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; }
+  .ac-tag.deadline { background: rgba(239,68,68,.1); color: #ef4444; }
+  .ac-tag.open { background: rgba(34,197,94,.1); color: #16a34a; }
+  .ac-tag.closing { background: rgba(245,158,11,.1); color: #d97706; }
+  .ac-tag.event { background: rgba(59,130,246,.1); color: #3b82f6; }
+  .ac-tag.type { background: var(--hover); color: var(--text-muted); }
+  .ac-tag.persona { background: rgba(168,85,247,.1); color: #9333ea; }
+  .ac-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border: none; border-radius: 7px; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all .15s; }
+  .ac-btn.primary { background: var(--green); color: #fff; }
+  .ac-btn.primary:hover { background: var(--green-dark); }
+  .ac-btn.secondary { background: var(--hover); color: var(--text); border: 1px solid var(--border); }
+  .ac-btn.secondary:hover { background: var(--border); }
+  .ac-section { margin-bottom: 28px; }
+  .ac-section-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .ac-section-hdr h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0; }
+  .ac-section-hdr .ac-count { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--hover); color: var(--text-muted); font-weight: 600; }
+  .ac-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+  .ac-tab { padding: 7px 16px; border: 1px solid var(--border); border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; background: none; color: var(--text-muted); transition: all .15s; }
+  .ac-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .ac-tab:hover:not(.active) { background: var(--hover); }
+  .nl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .nl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; transition: border-color .2s; }
+  .nl-card:hover { border-color: var(--green-mid); }
+  .nl-card .nl-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .nl-card .nl-emoji { font-size: 24px; flex-shrink: 0; }
+  .nl-card .nl-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .nl-card .nl-by { font-size: 10px; color: var(--text-faint); }
+  .nl-card .nl-freq { font-size: 10px; padding: 2px 7px; border-radius: 8px; background: var(--hover); color: var(--text-muted); font-weight: 600; display: inline-block; margin-bottom: 8px; }
+  .nl-card .nl-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; flex: 1; margin-bottom: 12px; }
+  .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; align-items: center; gap: 12px; transition: border-color .2s; }
+  .rec-card:hover { border-color: var(--green-mid); }
+  .rec-card .rec-icon { font-size: 24px; flex-shrink: 0; }
+  .rec-card .rec-body { flex: 1; min-width: 0; }
+  .rec-card .rec-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .rec-card .rec-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
   /* ── VC GRID ── */
   .vc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
   .vc-item { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 11px; }
@@ -650,6 +694,8 @@
     </div>
     <button class="book-btn" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
     <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
+    <button id="nav-action-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:var(--green);border:none;border-radius:7px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('action',this)">🎯 Action Center</button>
+    <button id="nav-hub-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('hub',this)">🌐 Community Hub</button>
     <button id="nav-connections-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('connections',this)">🤝 My Connections</button>
     <button id="nav-roadmap-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('roadmap',this)">🗺️ Product Roadmap</button>
     <button id="nav-admin-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="goAdmin()">🔐 Admin Panel</button>
@@ -868,6 +914,8 @@ _supabase.auth.onAuthStateChange((event, session) => {
     const ab = document.getElementById('nav-admin-btn'); if (ab) ab.style.display = 'none';
     const rb = document.getElementById('nav-roadmap-btn'); if (rb) rb.style.display = 'none';
     const cb = document.getElementById('nav-connections-btn'); if (cb) cb.style.display = 'none';
+    const acb = document.getElementById('nav-action-btn'); if (acb) acb.style.display = 'none';
+    const hbb = document.getElementById('nav-hub-btn'); if (hbb) hbb.style.display = 'none';
     // Show clean full-screen signed-out landing
     showSignedOutPage();
   }
@@ -899,8 +947,12 @@ function applyUser(user, isNew) {
   const adminBtn = document.getElementById('nav-admin-btn');
   const roadmapBtn = document.getElementById('nav-roadmap-btn');
   const connectionsBtn = document.getElementById('nav-connections-btn');
+  const actionBtn = document.getElementById('nav-action-btn');
+  const hubBtn = document.getElementById('nav-hub-btn');
   if (profileBtn) profileBtn.style.display = 'flex';
   if (connectionsBtn && !isAdmin) connectionsBtn.style.display = 'flex';
+  if (actionBtn && !isAdmin) actionBtn.style.display = 'flex';
+  if (hubBtn && !isAdmin) hubBtn.style.display = 'flex';
   if (adminBtn && isAdmin) adminBtn.style.display = 'flex';
   // Roadmap nav only for non-admin users with access (admin sees it in the admin dashboard tabs)
 
@@ -3364,6 +3416,10 @@ async function wizSave() {
   if (pbtn) pbtn.style.display = 'flex';
   const cbtn = document.getElementById('nav-connections-btn');
   if (cbtn && !isAdmin) cbtn.style.display = 'flex';
+  const abtn = document.getElementById('nav-action-btn');
+  if (abtn && !isAdmin) abtn.style.display = 'flex';
+  const hbtn = document.getElementById('nav-hub-btn');
+  if (hbtn && !isAdmin) hbtn.style.display = 'flex';
   render(currentPage);
 }
 
@@ -4853,12 +4909,245 @@ function pgRoadmapStandalone() {
   return `<div class="page-hdr"><h1>🗺️ Product Roadmap</h1><p>Strategic feature initiatives for FounderOps Center.</p></div>` + pgRoadmap();
 }
 
+// ══════════════════════════════════════════════════════════════
+// COMMUNITY HUB
+// ══════════════════════════════════════════════════════════════
+let hubTab = 'newsletters';
+
+const HUB_NEWSLETTERS = [
+  { name:'AIVA Newsletter', by:'AIVA', freq:'Regular', desc:'AgTech innovation and venture updates from the AIVA network.', url:'https://airtable.com/appaz6m2ulaHTytRg/pagDTVshyiPNeHKp3/form', icon:'📰' },
+  { name:'Best of AgTech Newsletters', by:'AgTech Newsletter Hub', freq:'Curated', desc:'Curated collection of the best AgTech newsletters in one place — subscribe to multiple at once.', url:'https://agtech.newslettergo.com/best-of', icon:'⭐' },
+  { name:'AgFunderNews', by:'AgFunder', freq:'Weekly', desc:'Industry-leading weekly newsletter covering global agri-food tech with deep reporting and analysis for 100K+ subscribers.', url:'https://agfundernews.com/newsletter', icon:'💰' },
+  { name:'iGrow News AgTech Digest', by:'Sepehr Achard', freq:'Weekly (Fri)', desc:'Free weekly recap of AgTech headlines across precision ag, vertical farming, biotech, robotics, and data.', url:'https://igrownews.com/ag-newsletter/', icon:'🌿' },
+  { name:'The Signal', by:'Global Ag Tech Initiative', freq:'Weekly', desc:'High-level analysis of global AgTech trends, regulation, and innovation for ag-tech decision-makers.', url:'https://www.globalagtechinitiative.com/thesignal/', icon:'📡' },
+  { name:'Future Farming', by:'Misset/Beselink Group', freq:'Weekly', desc:'Leading smart farming and precision ag brand covering the latest news and insights in ag-tech.', url:'https://www.futurefarming.com/newsletter/', icon:'🚜' },
+  { name:'AgriTechTomorrow', by:'AgriTechTomorrow', freq:'Monthly', desc:'Industry news on precision farming, supply chain, indoor/vertical farming, and agricultural technology.', url:'https://www.agritechtomorrow.com/subscribe.php', icon:'🔬' },
+  { name:'Vertical Farm Daily', by:'Vertical Farm Daily', freq:'Daily', desc:'Daily newsletter covering indoor farming and controlled environment agriculture (CEA) news globally.', url:'https://www.verticalfarmdaily.com/subscribe/', icon:'🏢' },
+  { name:'FarmProgress', by:'Farm Progress', freq:'Multiple/week', desc:'Free e-newsletters covering farm technology, market news, weather, and agribusiness developments.', url:'https://pgs.farmprogress.com/newsletter-signup', icon:'📊' },
+  { name:'Food Tank', by:'Food Tank', freq:'Weekly (Thu)', desc:'Food system leaders, regenerative agriculture, sustainability stories, and food system transformation.', url:'https://foodtank.com/news/category/food-tank-newsletter/', icon:'🍽️' },
+  { name:'AgTech Navigator', by:'Agri-Tech Navigator', freq:'Regular', desc:'Free news on global ag-tech and agri-food innovation, investment, and regulation.', url:'https://www.agtechnavigator.com/', icon:'🧭' },
+  { name:'Agri-TechE', by:'Agri-TechE (UK)', freq:'Monthly', desc:'Monthly agri-tech news, events, and opportunities from the UK agri-tech cluster.', url:'https://www.agri-tech-e.co.uk/sign-up/', icon:'🇬🇧' }
+];
+
+const HUB_COMMUNITIES = [
+  { name:'AgTech Alchemy', type:'Slack + Meetups', by:'Walt Duflock, Sachi Desai, Rhishi Pethe', desc:'Brings founders, operators, investors, and practitioners together in-person and via Slack to share real experience.', url:'https://www.linkedin.com/company/agtech-alchemy', icon:'⚗️' },
+  { name:'AgChat & Chew', type:'Biweekly Zoom Meeting', by:'Andrew Rose', desc:'Biweekly AgTech networking call — every other Friday 9:30–10:30am ET. Open to all in the ecosystem.', url:'https://us06web.zoom.us/w/86578104090?tk=EQFBJ90_PhIFUrt6seuw9r30plGmmvJ8Vd46EbPQKno.DQcAAAAUKHUHGhZ1S0N2WmFHcFFwLTk3S1pueTdpMHZnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=PPpD4dcWpSmYF2i63RLE02k9pkECki.1', icon:'☕' },
+  { name:'AgRobotics Working Group', type:'Weekly Working Group', by:'Dan (arwg@westernfairdistrict.com)', desc:'Weekly agenda-driven working group advancing ag robotics and automation in Canada. Email Dan to join.', url:'https://www.agroboticswg.com/', icon:'🤖' },
+  { name:'Agtech Zone (Quebec)', type:'Community Platform', by:'Quebec AgTech Ecosystem', desc:'One of Canada\'s largest communities dedicated to advancement of agricultural technologies.', url:'https://zoneagtech.ca/en/communaute-agtech/', icon:'🇨🇦' },
+  { name:'PrecisionAg Professional', type:'LinkedIn Group', by:'PrecisionAg', desc:'Exclusive forum for precision agriculture professionals — service providers, ag retailers, consultants, and dealers.', url:'https://www.linkedin.com/company/precisionag-professional', icon:'🎯' },
+  { name:'NYC Agriculture Collective', type:'Community + Events', by:'NYC Agriculture Collective', desc:'Organizes NYC AgTech Week and virtual networking events for urban ag and agtech professionals.', url:'https://nycagtechweek.org/about-1', icon:'🗽' },
+  { name:'Founders Network — AgTech', type:'Founder Community', by:'Founders Network', desc:'Full-lifecycle support to AgTech founders from funding rounds to corporate and government partnerships.', url:'https://foundersnetwork.com/agtech-founders/', icon:'🚀' },
+  { name:'The Farming Community', type:'Discord', by:'Community-run (16K+ members)', desc:'Welcoming space for farmers, students, professionals, and enthusiasts worldwide to learn, teach, and grow.', url:'https://discord.com/invite/farming', icon:'💬' },
+  { name:'AGRI Tech Venture Forum', type:'Networking Group', by:'Ag Tech executive community', desc:'Premium networking for ag tech executives, entrepreneurs, investors, and corporate strategics.', url:'https://agritechventureforum.com/', icon:'🏛️' },
+  { name:'IEEE Agricultural Robotics', type:'Technical Committee', by:'IEEE-RAS', desc:'Promotes research, development, and standardization in robotics and automation for agricultural production.', url:'https://www.ieee-ras.org/agricultural-robotics-automation', icon:'⚙️' },
+  { name:'Agri-TechE Network (UK)', type:'Professional Network', by:'Agri-TechE', desc:'Connects farmers, growers, scientists, technologists and entrepreneurs to turn challenges into opportunities.', url:'https://uk.linkedin.com/company/agri-tech-e', icon:'🔗' }
+];
+
+const HUB_EVENTS = [
+  { name:'World Agri-Tech Innovation Summit (USA)', date:'Mar 16–18, 2026', location:'San Francisco', desc:'1,500+ global leaders — agribusinesses, tech innovators, food brands, investors, startups, and policymakers.', url:'https://worldagritechusa.com/', icon:'🌎' },
+  { name:'World Agri-Tech London', date:'Sep 22–23, 2026', location:'London', desc:'European edition of the premier agri-tech innovation summit.', url:'https://worldagritechusa.com/', icon:'🇬🇧' },
+  { name:'World Agri-Tech South America', date:'Jun 23–24, 2026', location:'São Paulo', desc:'Latin American agri-tech innovation summit connecting regional and global leaders.', url:'https://www.worldagritechsouthamerica.com/', icon:'🇧🇷' },
+  { name:'Animal AgTech Innovation Summit', date:'Apr 8–9, 2026', location:'Fort Worth, TX', desc:'500+ senior executives from livestock and dairy sectors, 13 high-growth startups, live pitching sessions.', url:'https://animalagtech.com/', icon:'🐄' },
+  { name:'FoodBytes! 2026', date:'Jun 3, 2026', location:'Utrecht, Netherlands', desc:'Rabobank\'s multi-continent platform — accelerator, pitch competition, and mentorship.', url:'https://www.foodbytesworld.com/', icon:'🍏' },
+  { name:'AgTech Summit (U of Illinois)', date:'Mar 10, 2026', location:'Champaign, IL', desc:'Features Startup World Cup Ag/Food regional, innovation panels, and networking.', url:'https://researchpark.illinois.edu/agtech-summit-registration-opens-for-2026/', icon:'🎓' },
+  { name:'Agriculture Webinar Portal', date:'Ongoing', location:'Virtual', desc:'Live and on-demand agriculture webinars, videos, and training from USDA, universities, and ag organizations.', url:'https://agwebinars.net/', icon:'💻' }
+];
+
+function pgCommunityHub() {
+  if (!currentUser) return guestGateCard('hub');
+
+  const tabs = [
+    { id:'newsletters', label:'📰 Newsletters', count: HUB_NEWSLETTERS.length },
+    { id:'communities', label:'🌐 Communities', count: HUB_COMMUNITIES.length },
+    { id:'events', label:'📅 Events', count: HUB_EVENTS.length }
+  ];
+
+  const tabBar = `<div class="ac-tabs">${tabs.map(t =>
+    `<button class="ac-tab ${hubTab===t.id?'active':''}" onclick="hubTab='${t.id}';render('hub')">${t.label} <span class="ac-count">${t.count}</span></button>`
+  ).join('')}</div>`;
+
+  let content = '';
+
+  if (hubTab === 'newsletters') {
+    content = `<div class="ac-section">
+      <div class="ac-section-hdr"><h3>Subscribe to AgTech Newsletters</h3></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">Stay informed with curated newsletters from across the AgTech ecosystem. Click "Subscribe" to open each newsletter's sign-up page.</p>
+      <div class="nl-grid">${HUB_NEWSLETTERS.map(n => `
+        <div class="nl-card">
+          <div class="nl-top">
+            <div class="nl-emoji">${n.icon}</div>
+            <div>
+              <div class="nl-name">${n.name}</div>
+              <div class="nl-by">${n.by}</div>
+            </div>
+          </div>
+          <div class="nl-freq">${n.freq}</div>
+          <div class="nl-desc">${n.desc}</div>
+          <a href="${n.url}" target="_blank" rel="noopener" class="ac-btn primary" style="text-align:center;justify-content:center">📩 Subscribe →</a>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (hubTab === 'communities') {
+    content = `<div class="ac-section">
+      <div class="ac-section-hdr"><h3>Join AgTech Communities</h3></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">Connect with AgTech professionals through Slack channels, working groups, LinkedIn communities, and more.</p>
+      <div class="ac-grid">${HUB_COMMUNITIES.map(c => `
+        <div class="ac-card">
+          <div class="ac-icon">${c.icon}</div>
+          <div class="ac-title">${c.name}</div>
+          <div class="ac-org">${c.by}</div>
+          <div style="margin-bottom:10px"><span class="ac-tag type">${c.type}</span></div>
+          <div class="ac-desc">${c.desc}</div>
+          <a href="${c.url}" target="_blank" rel="noopener" class="ac-btn primary">Join →</a>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (hubTab === 'events') {
+    content = `<div class="ac-section">
+      <div class="ac-section-hdr"><h3>Upcoming AgTech Events</h3></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">Conferences, summits, and webinars to attend — in person and virtual.</p>
+      <div class="ac-grid">${HUB_EVENTS.map(e => `
+        <div class="ac-card">
+          <div class="ac-icon">${e.icon}</div>
+          <div class="ac-title">${e.name}</div>
+          <div class="ac-org">${e.location}</div>
+          <div style="margin-bottom:10px"><span class="ac-tag event">📅 ${e.date}</span></div>
+          <div class="ac-desc">${e.desc}</div>
+          <a href="${e.url}" target="_blank" rel="noopener" class="ac-btn primary">Learn More →</a>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  return `<div class="page-hdr"><h1>🌐 Community Hub</h1>
+    <p>Your front door to the entire AgTech ecosystem — newsletters, communities, working groups, and events in one place.</p></div>
+    ${tabBar}${content}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACTION CENTER
+// ══════════════════════════════════════════════════════════════
+
+const ACTION_ACCELERATORS = [
+  { name:'THRIVE Global Impact Challenge', org:'SVG Ventures', type:'Pitch + Accelerator', deadline:'May 25, 2025', status:'check', desc:'Up to $1M investment for startups advancing sustainable agriculture.', url:'https://thriveagrifood.com/', agtech:true, icon:'🏆' },
+  { name:'World Food Prize — Innovate for Impact', org:'World Food Prize Foundation', type:'Pitch Competition', deadline:'Apr 15, 2026', status:'open', desc:'$50K first prize, pitch at Borlaug Dialogue (1,500+ attendees from 70+ countries).', url:'https://www.worldfoodprize.org/en/nominations/innovate_for_impact_challenge/', agtech:true, icon:'🌾' },
+  { name:'EIT Food Accelerator Network', org:'EIT Food (EU)', type:'Accelerator', deadline:'Apr 8, 2026', status:'open', desc:'Six specialized hubs across Europe with up to €50K grants for pre-Series A agrifood startups.', url:'https://www.eitfood.eu/', agtech:true, icon:'🇪🇺' },
+  { name:'AgLaunch365', org:'AgLaunch', type:'Accelerator', deadline:'Sep 15, 2025', status:'check', desc:'$100K initial investment plus milestone-based capital for pre-seed AgTech companies.', url:'https://aglaunch.com/', agtech:true, icon:'🚀' },
+  { name:'Startupbootcamp Food & AgriTech', org:'Startupbootcamp', type:'3-Month Accelerator', deadline:'Dec 7, 2025', status:'check', desc:'€25K cash + €100K in-kind, 100+ industry mentors. Amsterdam-based, hybrid program.', url:'https://startupbootcamp.org/accelerator/food-agritech', agtech:true, icon:'🇳🇱' },
+  { name:'Creative Destruction Lab — AgriFood', org:'CDL (Calgary / Doha)', type:'Accelerator', deadline:'Apr 2026', status:'open', desc:'World-class mentor network of serial entrepreneurs, investors, and researchers. Ag and food tech focus.', url:'https://creativedestructionlab.com/streams/ag/', agtech:true, icon:'💡' },
+  { name:'The Yield Lab', org:'Yield Lab Institute', type:'Venture Fund + Accelerator', deadline:'Rolling', status:'open', desc:'Global network investing seed to growth stage agrifoodtech. Includes H.A.R.V.E.S.T. AgTech program.', url:'https://theyieldlab.com/', agtech:true, icon:'🌱' },
+  { name:'Plug and Play AgTech', org:'Plug and Play', type:'Accelerator', deadline:'Rolling', status:'open', desc:'Corporate partners include Corteva, Nestlé, Bayer, PepsiCo. Digital farming, AI, IoT focus.', url:'https://www.plugandplayapac.com/food', agtech:true, icon:'🔌' },
+  { name:'Techstars Farm to Fork', org:'Techstars + Cargill + Ecolab', type:'3-Month Accelerator', deadline:'Rolling', status:'open', desc:'Full food value chain — AgTech, manufacturing, supply chains, food safety, traceability.', url:'https://accelerate.techstars.com/farmtofork', agtech:true, icon:'🍴' },
+  { name:'FoodBytes! 2026', org:'Rabobank', type:'Pitch + Mentorship', deadline:'Jun 3, 2026', status:'open', desc:'Multi-continent platform combining accelerator, pitch competition, and mentorship.', url:'https://www.foodbytesworld.com/', agtech:true, icon:'🍏' },
+  { name:'Radicle Growth', org:'Radicle (Finistere Ventures)', type:'Accelerator Fund', deadline:'Rolling', status:'open', desc:'AgRogue Growth Partners invests $3–7M in 10–15 AgTech companies. Radicle Corn Challenge: $1.75M.', url:'https://www.radicle.vc/', agtech:true, icon:'🌿' },
+  { name:'MaRS — Food & AgTech Mission', org:'MaRS Discovery District', type:'Venture Accelerator', deadline:'Rolling', status:'open', desc:'National Canadian program supporting commercialization of food & AgTech innovations. Powered by Farm Credit Canada.', url:'https://missionfrommars.ca/food-and-agtech/', agtech:true, icon:'🇨🇦' },
+  { name:'BioEnterprise GOAH', org:'BioEnterprise Canada', type:'Accelerator', deadline:'Check site', status:'check', desc:'Fully remote support for Ontario agri-food and AgTech SMEs under 50 employees.', url:'https://bioenterprise.ca/innovators/grow-ontario-accelerator-hub-goah/', agtech:true, icon:'🧬' },
+  { name:'Cultivator AgTech Accelerator', org:'Cultivator (Saskatchewan)', type:'3-Month Accelerator', deadline:'Rolling', status:'open', desc:'Brings agriculture and technology together — helps Canadian AgTech founders reach product-market fit.', url:'https://www.cultivator.ca/programs/agtech-accelerator', agtech:true, icon:'🌾' },
+  { name:'Y Combinator', org:'Y Combinator', type:'Accelerator', deadline:'Biannual batches', status:'open', desc:'Top general accelerator that regularly funds AgTech startups (GrazeMate, Bear Flag Robotics, Instacrops).', url:'https://www.ycombinator.com/companies/industry/agriculture', agtech:false, icon:'🟧' },
+  { name:'DMZ (Toronto Met)', org:'Toronto Metropolitan University', type:'Tech Incubator', deadline:'Rolling', status:'open', desc:'Ranked #1 globally. Supports founders across Canada building tech companies including AgTech.', url:'https://dmz.torontomu.ca', agtech:false, icon:'🏙️' },
+  { name:'Communitech', org:'Communitech (Kitchener-Waterloo)', type:'Innovation Hub', deadline:'Rolling', status:'open', desc:'25+ years supporting founders across Canada. 1,200+ current members in tech ecosystem.', url:'https://www.communitech.ca/', agtech:false, icon:'🤝' }
+];
+
+const PERSONA_RECS = {
+  'early-stage': [
+    { icon:'🎯', title:'Complete your FounderOps profile', sub:'Unlock tier-gated connections and personalized matches', action:'profile', type:'action' },
+    { icon:'🏆', title:'Apply to 2–3 accelerators above', sub:'Most have rolling deadlines — don\'t wait for "the right time"', type:'tip' },
+    { icon:'📰', title:'Subscribe to AgFunderNews + iGrow', sub:'Stay current on deals, trends, and who\'s raising', type:'tip' },
+    { icon:'🤝', title:'Join AgTech Alchemy on Slack', sub:'The most active founder community in AgTech', action:'hub', type:'action' },
+    { icon:'📅', title:'Attend the next World Agri-Tech event', sub:'Best networking ROI in the industry — put it on your calendar', type:'tip' }
+  ],
+  'growth-stage': [
+    { icon:'💰', title:'Explore Radicle Growth & Yield Lab', sub:'Growth-stage capital specifically for AgTech companies', type:'tip' },
+    { icon:'🤝', title:'Use Smart Connections to find investors', sub:'Your match scores improve as you earn more badges', action:'connections', type:'action' },
+    { icon:'🏛️', title:'Join the AGRI Tech Venture Forum', sub:'Premium networking with ag tech executives and corporate strategics', action:'hub', type:'action' },
+    { icon:'📊', title:'Subscribe to The Signal newsletter', sub:'High-level AgTech trend analysis for strategic planning', type:'tip' },
+    { icon:'🌍', title:'Explore international expansion events', sub:'World Agri-Tech runs summits in SF, London, and São Paulo', type:'tip' }
+  ],
+  'investor': [
+    { icon:'📰', title:'Subscribe to AgFunderNews', sub:'The industry standard for agri-food tech deal flow and analysis', type:'tip' },
+    { icon:'🔍', title:'Use Smart Connections for deal discovery', sub:'AI-scored matches surface founders aligned with your thesis', action:'connections', type:'action' },
+    { icon:'🌱', title:'Browse the Ecosystem Overview', sub:'Full map of VCs, accelerators, and government programs', action:'ecosystem', type:'action' },
+    { icon:'📅', title:'Attend FoodBytes! and World Agri-Tech', sub:'Best events for meeting portfolio-ready AgTech startups', type:'tip' },
+    { icon:'🤝', title:'Join Founders Network — AgTech', sub:'Support founders and discover investment opportunities', action:'hub', type:'action' }
+  ],
+  'researcher': [
+    { icon:'🤖', title:'Join the AgRobotics Working Group', sub:'Research and development in ag robotics and automation', action:'hub', type:'action' },
+    { icon:'🔬', title:'Subscribe to AgriTechTomorrow', sub:'Deep coverage of precision farming, vertical farming, and biotech', type:'tip' },
+    { icon:'🎓', title:'Attend the AgTech Summit at U of Illinois', sub:'Academic-oriented with Startup World Cup regional', type:'tip' },
+    { icon:'⚙️', title:'Join IEEE Agricultural Robotics committee', sub:'Technical standards and research community', action:'hub', type:'action' },
+    { icon:'📡', title:'Follow The Signal newsletter', sub:'Global AgTech policy, regulation, and innovation trends', type:'tip' }
+  ]
+};
+
+function pgActionCenter() {
+  if (!currentUser) return guestGateCard('action');
+  const p = _userProfile || {};
+  const persona = p.persona || 'early-stage';
+  const recs = PERSONA_RECS[persona] || PERSONA_RECS['early-stage'];
+
+  // Filter accelerators — sort open/upcoming first
+  const now = new Date();
+  const sortedAccel = [...ACTION_ACCELERATORS].sort((a,b) => {
+    const aOpen = a.status === 'open' ? 0 : 1;
+    const bOpen = b.status === 'open' ? 0 : 1;
+    return aOpen - bOpen;
+  });
+
+  const personaLabel = { 'early-stage':'Early-Stage Founder', 'growth-stage':'Growth-Stage Founder', 'investor':'Investor / Advisor', 'researcher':'Researcher' };
+
+  return `<div class="page-hdr"><h1>🎯 Action Center</h1>
+    <p>What you should be doing this week — personalized for you as ${personaLabel[persona] || 'an AgTech professional'}.</p></div>
+
+    <div class="ac-section">
+      <div class="ac-section-hdr"><h3>⚡ Recommended For You</h3></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+        ${recs.map(r => `<div class="rec-card" ${r.action ? `style="cursor:pointer" onclick="go('${r.action}')"` : ''}>
+          <div class="rec-icon">${r.icon}</div>
+          <div class="rec-body">
+            <div class="rec-title">${r.title}</div>
+            <div class="rec-sub">${r.sub}</div>
+          </div>
+          ${r.action ? '<div style="color:var(--green);font-size:14px">→</div>' : ''}
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="ac-section">
+      <div class="ac-section-hdr"><h3>🏆 Pitch Competitions & Accelerators</h3><span class="ac-count">${sortedAccel.length}</span></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">Apply to programs with open deadlines, or bookmark upcoming ones. AgTech-specific programs shown first.</p>
+      <div class="ac-grid">${sortedAccel.map(a => {
+        const statusTag = a.status === 'open' ? '<span class="ac-tag open">✅ Open / Rolling</span>'
+          : a.status === 'closing' ? '<span class="ac-tag closing">⚠️ Closing Soon</span>'
+          : '<span class="ac-tag deadline">🔍 Check Dates</span>';
+        return `<div class="ac-card">
+          <div class="ac-icon">${a.icon}</div>
+          <div class="ac-title">${a.name}</div>
+          <div class="ac-org">${a.org}</div>
+          <div style="margin:8px 0;display:flex;flex-wrap:wrap;gap:4px">
+            <span class="ac-tag type">${a.type}</span>
+            ${statusTag}
+            ${!a.agtech ? '<span class="ac-tag persona">General (AgTech-friendly)</span>' : ''}
+          </div>
+          <div class="ac-desc">${a.desc}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto">
+            <span style="font-size:10px;color:var(--text-faint)">Deadline: ${a.deadline}</span>
+            <a href="${a.url}" target="_blank" rel="noopener" class="ac-btn primary">Apply →</a>
+          </div>
+        </div>`; }).join('')}
+      </div>
+    </div>`;
+}
+
 const pages = {
   overview: pgOverview, journey: pgJourney, glossary: pgGlossary,
   documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem,
   segments: pgSegments, crops: pgCrops, resources: pgResources,
   admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone,
-  connections: pgUserConnections
+  connections: pgUserConnections, hub: pgCommunityHub, action: pgActionCenter
 };
 
 // Pages guests can see in full
