@@ -950,9 +950,9 @@ function applyUser(user, isNew) {
   const actionBtn = document.getElementById('nav-action-btn');
   const hubBtn = document.getElementById('nav-hub-btn');
   if (profileBtn) profileBtn.style.display = 'flex';
-  if (connectionsBtn && !isAdmin) connectionsBtn.style.display = 'flex';
-  if (actionBtn && !isAdmin) actionBtn.style.display = 'flex';
-  if (hubBtn && !isAdmin) hubBtn.style.display = 'flex';
+  if (connectionsBtn) connectionsBtn.style.display = 'flex';
+  if (actionBtn) actionBtn.style.display = 'flex';
+  if (hubBtn) hubBtn.style.display = 'flex';
   if (adminBtn && isAdmin) adminBtn.style.display = 'flex';
   // Roadmap nav only for non-admin users with access (admin sees it in the admin dashboard tabs)
 
@@ -3415,11 +3415,11 @@ async function wizSave() {
   const pbtn = document.getElementById('nav-profile-btn');
   if (pbtn) pbtn.style.display = 'flex';
   const cbtn = document.getElementById('nav-connections-btn');
-  if (cbtn && !isAdmin) cbtn.style.display = 'flex';
+  if (cbtn) cbtn.style.display = 'flex';
   const abtn = document.getElementById('nav-action-btn');
-  if (abtn && !isAdmin) abtn.style.display = 'flex';
+  if (abtn) abtn.style.display = 'flex';
   const hbtn = document.getElementById('nav-hub-btn');
-  if (hbtn && !isAdmin) hbtn.style.display = 'flex';
+  if (hbtn) hbtn.style.display = 'flex';
   render(currentPage);
 }
 
@@ -5203,9 +5203,9 @@ function guestGateCard(page) {
 // ── INIT ──────────────────────────────────────────────────────────
 // Check if user is already signed in; if not, show landing page
 // App elements are hidden by default to prevent flash of content
+restoreTheme(); // Restore theme immediately before async auth check
 (async () => {
   const { data: { session } } = await _supabase.auth.getSession();
-  restoreTheme();
   if (session?.user) {
     // User is signed in — show the app
     document.getElementById('sidebar').style.display = '';
