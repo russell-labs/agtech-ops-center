@@ -736,7 +736,6 @@
       </select>
     </div>
     <button class="nav-item" onclick="go('ecosystem',this)"><span class="nav-icon">📍</span> Ecosystem Overview</button>
-    <button class="nav-item" onclick="go('segments',this)"><span class="nav-icon">📊</span> Industry Segments</button>
     <button class="nav-item" onclick="go('crops',this)"><span class="nav-icon">🌱</span> Crops</button>
     <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
     <button id="nav-investor-btn" class="nav-item" style="display:none" onclick="go('investor',this)"><span class="nav-icon">📈</span> Investor Dashboard</button>
@@ -809,7 +808,7 @@
     <p><strong>Explore the Ecosystem</strong> — Browse the global AgTech overview, discover key players, events, funding programs, and thought leaders shaping the industry.</p>
     <p><strong>Your Founder's Journey</strong> — Step-by-step guidance from idea validation through scaling, tailored to your stage and focus area.</p>
     <p><strong>Smart Connections</strong> — Get matched with relevant people in the ecosystem based on your profile, interests, and goals.</p>
-    <p><strong>Region-Specific Data</strong> — Select your country to see localized ecosystem data, industry segments, crops, and support programs. Currently Canada-focused with more regions coming soon.</p>
+    <p><strong>Region-Specific Data</strong> — Select your country to see localized ecosystem data, crops, and support programs across 8 regions worldwide.</p>
     <p>Create a free account to unlock the full platform. Your profile helps us personalize your experience and connect you with the right people.</p>
   </div>
 </div>
@@ -1135,15 +1134,15 @@ function notifyNewUser(name, email) {
 // PERSONA-TAILORED UI
 // ══════════════════════════════════════════════════════════════
 const PERSONA_UI = {
-  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','segments','crops','resources'] },
-  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','segments','crops','resources'] },
-  'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','segments','crops','resources'], extraNav:['investor'] },
+  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','crops','resources'] },
+  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','crops','resources'] },
+  'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','crops','resources'], extraNav:['investor'] },
   'farmer':        { brand:'Farmer Ops Center',   icon:'🌾', tagline:'Discover AgTech innovations built for your operation.', nav:['overview','glossary','ecosystem','crops','resources'] },
-  'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','segments','resources'] },
-  'researcher':    { brand:'Research Ops Center',  icon:'R', tagline:'AgTech research, industry data, and collaboration opportunities.', nav:['overview','glossary','ecosystem','segments','crops','resources'] },
-  'service':       { brand:'AgTech Ops Center',    icon:'S', tagline:'Serve the AgTech ecosystem with market intelligence.', nav:['overview','glossary','ecosystem','segments','resources'] },
-  'industry':      { brand:'AgTech Ops Center',    icon:'⚙️', tagline:'Industry intelligence for agriculture professionals.', nav:['overview','glossary','ecosystem','segments','crops','resources'] },
-  'government':    { brand:'AgTech Policy Center', icon:'🏛️', tagline:'Policy intelligence and AgTech ecosystem data.', nav:['overview','glossary','ecosystem','segments','resources'] }
+  'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','resources'] },
+  'researcher':    { brand:'Research Ops Center',  icon:'R', tagline:'AgTech research, industry data, and collaboration opportunities.', nav:['overview','glossary','ecosystem','crops','resources'] },
+  'service':       { brand:'AgTech Ops Center',    icon:'S', tagline:'Serve the AgTech ecosystem with market intelligence.', nav:['overview','glossary','ecosystem','resources'] },
+  'industry':      { brand:'AgTech Ops Center',    icon:'⚙️', tagline:'Industry intelligence for agriculture professionals.', nav:['overview','glossary','ecosystem','crops','resources'] },
+  'government':    { brand:'AgTech Policy Center', icon:'🏛️', tagline:'Policy intelligence and AgTech ecosystem data.', nav:['overview','glossary','ecosystem','resources'] }
 };
 
 function getActivePersona() {
@@ -6739,7 +6738,7 @@ function investorToggle(section) { _investorOpen[section] = !_investorOpen[secti
 const pages = {
   overview: pgOverview, journey: pgJourney, glossary: pgGlossary,
   documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem,
-  segments: pgSegments, crops: pgCrops, resources: pgResources,
+  crops: pgCrops, resources: pgResources,
   admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone,
   connections: pgUserConnections, hub: pgCommunityHub, action: pgActionCenter,
   investor: pgInvestorDashboard
