@@ -663,6 +663,16 @@
     .lp-fw-arrow { display:none; }
   }
 
+  .lp-founder { max-width:720px;margin:0 auto;padding:0 24px 48px; }
+  .lp-founder-card { display:flex;gap:24px;align-items:flex-start;padding:32px;border-radius:16px;border:1px solid var(--green-mid);background:linear-gradient(135deg,var(--accent-bg),var(--bg)); }
+  .lp-founder-photo { width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--green);flex-shrink:0; }
+  .lp-founder-quote { font-size:15px;color:var(--text);line-height:1.8;font-style:italic;margin:0 0 12px; }
+  .lp-founder-name { font-size:14px;font-weight:800;color:var(--text); }
+  .lp-founder-role { font-size:12px;color:var(--text-muted);margin-top:2px; }
+  .lp-founder-creds { display:flex;flex-wrap:wrap;gap:6px;margin-top:10px; }
+  .lp-founder-cred { font-size:11px;padding:4px 10px;border-radius:6px;background:var(--hover);color:var(--text-muted);border:1px solid var(--border); }
+  @media(max-width:600px){ .lp-founder-card { flex-direction:column;align-items:center;text-align:center; } }
+
   .lp-bottom-cta { text-align:center;padding:48px 24px;background:var(--accent-bg);border-top:1px solid var(--green-mid); }
   .lp-bottom-cta h2 { font-size:clamp(20px,3vw,28px);font-weight:800;color:var(--text);margin:0 0 10px; }
   .lp-bottom-cta p { font-size:14px;color:var(--text-muted);margin:0 0 24px; }
@@ -1079,8 +1089,8 @@ function notifyNewUser(name, email) {
 // PERSONA-TAILORED UI
 // ══════════════════════════════════════════════════════════════
 const PERSONA_UI = {
-  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence — from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','segments','crops','resources'] },
-  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence — from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','segments','crops','resources'] },
+  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','segments','crops','resources'] },
+  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','segments','crops','resources'] },
   'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','segments','crops','resources'], extraNav:['investor'] },
   'farmer':        { brand:'Farmer Ops Center',   icon:'🌾', tagline:'Discover AgTech innovations built for your operation.', nav:['overview','glossary','ecosystem','crops','resources'] },
   'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','segments','resources'] },
@@ -1283,11 +1293,11 @@ function showLandingPage(isSignedOut) {
   <!-- Hero -->
   <div class="lp-hero">
     ${isSignedOut
-      ? '<div class="lp-badge">You\'ve been signed out — welcome back anytime</div>'
-      : '<div class="lp-badge"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green)"></span> Early access — Canada-first, expanding globally</div>'
+      ? '<div class="lp-badge">You\'ve been signed out. Welcome back anytime.</div>'
+      : '<div class="lp-badge"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green)"></span> Early access. Canada-first, expanding globally.</div>'
     }
     <h1 class="lp-h1">The operating system for<br><span>AgTech ecosystems</span></h1>
-    <p class="lp-sub">Founders build better companies when they're connected to the right investors, advisors, and farmers. We make that happen — with market intelligence, AI-powered matching, and a trusted network that grows stronger with every connection.</p>
+    <p class="lp-sub">Founders build better companies when they're connected to the right investors, advisors, and farmers. We make that happen with market intelligence, AI-powered matching, and a trusted network that grows stronger with every connection.</p>
     <div class="lp-cta-row">
       <button class="lp-cta-big" onclick="enterApp()">${isSignedOut ? 'Sign Back In' : 'Join Free'} &rarr;</button>
       <button class="lp-cta-sec" onclick="enterAppGuest()">Browse the Platform</button>
@@ -1336,7 +1346,7 @@ function showLandingPage(isSignedOut) {
           <div class="lp-carousel-emoji">🚀</div>
           <div class="lp-carousel-title">For Founders</div>
           <div class="lp-carousel-sub">Founder Ops Center</div>
-          <div class="lp-carousel-desc">Stop searching and start building. Everything you need to navigate from idea to scale — market intelligence, curated connections, and a clear path to the right investors and pilot partners.</div>
+          <div class="lp-carousel-desc">Stop searching and start building. Market intelligence, curated connections, and a clear path to the right investors and pilot partners. All in one place.</div>
           <div class="lp-carousel-feat">
             <strong>✓</strong> AI-matched investor intros<br>
             <strong>✓</strong> 17 accelerators and pitch competitions<br>
@@ -1374,7 +1384,7 @@ function showLandingPage(isSignedOut) {
             <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">📈</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Investor Dashboard</div><div style="font-size:11px;color:var(--text-muted)">$16B+ market data, deal flow, sector trends</div></div></div>
             <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🔥</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Sector Heatmap</div><div style="font-size:11px;color:var(--text-muted)">See what's hot, what's cooling, where money flows</div></div></div>
             <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🤝</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Verified Founders</div><div style="font-size:11px;color:var(--text-muted)">Milestone-tracked profiles with real traction data</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🗺️</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Ecosystem Map</div><div style="font-size:11px;color:var(--text-muted)">VCs, accelerators, programs — all in one view</div></div></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🗺️</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Ecosystem Map</div><div style="font-size:11px;color:var(--text-muted)">VCs, accelerators, and programs in one view</div></div></div>
           </div>
         </div>
       </div>
@@ -1389,13 +1399,13 @@ function showLandingPage(isSignedOut) {
             <strong>✓</strong> Early access to new AgTech products<br>
             <strong>✓</strong> Pilot partnerships with funded startups<br>
             <strong>✓</strong> Direct line to founders building for your crops<br>
-            <strong>✓</strong> No jargon — just tools that work
+            <strong>✓</strong> No jargon, just tools that work
           </div>
         </div>
         <div class="lp-carousel-right">
           <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">What farmers get:</div>
           <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🧪</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Pilot Programs</div><div style="font-size:11px;color:var(--text-muted)">Try new tech before anyone else — free or subsidized</div></div></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🧪</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Pilot Programs</div><div style="font-size:11px;color:var(--text-muted)">Try new tech before anyone else, often free or subsidized</div></div></div>
             <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🌱</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Crop Intelligence</div><div style="font-size:11px;color:var(--text-muted)">Market data for the crops you actually grow</div></div></div>
             <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🗣️</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Your Voice Matters</div><div style="font-size:11px;color:var(--text-muted)">Shape the products startups are building for you</div></div></div>
             <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:18px">🤝</span><div><div style="font-size:12px;font-weight:700;color:var(--text)">Direct Connections</div><div style="font-size:11px;color:var(--text-muted)">Talk to founders, not sales reps</div></div></div>
@@ -1462,7 +1472,7 @@ function showLandingPage(isSignedOut) {
       <div class="lp-card">
         <div class="lp-card-icon" style="background:#eff6ff">🤝</div>
         <h3>AI-Powered Connections</h3>
-        <p>Every profile is scored against every other. You see match percentages, match reasons, and can request warm introductions — all facilitated by a real human.</p>
+        <p>Every profile is scored against every other. You see match percentages, match reasons, and can request warm introductions, all facilitated by a real human.</p>
       </div>
       <div class="lp-card">
         <div class="lp-card-icon" style="background:#fef3c7">🎯</div>
@@ -1477,11 +1487,37 @@ function showLandingPage(isSignedOut) {
     </div>
   </div>
 
+  <!-- Founder Story -->
+  <div class="lp-founder">
+    <div class="lp-section-label">Why this exists</div>
+    <div class="lp-founder-card">
+      <img src="Russell.jpeg" alt="Russell Cole" class="lp-founder-photo" onerror="this.style.display='none'">
+      <div>
+        <div class="lp-founder-quote">I've spent 8+ years building AgTech companies. Soil amendments, drone and satellite imaging, AI tools that help farmers get more from their data. I pitched investors, ran feedback loops with growers, built teams, handled the business admin, and lived through the highs and lows that every AgTech founder knows. Through all of it, the thing I kept coming back to was connecting people. Introducing a founder to the right investor. Getting a farmer on a call with a startup that could actually solve their problem. It wasn't always related to my own business. I just liked doing it.</div>
+        <div class="lp-founder-quote" style="margin-top:0">If I'd had something like this platform when I was in the thick of it, I would have been way better off. Now I have the ability to build it, so that's exactly what I'm doing. People are at the heart of everything and I can't wait to see where this goes.</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap">
+          <div>
+            <div class="lp-founder-name">Russell Cole</div>
+            <div class="lp-founder-role">Founder & Connector-in-Chief</div>
+          </div>
+          <a href="https://www.linkedin.com/in/russellcole/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--green);text-decoration:none;font-weight:600;padding:6px 14px;border:1px solid var(--green-mid);border-radius:6px">LinkedIn →</a>
+        </div>
+        <div class="lp-founder-creds">
+          <span class="lp-founder-cred">8+ Years in AgTech</span>
+          <span class="lp-founder-cred">Soil Amendments</span>
+          <span class="lp-founder-cred">Drone & Satellite Imaging</span>
+          <span class="lp-founder-cred">AI for Farmers</span>
+          <span class="lp-founder-cred">Ecosystem Connector</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bottom CTA -->
   <div class="lp-bottom-cta">
     <h2>The best AgTech networks aren't found. They're built.</h2>
-    <p>Join the founders, investors, farmers, and advisors who are building the future of agriculture — together.</p>
-    <button class="lp-cta-big" onclick="enterApp()">${isSignedOut ? 'Sign Back In' : 'Get Started — It\'s Free'} &rarr;</button>
+    <p>Join the founders, investors, farmers, and advisors who are building the future of agriculture together.</p>
+    <button class="lp-cta-big" onclick="enterApp()">${isSignedOut ? 'Sign Back In' : 'Get Started. It\'s Free.'} &rarr;</button>
   </div>
 
   <!-- Footer -->
