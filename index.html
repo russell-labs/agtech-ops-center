@@ -379,7 +379,7 @@
   .opp-item p { font-size: 11px; color: var(--text-muted); }
 
   /* ── FEEDBACK FAB ── */
-  .fab { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg,#ea580c,#f97316); color: #fff; border: none; border-radius: 28px; padding: 14px 22px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 24px rgba(234,88,12,.4); z-index: 99; animation: fab-pulse 2.5s ease-in-out infinite; transition: transform .2s, box-shadow .2s; }
+  .fab { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg,#ea580c,#f97316); color: #fff; border: none; border-radius: 22px; padding: 10px 18px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(234,88,12,.3); z-index: 99; transition: transform .2s, box-shadow .2s; opacity:.85; }
   .fab:hover { transform: scale(1.08); box-shadow: 0 8px 30px rgba(234,88,12,.55); animation: none; }
   @keyframes fab-pulse { 0%,100%{ box-shadow: 0 6px 24px rgba(234,88,12,.4); } 50%{ box-shadow: 0 6px 32px rgba(234,88,12,.65), 0 0 0 8px rgba(234,88,12,.1); } }
 
@@ -742,22 +742,25 @@
     <button class="nav-item" onclick="go('crops',this)"><span class="nav-icon">🌱</span> Crops</button>
     <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
   </div>
+  <div id="sidebar-my-tools" class="sidebar-section" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
+    <div class="section-label">My Tools</div>
+    <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center</button>
+    <button id="nav-hub-btn" class="nav-item" style="display:none" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
+    <button id="nav-connections-btn" class="nav-item" style="display:none" onclick="go('connections',this)"><span class="nav-icon">🤝</span> My Connections</button>
+    <button id="nav-investor-btn" class="nav-item" style="display:none" onclick="go('investor',this)"><span class="nav-icon">📈</span> Investor Dashboard</button>
+    <button id="nav-roadmap-btn" class="nav-item" style="display:none" onclick="go('roadmap',this)"><span class="nav-icon">🗺️</span> Product Roadmap</button>
+    <button id="nav-admin-btn" class="nav-item" style="display:none" onclick="goAdmin()"><span class="nav-icon">🔐</span> Admin Panel</button>
+  </div>
+  <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
   <div class="sidebar-footer">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px;padding:2px 2px">
-      <img src="Russell.jpeg" alt="Russell Cole" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1.5px solid var(--green);flex-shrink:0" onerror="this.style.display='none'">
+    <div style="display:flex;align-items:center;gap:9px;padding:2px 2px">
+      <img src="Russell.jpeg" alt="Russell Cole" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid var(--green);flex-shrink:0" onerror="this.style.display='none'">
       <div style="min-width:0">
-        <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Russell Cole</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Russell Cole</div>
         <a href="https://www.linkedin.com/in/russellcole/" target="_blank" rel="noopener" style="font-size:10px;color:var(--green);text-decoration:none">LinkedIn ↗</a>
       </div>
     </div>
-    <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
-    <button id="nav-action-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:var(--green);border:none;border-radius:7px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('action',this)">🎯 Action Center</button>
-    <button id="nav-hub-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('hub',this)">🌐 Community Hub</button>
-    <button id="nav-connections-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('connections',this)">🤝 My Connections</button>
-    <button id="nav-investor-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('investor',this)">📈 Investor Dashboard</button>
-    <button id="nav-roadmap-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('roadmap',this)">🗺️ Product Roadmap</button>
-    <button id="nav-admin-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="goAdmin()">🔐 Admin Panel</button>
-    <button class="book-btn" style="margin-top:10px" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
+    <button class="book-btn" style="margin-top:8px" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
   </div>
 </aside>
 
@@ -987,6 +990,7 @@ _supabase.auth.onAuthStateChange((event, session) => {
     const acb = document.getElementById('nav-action-btn'); if (acb) acb.style.display = 'none';
     const hbb = document.getElementById('nav-hub-btn'); if (hbb) hbb.style.display = 'none';
     const ivb = document.getElementById('nav-investor-btn'); if (ivb) ivb.style.display = 'none';
+    const mts = document.getElementById('sidebar-my-tools'); if (mts) mts.style.display = 'none';
     const ps = document.getElementById('admin-persona-switcher'); if (ps) { ps.style.display = 'none'; ps.value = ''; }
     _adminPersonaOverride = null;
     // Reset branding to default on signout
@@ -1020,18 +1024,20 @@ function applyUser(user, isNew) {
   closeModal('signin-modal');
   dismissOnboard();
 
-  // Show nav buttons
+  // Show nav buttons in My Tools section
   const profileBtn = document.getElementById('nav-profile-btn');
   const adminBtn = document.getElementById('nav-admin-btn');
   const roadmapBtn = document.getElementById('nav-roadmap-btn');
   const connectionsBtn = document.getElementById('nav-connections-btn');
   const actionBtn = document.getElementById('nav-action-btn');
   const hubBtn = document.getElementById('nav-hub-btn');
+  const myToolsSection = document.getElementById('sidebar-my-tools');
+  if (myToolsSection) myToolsSection.style.display = 'block';
   if (profileBtn) profileBtn.style.display = 'flex';
-  if (connectionsBtn) connectionsBtn.style.display = 'flex';
-  if (actionBtn) actionBtn.style.display = 'flex';
-  if (hubBtn) hubBtn.style.display = 'flex';
-  if (adminBtn && isAdmin) adminBtn.style.display = 'flex';
+  if (connectionsBtn) connectionsBtn.style.display = 'block';
+  if (actionBtn) actionBtn.style.display = 'block';
+  if (hubBtn) hubBtn.style.display = 'block';
+  if (adminBtn && isAdmin) adminBtn.style.display = 'block';
   // Show persona switcher for admin
   const personaSwitcher = document.getElementById('admin-persona-switcher');
   if (personaSwitcher) personaSwitcher.style.display = isAdmin ? 'inline-block' : 'none';
@@ -1062,7 +1068,7 @@ function applyUser(user, isNew) {
     // Show roadmap nav for non-admin users granted access (admin sees it in admin dashboard)
     if (!isAdmin && profile && (profile.admin_tags||[]).includes('roadmap_access')) {
       const rmBtn = document.getElementById('nav-roadmap-btn');
-      if (rmBtn) rmBtn.style.display = 'flex';
+      if (rmBtn) rmBtn.style.display = 'block';
     }
     if (!profile || !profile.onboarding_complete) {
       setTimeout(() => showWizard(), 800);
@@ -1165,7 +1171,7 @@ function applyPersonaUI(profile) {
     const hasInvestorTag = (profile.admin_tags || []).includes('investor_access');
     const hasInvestorSecondary = profile.secondary_role && (profile.secondary_role === 'investor' || profile.secondary_role.includes('investor'));
     const showInvestor = key === 'investor' || hasInvestorTag || hasInvestorSecondary;
-    investorBtn.style.display = showInvestor ? 'flex' : 'none';
+    investorBtn.style.display = showInvestor ? 'block' : 'none';
   }
 
   // Rename Journey and Toolkit for non-founder personas
@@ -2461,6 +2467,130 @@ ${tabs('media',[
 // ════════════════════════════════════════════════
 // PAGE: ECOSYSTEM OVERVIEW
 // ════════════════════════════════════════════════
+let _ecoSegmentOpen = null;
+let _ecoTrendOpen = null;
+
+const ECO_SEGMENTS = [
+  { id:'precision', name:'Precision Agriculture', icon:'📐', desc:'Variable-rate application, GPS guidance',
+    marketSize:'Canada precision ag market ~CA$1.5-2B by 2027 (varies by analyst)',
+    adoption:'Guidance/auto-steer mainstream. Variable rate technology = low-to-mid teens % of farms (StatsCan, Ontario survey)',
+    techs:['Variable Rate Application','GPS/GNSS Systems','Soil Sensors','Yield Monitoring'],
+    companies:['Farmers Edge','TELUS Agriculture','Decisive Farming'],
+    challenges:['High upfront costs','Data integration complexity','ROI measurement'],
+    opportunities:['Carbon credit programs','Sustainability incentives','Insurance premium reductions']
+  },
+  { id:'automation', name:'Farm Automation', icon:'⚡', desc:'Robotic milking, autonomous machinery',
+    marketSize:'Canada market context: ~US$0.7-3.6B by 2030 (big spread)',
+    adoption:'Adoption early, ~20-30% pilot/early trials',
+    techs:['Robotic Systems','Autonomous Vehicles','Computer Vision','AI Control Systems'],
+    companies:['DOT Platform','Nexus Robotics','Prairie Robotics'],
+    challenges:['High capital requirements','Weather dependency','Maintenance complexity'],
+    opportunities:['Labor shortage solutions','Precision application','24/7 operations']
+  },
+  { id:'smart', name:'Smart Farming', icon:'🌿', desc:'Test farms, demonstration sites',
+    marketSize:'Anchor to EMILI & Olds College Smart Farm',
+    adoption:'Adoption limited by rural connectivity, integration, skills gap',
+    techs:['IoT Sensors','Machine Learning','Automated Systems','Data Analytics'],
+    companies:['EMILI Partners','Olds College Smart Farm','AgExpert'],
+    challenges:['Rural connectivity','Technology integration','Skills gap'],
+    opportunities:['Government digital agriculture incentives','Test farm partnerships','Precision livestock']
+  }
+];
+
+const ECO_TRENDS = [
+  { id:'ai-agronomy', name:'AI in Agronomy', icon:'⚡',
+    marketSize:'~CA$200-350M by 2026 (early adoption, proxy from precision ag services market)',
+    importance:'High', importanceColor:'#f59e0b', timeframe:'2024-2028',
+    players:['Microsoft Azure','Google Cloud','Climate FieldView','Croptimistic Technology Inc. (SWAT Maps)'],
+    playerNote:'Machine learning adoption for crop management, yield prediction, and resource optimization. Prairie soils and residue require local calibration. Off-the-shelf global models underperform.',
+    challenges:['Data quality & local variability','Model drift','Integration complexity','Farmer trust'],
+    opportunities:['Prescriptive recommendations','Predictive analytics','Decision support','ROI-backed insights']
+  },
+  { id:'cybersecurity', name:'Farm Cybersecurity', icon:'🔒',
+    marketSize:'No reliable Canada-only TAM. Anchor to growing spend + national standards work (EMILI, CSA Group, CSKA)',
+    importance:'Critical', importanceColor:'#ef4444', timeframe:'2025-2027',
+    players:['IBM Canada','Deloitte Canada','EMILI & agtech startups'],
+    playerNote:'Priority area with EMILI leading Canada\'s first ag cybersecurity standards and training programs. Growing spend + national standards work.',
+    challenges:['Legacy integration','Cost','Skills shortage'],
+    opportunities:['Insurance premium reductions','Compliance','Managed data-protection services']
+  },
+  { id:'carbon-smart', name:'Carbon-Smart Farming', icon:'🌱',
+    marketSize:'Canada voluntary carbon credit market USD $176M (2023), projected ~USD $1.4B by 2030 (all sectors, not just ag)',
+    importance:'Very High', importanceColor:'#ef4444', timeframe:'2024-2030',
+    players:['Nutrien','Terramera','Carbon credit platforms'],
+    playerNote:'On-farm carbon markets are growing, but MRV bottlenecks remain the key barrier. Canada\'s voluntary carbon credit market growing rapidly.',
+    challenges:['MRV (measurement, reporting, verification)','Market volatility','Uncertain rules'],
+    opportunities:['Carbon credit revenue','ESG premiums','Regulatory compliance']
+  },
+  { id:'precision-trend', name:'Precision Agriculture', icon:'📐',
+    marketSize:'Canada precision ag market ~CA$1.5-2B by 2027 (varies by analyst)',
+    importance:'Very High', importanceColor:'#ef4444', timeframe:'2024-2027',
+    players:['Farmers Edge','TELUS Agriculture','Decisive Farming'],
+    playerNote:'Canada precision ag market with nuanced adoption. Guidance/auto-steer = mainstream. Variable rate technology = low-to-mid teens % of farms.',
+    challenges:['High upfront costs','Data integration complexity','ROI measurement'],
+    opportunities:['Carbon credits','Sustainability incentives','ROI measurement tools']
+  }
+];
+
+function ecoExpandableSegments() {
+  if (_ecoSegmentOpen) {
+    const s = ECO_SEGMENTS.find(x => x.id === _ecoSegmentOpen);
+    if (!s) { _ecoSegmentOpen = null; return ecoExpandableSegments(); }
+    return '<div style="margin-bottom:4px"><button onclick="_ecoSegmentOpen=null;render(currentPage)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--text);font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:5px">← Back</button><span style="font-size:15px;font-weight:700;margin-left:10px;color:var(--text)">' + s.name + '</span></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">'
+    + '<div>'
+    + '<div style="background:rgba(245,158,11,.06);border-radius:10px;padding:16px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Market Size</div><div style="font-size:13px;font-weight:600;color:#f59e0b;line-height:1.5">' + s.marketSize + '</div></div>'
+    + '<div style="background:rgba(245,158,11,.06);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Adoption Rate</div><div style="font-size:13px;font-weight:600;color:#f59e0b;line-height:1.5">' + s.adoption + '</div></div>'
+    + '</div>'
+    + '<div>'
+    + '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Key Technologies</div><div style="display:flex;flex-wrap:wrap;gap:6px">' + s.techs.map(t => '<span style="font-size:11px;padding:4px 10px;border-radius:99px;background:var(--green);color:#fff;font-weight:600">' + t + '</span>').join('') + '</div></div>'
+    + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Leading Companies</div><div style="display:flex;flex-wrap:wrap;gap:6px">' + s.companies.map(c => '<span style="font-size:11px;padding:4px 10px;border-radius:99px;background:var(--hover);color:var(--text);font-weight:500;border:1px solid var(--border)">' + c + '</span>').join('') + '</div></div>'
+    + '</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">'
+    + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Challenges</div>' + s.challenges.map(c => '<div style="font-size:12px;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px"><span style="color:#ef4444">●</span> ' + c + '</div>').join('') + '</div>'
+    + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Opportunities</div>' + s.opportunities.map(o => '<div style="font-size:12px;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px"><span style="color:var(--green)">●</span> ' + o + '</div>').join('') + '</div>'
+    + '</div>';
+  }
+  return '<div class="grid3">' + ECO_SEGMENTS.map(s =>
+    '<div class="market-card" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="_ecoSegmentOpen=\'' + s.id + '\';render(currentPage)" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">'
+    + '<div style="font-size:28px;text-align:center;margin-bottom:8px">' + s.icon + '</div>'
+    + '<h4 style="text-align:center">' + s.name + '</h4>'
+    + '<p style="text-align:center">' + s.desc + '</p>'
+    + '<div style="text-align:center;margin-top:8px"><span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer">↗ Explore</span></div>'
+    + '</div>'
+  ).join('') + '</div>';
+}
+
+function ecoExpandableTrends() {
+  if (_ecoTrendOpen) {
+    const t = ECO_TRENDS.find(x => x.id === _ecoTrendOpen);
+    if (!t) { _ecoTrendOpen = null; return ecoExpandableTrends(); }
+    return '<div style="margin-bottom:4px"><button onclick="_ecoTrendOpen=null;render(currentPage)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--text);font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:5px">← Back</button><span style="font-size:15px;font-weight:700;margin-left:10px;color:var(--text)">' + t.name + '</span></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">'
+    + '<div>'
+    + '<div style="background:rgba(245,158,11,.06);border-radius:10px;padding:16px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Market Size</div><div style="font-size:13px;font-weight:600;color:#f59e0b;line-height:1.5">' + t.marketSize + '</div></div>'
+    + '<div style="background:rgba(245,158,11,.06);border-radius:10px;padding:16px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Importance Level</div><div style="font-size:14px;font-weight:700;color:' + t.importanceColor + '">' + t.importance + '</div></div>'
+    + '<div style="background:rgba(245,158,11,.06);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Timeframe</div><div style="font-size:14px;font-weight:700;color:#3b82f6">' + t.timeframe + '</div></div>'
+    + '</div>'
+    + '<div>'
+    + '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Key Players</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">' + t.players.map(p => '<span style="font-size:11px;padding:4px 10px;border-radius:99px;background:var(--hover);color:var(--text);font-weight:500;border:1px solid var(--border)">' + p + '</span>').join('') + '</div>'
+    + '<div style="font-size:12px;color:var(--text-muted);line-height:1.5">' + t.playerNote + '</div></div>'
+    + '</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">'
+    + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Challenges</div>' + t.challenges.map(c => '<div style="font-size:12px;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px"><span style="color:#ef4444">●</span> ' + c + '</div>').join('') + '</div>'
+    + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Opportunities</div>' + t.opportunities.map(o => '<div style="font-size:12px;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px"><span style="color:var(--green)">●</span> ' + o + '</div>').join('') + '</div>'
+    + '</div>';
+  }
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' + ECO_TRENDS.map(t =>
+    '<div class="market-card" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="_ecoTrendOpen=\'' + t.id + '\';render(currentPage)" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">'
+    + '<div style="font-size:28px;text-align:center;margin-bottom:8px">' + t.icon + '</div>'
+    + '<h4 style="text-align:center">' + t.name + '</h4>'
+    + '<p style="text-align:center;font-size:11px;color:var(--text-muted)">' + t.marketSize.substring(0, 60) + (t.marketSize.length > 60 ? '...' : '') + '</p>'
+    + '<div style="text-align:center;margin-top:8px"><span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer">↗ Explore</span></div>'
+    + '</div>'
+  ).join('') + '</div>';
+}
+
 function pgEcosystem(){return `
 <div class="page-hdr"><h1>Canadian AgTech Ecosystem Overview</h1>
 <p>A comprehensive view of Canada's agricultural technology landscape, innovations, and market dynamics.</p></div>
@@ -2481,24 +2611,14 @@ function pgEcosystem(){return `
 <div class="eco-stat"><div class="v">Smart Farms</div><div class="l">EMILI, Olds College, Glacier Farm</div></div></div>
 </div>
 <div class="card"><h3>📊 Market Dynamics &amp; Adoption</h3>
-<div class="sub">Canadian farmers are increasingly adopting advanced technologies. The Prairie provinces lead in precision agriculture adoption.</div>
-<div class="grid3">
-<div class="market-card"><h4>Precision Agriculture</h4><p>Variable-rate application, GPS guidance. Mainstream in the Prairies.</p>
-<span class="tech-tag">GPS Guidance</span><span class="tech-tag">VRT</span><span class="tech-tag">Yield Mapping</span>
-<div class="market-val">~CA$2–3B market est. by 2027 (Grand View Research)</div></div>
-<div class="market-card"><h4>Farm Automation</h4><p>Robotic milking, autonomous machinery, AI-driven operations.</p>
-<span class="tech-tag">Robotics</span><span class="tech-tag">Autonomous</span><span class="tech-tag">AI-driven</span>
-<div class="market-val">High growth — labour shortages driving adoption</div></div>
-<div class="market-card"><h4>Smart Farming</h4><p>Test farms and demonstration sites driving adoption.</p>
-<span class="tech-tag">IoT Sensors</span><span class="tech-tag">Machine Learning</span><span class="tech-tag">Data Analytics</span>
-<div style="font-size:11px;color:var(--text-faint);margin-top:7px;font-weight:600">Adoption limited by rural connectivity</div></div>
-</div></div>
+<div class="sub">Click on a segment below to explore detailed market insights and opportunities.</div>
+<div class="sub" style="margin-bottom:14px">Canadian farmers and industry are increasingly adopting advanced technologies including IoT sensors, drones, GIS mapping, and data analytics. The Prairie provinces lead in precision agriculture adoption, with smart farm initiatives demonstrating technologies at scale.</div>
+${ecoExpandableSegments()}
+</div>
 <div class="card"><h3>🔭 Trends to Watch</h3>
-<div class="trend-grid">
-<div class="trend-item"><h4>AI in Agronomy</h4><p>Rapidly emerging market. Early adoption with high growth potential in crop disease detection, yield prediction, and automated scouting.</p><span class="badge b-blue">Very High Priority</span></div>
-<div class="trend-item"><h4>Farm Cybersecurity</h4><p>Growing need for security in connected farm systems. Emerging specialist market with limited competition.</p><span class="badge b-yellow">Emerging</span></div>
-<div class="trend-item"><h4>Carbon-Smart Farming</h4><p>Canada voluntary carbon credit market with strong government incentives for regenerative practices.</p><span class="badge b-green">Policy-driven</span></div>
-</div></div>`;}
+<div class="sub" style="margin-bottom:14px">Click on a trend below to explore market insights and investment opportunities.</div>
+${ecoExpandableTrends()}
+</div>`;}
 
 // ════════════════════════════════════════════════
 // PAGE: INDUSTRY SEGMENTS
@@ -3769,15 +3889,17 @@ async function wizSave() {
   _userProfile = await syncProfileMeta(_userProfile);
   closeWizard();
   toast('🎉 Profile created! Russell will review and connect you with the right people.');
-  // Show profile nav + connections nav
+  // Show profile nav + My Tools section
   const pbtn = document.getElementById('nav-profile-btn');
   if (pbtn) pbtn.style.display = 'flex';
+  const mtsWiz = document.getElementById('sidebar-my-tools');
+  if (mtsWiz) mtsWiz.style.display = 'block';
   const cbtn = document.getElementById('nav-connections-btn');
-  if (cbtn) cbtn.style.display = 'flex';
+  if (cbtn) cbtn.style.display = 'block';
   const abtn = document.getElementById('nav-action-btn');
-  if (abtn) abtn.style.display = 'flex';
+  if (abtn) abtn.style.display = 'block';
   const hbtn = document.getElementById('nav-hub-btn');
-  if (hbtn) hbtn.style.display = 'flex';
+  if (hbtn) hbtn.style.display = 'block';
   // Apply persona-tailored UI after wizard completion
   applyPersonaUI(_userProfile);
   render(currentPage);
