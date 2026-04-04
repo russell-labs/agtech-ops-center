@@ -725,15 +725,13 @@
     <div class="region-lbl">Region-Specific Data</div>
     <select class="region-select" id="region-select" onchange="updateRegion(this.value)">
       <option value="ca">🇨🇦 Canada</option>
-      <optgroup label="── Coming Soon ──">
-        <option disabled>🇺🇸 United States</option>
-        <option disabled>🇳🇱 Netherlands</option>
-        <option disabled>🇮🇱 Israel</option>
-        <option disabled>🇧🇷 Brazil</option>
-        <option disabled>🇦🇺 Australia</option>
-        <option disabled>🇸🇬 Singapore</option>
-        <option disabled>🇪🇺 European Union</option>
-      </optgroup>
+      <option value="us">🇺🇸 United States</option>
+      <option value="nl">🇳🇱 Netherlands</option>
+      <option value="il">🇮🇱 Israel</option>
+      <option value="br">🇧🇷 Brazil</option>
+      <option value="au">🇦🇺 Australia</option>
+      <option value="sg">🇸🇬 Singapore</option>
+      <option value="eu">🇪🇺 European Union</option>
     </select>
   </div>
   <div class="sidebar-section">
@@ -741,15 +739,17 @@
     <button class="nav-item" onclick="go('segments',this)"><span class="nav-icon">📊</span> Industry Segments</button>
     <button class="nav-item" onclick="go('crops',this)"><span class="nav-icon">🌱</span> Crops</button>
     <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
+    <button id="nav-investor-btn" class="nav-item" style="display:none" onclick="go('investor',this)"><span class="nav-icon">📈</span> Investor Dashboard</button>
   </div>
   <div id="sidebar-my-tools" class="sidebar-section" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
-    <div class="section-label">My Tools</div>
+    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleMyTools()"><span>My Tools</span><span id="my-tools-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
+    <div id="my-tools-items">
     <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center</button>
     <button id="nav-hub-btn" class="nav-item" style="display:none" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
     <button id="nav-connections-btn" class="nav-item" style="display:none" onclick="go('connections',this)"><span class="nav-icon">🤝</span> My Connections</button>
-    <button id="nav-investor-btn" class="nav-item" style="display:none" onclick="go('investor',this)"><span class="nav-icon">📈</span> Investor Dashboard</button>
     <button id="nav-roadmap-btn" class="nav-item" style="display:none" onclick="go('roadmap',this)"><span class="nav-icon">🗺️</span> Product Roadmap</button>
     <button id="nav-admin-btn" class="nav-item" style="display:none" onclick="goAdmin()"><span class="nav-icon">🔐</span> Admin Panel</button>
+    </div>
   </div>
   <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
   <div class="sidebar-footer">
@@ -1155,7 +1155,7 @@ function applyPersonaUI(profile) {
   }
 
   // Show/hide nav items based on persona (skip My Tools items — they have their own visibility logic)
-  const myToolsIds = ['nav-action-btn','nav-hub-btn','nav-connections-btn','nav-investor-btn','nav-roadmap-btn','nav-admin-btn'];
+  const myToolsIds = ['nav-action-btn','nav-hub-btn','nav-connections-btn','nav-roadmap-btn','nav-admin-btn'];
   const allNavBtns = document.querySelectorAll('.sidebar-section .nav-item');
   allNavBtns.forEach(btn => {
     if (btn.id && myToolsIds.includes(btn.id)) return; // skip My Tools items
@@ -1172,7 +1172,7 @@ function applyPersonaUI(profile) {
   if (investorBtn) {
     const hasInvestorTag = (profile.admin_tags || []).includes('investor_access');
     const hasInvestorSecondary = profile.secondary_role && (profile.secondary_role === 'investor' || profile.secondary_role.includes('investor'));
-    const showInvestor = key === 'investor' || hasInvestorTag || hasInvestorSecondary;
+    const showInvestor = key === 'investor' || key === 'advisor' || hasInvestorTag || hasInvestorSecondary;
     investorBtn.style.display = showInvestor ? 'block' : 'none';
   }
 
@@ -1679,6 +1679,15 @@ function closeSidebar(){
   sb.classList.remove('mobile-open');
   if(ov) ov.classList.remove('show');
 }
+let _myToolsOpen = true;
+function toggleMyTools() {
+  _myToolsOpen = !_myToolsOpen;
+  const items = document.getElementById('my-tools-items');
+  const arrow = document.getElementById('my-tools-arrow');
+  if (items) items.style.display = _myToolsOpen ? '' : 'none';
+  if (arrow) arrow.style.transform = _myToolsOpen ? '' : 'rotate(-90deg)';
+}
+
 function toggleSidebar(){
   if(window.innerWidth <= 700){
     const sb = document.getElementById('sidebar');
@@ -1761,12 +1770,11 @@ function go(page, btn){
   render(page);
   document.getElementById('page').scrollTop = 0;
 }
+let _currentRegion = 'ca';
 function updateRegion(v){
-  if(v !== 'ca'){
-    document.getElementById('region-select').value = 'ca';
-    toast('🇨🇦 Other regions coming soon — Canada data is live now');
-    return;
-  }
+  _currentRegion = v;
+  _ecoSegmentOpen = null;
+  _ecoTrendOpen = null;
   render(currentPage);
 }
 
@@ -2472,71 +2480,191 @@ ${tabs('media',[
 let _ecoSegmentOpen = null;
 let _ecoTrendOpen = null;
 
-const ECO_SEGMENTS = [
-  { id:'precision', name:'Precision Agriculture', icon:'📐', desc:'Variable-rate application, GPS guidance',
-    marketSize:'Canada precision ag market ~CA$1.5-2B by 2027 (varies by analyst)',
-    adoption:'Guidance/auto-steer mainstream. Variable rate technology = low-to-mid teens % of farms (StatsCan, Ontario survey)',
-    techs:['Variable Rate Application','GPS/GNSS Systems','Soil Sensors','Yield Monitoring'],
-    companies:['Farmers Edge','TELUS Agriculture','Decisive Farming'],
-    challenges:['High upfront costs','Data integration complexity','ROI measurement'],
-    opportunities:['Carbon credit programs','Sustainability incentives','Insurance premium reductions']
-  },
-  { id:'automation', name:'Farm Automation', icon:'⚡', desc:'Robotic milking, autonomous machinery',
-    marketSize:'Canada market context: ~US$0.7-3.6B by 2030 (big spread)',
-    adoption:'Adoption early, ~20-30% pilot/early trials',
-    techs:['Robotic Systems','Autonomous Vehicles','Computer Vision','AI Control Systems'],
-    companies:['DOT Platform','Nexus Robotics','Prairie Robotics'],
-    challenges:['High capital requirements','Weather dependency','Maintenance complexity'],
-    opportunities:['Labor shortage solutions','Precision application','24/7 operations']
-  },
-  { id:'smart', name:'Smart Farming', icon:'🌿', desc:'Test farms, demonstration sites',
-    marketSize:'Anchor to EMILI & Olds College Smart Farm',
-    adoption:'Adoption limited by rural connectivity, integration, skills gap',
-    techs:['IoT Sensors','Machine Learning','Automated Systems','Data Analytics'],
-    companies:['EMILI Partners','Olds College Smart Farm','AgExpert'],
-    challenges:['Rural connectivity','Technology integration','Skills gap'],
-    opportunities:['Government digital agriculture incentives','Test farm partnerships','Precision livestock']
-  }
-];
-
-const ECO_TRENDS = [
-  { id:'ai-agronomy', name:'AI in Agronomy', icon:'⚡',
-    marketSize:'~CA$200-350M by 2026 (early adoption, proxy from precision ag services market)',
-    importance:'High', importanceColor:'#f59e0b', timeframe:'2024-2028',
-    players:['Microsoft Azure','Google Cloud','Climate FieldView','Croptimistic Technology Inc. (SWAT Maps)'],
-    playerNote:'Machine learning adoption for crop management, yield prediction, and resource optimization. Prairie soils and residue require local calibration. Off-the-shelf global models underperform.',
-    challenges:['Data quality & local variability','Model drift','Integration complexity','Farmer trust'],
-    opportunities:['Prescriptive recommendations','Predictive analytics','Decision support','ROI-backed insights']
-  },
-  { id:'cybersecurity', name:'Farm Cybersecurity', icon:'🔒',
-    marketSize:'No reliable Canada-only TAM. Anchor to growing spend + national standards work (EMILI, CSA Group, CSKA)',
-    importance:'Critical', importanceColor:'#ef4444', timeframe:'2025-2027',
-    players:['IBM Canada','Deloitte Canada','EMILI & agtech startups'],
-    playerNote:'Priority area with EMILI leading Canada\'s first ag cybersecurity standards and training programs. Growing spend + national standards work.',
-    challenges:['Legacy integration','Cost','Skills shortage'],
-    opportunities:['Insurance premium reductions','Compliance','Managed data-protection services']
-  },
-  { id:'carbon-smart', name:'Carbon-Smart Farming', icon:'🌱',
-    marketSize:'Canada voluntary carbon credit market USD $176M (2023), projected ~USD $1.4B by 2030 (all sectors, not just ag)',
-    importance:'Very High', importanceColor:'#ef4444', timeframe:'2024-2030',
-    players:['Nutrien','Terramera','Carbon credit platforms'],
-    playerNote:'On-farm carbon markets are growing, but MRV bottlenecks remain the key barrier. Canada\'s voluntary carbon credit market growing rapidly.',
-    challenges:['MRV (measurement, reporting, verification)','Market volatility','Uncertain rules'],
-    opportunities:['Carbon credit revenue','ESG premiums','Regulatory compliance']
-  },
-  { id:'precision-trend', name:'Precision Agriculture', icon:'📐',
-    marketSize:'Canada precision ag market ~CA$1.5-2B by 2027 (varies by analyst)',
-    importance:'Very High', importanceColor:'#ef4444', timeframe:'2024-2027',
-    players:['Farmers Edge','TELUS Agriculture','Decisive Farming'],
-    playerNote:'Canada precision ag market with nuanced adoption. Guidance/auto-steer = mainstream. Variable rate technology = low-to-mid teens % of farms.',
-    challenges:['High upfront costs','Data integration complexity','ROI measurement'],
-    opportunities:['Carbon credits','Sustainability incentives','ROI measurement tools']
-  }
-];
+const REGION_DATA = {
+ca: {
+  flag:'🇨🇦', name:'Canadian', country:'Canada',
+  desc:'A comprehensive view of Canada\'s agricultural technology landscape, innovations, and market dynamics.',
+  overview:[
+    {title:'National Agriculture Context', stats:[{v:'~65-70M acres',l:'Field crop acres (StatsCan, 2024-25)'},{v:'~190,000 farms',l:'Active commercial farming operations'},{v:'$100B+ CAD',l:'Agri-food exports (2024-25, record year)'},{v:'107M tonnes',l:'Record grain & oilseed production (2024-25)'}],
+     sources:'<a href="https://agriculture.canada.ca/en/sector/overview" target="_blank">AAFC Sector Overview</a> · <a href="https://www150.statcan.gc.ca/n1/pub/95-640-x/2016001/p1/p1-01-eng.htm" target="_blank">Statistics Canada</a>'},
+    {title:'Public Support Ecosystem', stats:[{v:'~30% public funding share',l:'Higher than US or UK markets'}], tags:['Sustainable CAP','PIC Supercluster','CFIN Network','AgriInnovate']},
+    {title:'AgTech Strengths', stats:[{v:'Grain & Oilseeds',l:'World-class precision ag adoption'},{v:'Canola',l:'Global biotech & crop science leader'},{v:'Smart Farms',l:'EMILI, Olds College, Glacier Farm'}]}
+  ],
+  marketIntro:'Canadian farmers and industry are increasingly adopting advanced technologies including IoT sensors, drones, GIS mapping, and data analytics. The Prairie provinces lead in precision agriculture adoption, with smart farm initiatives demonstrating technologies at scale.',
+  segments:[
+    {id:'precision',name:'Precision Agriculture',icon:'📐',desc:'Variable-rate application, GPS guidance',marketSize:'~CA$1.5-2B by 2027 (varies by analyst)',adoption:'Guidance/auto-steer mainstream. Variable rate technology in low-to-mid teens % of farms.',techs:['Variable Rate Application','GPS/GNSS Systems','Soil Sensors','Yield Monitoring'],companies:['Farmers Edge','TELUS Agriculture','Decisive Farming'],challenges:['High upfront costs','Data integration complexity','ROI measurement'],opportunities:['Carbon credit programs','Sustainability incentives','Insurance premium reductions']},
+    {id:'automation',name:'Farm Automation',icon:'⚡',desc:'Robotic milking, autonomous machinery',marketSize:'~US$0.7-3.6B by 2030 (wide range across analysts)',adoption:'Early stage, ~20-30% pilot/early trials',techs:['Robotic Systems','Autonomous Vehicles','Computer Vision','AI Control Systems'],companies:['DOT Platform','Nexus Robotics','Prairie Robotics'],challenges:['High capital requirements','Weather dependency','Maintenance complexity'],opportunities:['Labor shortage solutions','Precision application','24/7 operations']},
+    {id:'smart',name:'Smart Farming',icon:'🌿',desc:'Test farms, demonstration sites',marketSize:'Anchored to EMILI & Olds College Smart Farm initiatives',adoption:'Limited by rural connectivity, integration, and skills gap',techs:['IoT Sensors','Machine Learning','Automated Systems','Data Analytics'],companies:['EMILI Partners','Olds College Smart Farm','AgExpert'],challenges:['Rural connectivity','Technology integration','Skills gap'],opportunities:['Government digital agriculture incentives','Test farm partnerships','Precision livestock']}
+  ],
+  trends:[
+    {id:'ai-agronomy',name:'AI in Agronomy',icon:'🤖',marketSize:'~CA$200-350M by 2026 (proxy from precision ag services)',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2028',players:['Microsoft Azure','Google Cloud','Climate FieldView','Croptimistic (SWAT Maps)'],playerNote:'Machine learning adoption for crop management and yield prediction. Prairie soils require local calibration.',challenges:['Data quality','Model drift','Integration complexity','Farmer trust'],opportunities:['Prescriptive recommendations','Predictive analytics','Decision support']},
+    {id:'cybersecurity',name:'Farm Cybersecurity',icon:'🔒',marketSize:'Growing spend + national standards work (EMILI, CSA Group)',importance:'Critical',importanceColor:'#ef4444',timeframe:'2025-2027',players:['IBM Canada','Deloitte Canada','EMILI'],playerNote:'EMILI leading Canada\'s first ag cybersecurity standards and training programs.',challenges:['Legacy integration','Cost','Skills shortage'],opportunities:['Insurance premium reductions','Compliance','Managed data services']},
+    {id:'carbon-smart',name:'Carbon-Smart Farming',icon:'🌱',marketSize:'Canada voluntary carbon credit market ~USD $176M (2023), projected ~$1.4B by 2030',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2030',players:['Nutrien','Terramera','Carbon credit platforms'],playerNote:'On-farm carbon markets growing, but MRV bottlenecks remain the key barrier.',challenges:['MRV complexity','Market volatility','Uncertain rules'],opportunities:['Carbon credit revenue','ESG premiums','Regulatory compliance']},
+    {id:'precision-trend',name:'Precision Agriculture',icon:'📐',marketSize:'~CA$1.5-2B by 2027',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2027',players:['Farmers Edge','TELUS Agriculture','Decisive Farming'],playerNote:'Guidance/auto-steer is mainstream. Variable rate technology in low-to-mid teens % of farms.',challenges:['High upfront costs','Data integration','ROI measurement'],opportunities:['Carbon credits','Sustainability incentives','ROI measurement tools']}
+  ]
+},
+us: {
+  flag:'🇺🇸', name:'United States', country:'United States',
+  desc:'The world\'s largest AgTech market. Deep venture capital, massive scale farming, and rapid technology adoption across diverse agricultural zones.',
+  overview:[
+    {title:'National Agriculture Context', stats:[{v:'895M acres',l:'Total farmland (USDA, 2024)'},{v:'~2M farms',l:'Active farming operations'},{v:'$200B+',l:'Agricultural exports (2024)'},{v:'#1 globally',l:'Corn, soybean, and poultry production'}],
+     sources:'<a href="https://www.usda.gov" target="_blank">USDA</a> · <a href="https://www.nass.usda.gov" target="_blank">NASS</a>'},
+    {title:'AgTech Investment', stats:[{v:'$4.6B+',l:'AgTech VC investment (2023)'},{v:'~2,800 startups',l:'Active AgTech companies'}], tags:['USDA SBIR','Ag Innovation Challenge','Farm Bill Programs','ARPA-E']},
+    {title:'AgTech Strengths', stats:[{v:'Precision Ag',l:'Highest adoption rates globally'},{v:'Biotech',l:'World leader in crop genetics and traits'},{v:'AgFinTech',l:'Farm credit, insurance tech, commodity platforms'}]}
+  ],
+  marketIntro:'The US is the global leader in AgTech investment and adoption. Silicon Valley, the Midwest, and Research Triangle drive innovation across precision agriculture, biotech, farm management, and supply chain technology.',
+  segments:[
+    {id:'precision',name:'Precision Agriculture',icon:'📐',desc:'GPS guidance, variable-rate, remote sensing',marketSize:'~US$7-9B by 2027 (Grand View Research)',adoption:'GPS guidance >80% in Midwest row crops. Variable rate ~35-40%.',techs:['GPS/RTK Guidance','Remote Sensing','Variable Rate Tech','Drone Imagery'],companies:['John Deere','Trimble','Climate Corp (Bayer)','Raven Industries'],challenges:['Data silos','Interoperability','Broadband access in rural areas'],opportunities:['AI-driven prescriptions','Insurance integration','Carbon market programs']},
+    {id:'biotech',name:'Agricultural Biotech',icon:'🧬',desc:'Gene editing, biologicals, seed tech',marketSize:'~US$45B+ (seeds & traits market, BCC Research)',adoption:'GM crops >90% for corn, soy, cotton in the US.',techs:['CRISPR Gene Editing','Biologicals','RNA Interference','Microbiome'],companies:['Bayer Crop Science','Corteva','Pivot Bio','Indigo Ag'],challenges:['Regulatory timelines','Consumer perception','IP complexity'],opportunities:['Climate-resilient varieties','Biological crop protection','Reduced chemical inputs']},
+    {id:'farm-mgmt',name:'Farm Management Software',icon:'💻',desc:'ERP, accounting, planning, analytics',marketSize:'~US$2.5-4B by 2028 (Markets & Markets)',adoption:'Growing rapidly, ~40-50% among large-scale operations.',techs:['Cloud Platforms','AI Analytics','IoT Integration','Mobile Apps'],companies:['Bushel','Granular (Corteva)','FarmLogs','AgWorld'],challenges:['Fragmented market','Adoption among small farms','Data privacy'],opportunities:['Consolidation','Vertical integration','Predictive decision tools']}
+  ],
+  trends:[
+    {id:'ai-agriculture',name:'AI & Machine Learning',icon:'🤖',marketSize:'US ag AI market ~$2.5B by 2028 (MarketsandMarkets)',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2028',players:['John Deere (Blue River)','Prospera','Taranis','aWhere'],playerNote:'Computer vision for weed detection, yield prediction, and autonomous equipment rapidly scaling.',challenges:['Data quality','Model generalization','Farmer adoption'],opportunities:['See & Spray tech','Autonomous operations','Yield optimization']},
+    {id:'alt-protein',name:'Alternative Proteins',icon:'🥩',marketSize:'~US$1.4B plant-based meat (2023), declining from peak',importance:'Moderate',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['Beyond Meat','Impossible Foods','Upside Foods','Good Meat'],playerNote:'Plant-based growth slowing. Cultivated meat gaining regulatory approvals but scale is the bottleneck.',challenges:['Consumer fatigue','Cost parity','Regulatory','Scale-up'],opportunities:['Cultivated meat approvals','Fermentation-derived proteins','Hybrid products']},
+    {id:'regen-ag',name:'Regenerative Agriculture',icon:'🌾',marketSize:'US carbon credit market growing. >50M acres in regen programs',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['Indigo Ag','Nori','Land O\'Lakes Sustain','General Mills'],playerNote:'Major CPGs driving adoption through supply chain commitments. MRV and verification remain challenges.',challenges:['Measurement standards','Farmer incentive alignment','Long payback periods'],opportunities:['Premium pricing','Carbon markets','ESG supply chain requirements']},
+    {id:'drone-tech',name:'Agricultural Drones',icon:'🚁',marketSize:'~US$5.7B by 2030 (Fortune Business Insights)',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2027',players:['DJI Agriculture','Rantizo','Hylio','PrecisionHawk'],playerNote:'Spray drones gaining FAA approvals. Imaging drones mainstream. Autonomous swarm operations emerging.',challenges:['FAA regulations','Battery life','Payload limits'],opportunities:['Spray applications','Crop monitoring','Livestock management']}
+  ]
+},
+nl: {
+  flag:'🇳🇱', name:'Dutch', country:'Netherlands',
+  desc:'The Netherlands punches far above its weight as the world\'s #2 agricultural exporter from a tiny land area, driven by innovation in greenhouse tech, precision horticulture, and food processing.',
+  overview:[
+    {title:'National Agriculture Context', stats:[{v:'1.8M hectares',l:'Agricultural land (CBS, 2024)'},{v:'~52,000 farms',l:'Active farming operations'},{v:'EUR 124B',l:'Agri-food exports (2024, #2 globally)'},{v:'#1 in Europe',l:'Greenhouse horticulture and flower exports'}],
+     sources:'<a href="https://www.cbs.nl" target="_blank">CBS Statistics</a> · <a href="https://www.wur.nl" target="_blank">Wageningen University</a>'},
+    {title:'Innovation Ecosystem', stats:[{v:'Wageningen UR',l:'#1 ranked agricultural university globally'},{v:'Food Valley',l:'Europe\'s largest agri-food innovation cluster'}], tags:['StartLife','Food Valley NL','Rabobank FoodBytes','TKI Agri & Food']},
+    {title:'AgTech Strengths', stats:[{v:'Greenhouse Tech',l:'Global leader in controlled environment agriculture'},{v:'Precision Dairy',l:'Robotic milking pioneer (Lely, DeLaval)'},{v:'Seed & Breeding',l:'Major global seed companies headquartered here'}]}
+  ],
+  marketIntro:'The Netherlands is a global AgTech powerhouse. Wageningen University anchors a dense ecosystem of startups, multinationals, and research institutes. The country leads in greenhouse technology, precision dairy, and agricultural robotics.',
+  segments:[
+    {id:'greenhouse',name:'Greenhouse Technology',icon:'🏠',desc:'Climate control, LED lighting, automation',marketSize:'Dutch greenhouse tech exports ~EUR 8B+ annually',adoption:'Near 100% in commercial greenhouse operations.',techs:['Climate Control Systems','LED Grow Lights','Automated Harvesting','Water Recycling'],companies:['Priva','Ridder','Signify (Philips)','Certhon'],challenges:['Energy costs','Labor availability','Export competition'],opportunities:['Vertical farming export','Energy-neutral greenhouses','Tropical climate adaptations']},
+    {id:'dairy-tech',name:'Precision Dairy',icon:'🐄',desc:'Robotic milking, health monitoring',marketSize:'Netherlands is global hub. Lely alone >40,000 robots worldwide.',adoption:'~30% of Dutch dairy farms use robotic milking.',techs:['Robotic Milking','Health Sensors','Feed Optimization','Methane Monitoring'],companies:['Lely','DeLaval','Nedap','Connecterra'],challenges:['High initial investment','Data standardization','Methane regulation'],opportunities:['Methane reduction tech','Precision feeding','Export to emerging markets']},
+    {id:'agri-food',name:'AgriFood Processing',icon:'🏭',desc:'Food tech, processing, quality control',marketSize:'Netherlands food processing sector EUR 75B+ revenue',adoption:'High automation levels across food industry.',techs:['Computer Vision QC','Robotics','Traceability Systems','AI Sorting'],companies:['Marel','JBT','Tomra','Key Technology'],challenges:['Sustainability regulations','Waste reduction targets','Labor scarcity'],opportunities:['Plant-based processing','Circular food systems','AI quality control']}
+  ],
+  trends:[
+    {id:'vertical-farming',name:'Vertical Farming',icon:'🌱',marketSize:'Netherlands vertical farming market growing >30% CAGR',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2028',players:['Infarm','Plantlab','GrowX','Future Crops'],playerNote:'Dutch vertical farming companies expanding globally. Amsterdam becoming a hub for indoor ag investment.',challenges:['Energy costs','Unit economics','Crop variety limits'],opportunities:['Export technology','Urban food production','Leafy greens at scale']},
+    {id:'protein-transition',name:'Protein Transition',icon:'🥬',marketSize:'Dutch alt-protein sector EUR 1B+ (2024)',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['Meatable','The Vegetarian Butcher (Unilever)','Mosa Meat','Vivera'],playerNote:'Netherlands is Europe\'s alt-protein hub. Regulatory environment supportive. Cultivated meat pioneer Mosa Meat headquartered here.',challenges:['Scale-up costs','Consumer acceptance','Regulatory uncertainty on novel foods'],opportunities:['Cultivated meat','Fermentation platforms','Insect protein']},
+    {id:'nitrogen-crisis',name:'Nitrogen & Sustainability',icon:'♻️',marketSize:'Multi-billion EUR farm transition programs',importance:'Critical',importanceColor:'#ef4444',timeframe:'2024-2030',players:['Government programs','Rabobank','Wageningen UR'],playerNote:'The Dutch nitrogen crisis is forcing major farm transitions. Technology solutions for emission reduction are urgently needed.',challenges:['Farm closures','Political volatility','Measurement complexity'],opportunities:['Emission reduction tech','Circular farming','Precision fertilization']},
+    {id:'agri-robotics',name:'Agricultural Robotics',icon:'🤖',marketSize:'Netherlands among top 3 in EU for agri-robotics',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2027',players:['Lely','Naio Technologies','Agrobot','Cerescon'],playerNote:'From dairy robots to autonomous weeders, the Netherlands leads Europe in agricultural robotics development and deployment.',challenges:['Regulatory frameworks','Field variability','Cost for small farms'],opportunities:['Labor replacement','Precision weeding','Harvest automation']}
+  ]
+},
+il: {
+  flag:'🇮🇱', name:'Israeli', country:'Israel',
+  desc:'Israel\'s water scarcity and small land area drove it to become a global AgTech innovation leader, especially in irrigation, desert agriculture, and agricultural AI.',
+  overview:[
+    {title:'National Agriculture Context', stats:[{v:'~440,000 hectares',l:'Cultivated agricultural land'},{v:'~70,000 workers',l:'In agriculture sector'},{v:'$2.6B',l:'Agricultural production (2023)'},{v:'>60%',l:'Of land is desert (Negev)'}],
+     sources:'<a href="https://www.gov.il/en/departments/ministry_of_agriculture" target="_blank">Ministry of Agriculture</a>'},
+    {title:'Innovation Ecosystem', stats:[{v:'500+ AgTech startups',l:'Active companies (Start-Up Nation Central)'},{v:'$1.5B+',l:'AgTech investments (cumulative, recent years)'}], tags:['Israel Innovation Authority','Trendlines Group','Fresh Start','AgriNation']},
+    {title:'AgTech Strengths', stats:[{v:'Drip Irrigation',l:'Invented in Israel. Global standard.'},{v:'Desert Ag',l:'Pioneering arid-zone farming techniques'},{v:'AgTech AI',l:'Computer vision, robotics, crop analytics'}]}
+  ],
+  marketIntro:'Israel\'s challenging geography and climate drove necessity-based innovation that now exports globally. The country is a powerhouse in water tech, precision irrigation, crop protection, and agricultural AI. Over 500 AgTech startups operate in this small but dense ecosystem.',
+  segments:[
+    {id:'irrigation',name:'Water & Irrigation Tech',icon:'💧',desc:'Drip irrigation, water management, desalination',marketSize:'Israeli irrigation tech companies >$2B global revenue',adoption:'Near-universal adoption in Israeli agriculture. Global export leader.',techs:['Drip Irrigation','Soil Moisture Sensors','AI Water Management','Desalination'],companies:['Netafim','Rivulis','Manna Irrigation','SupPlant'],challenges:['Climate change impacts','Aging infrastructure','Competition from China'],opportunities:['Smart irrigation export','Water-scarce markets','Climate adaptation']},
+    {id:'crop-protection',name:'Crop Protection & Biotech',icon:'🛡️',desc:'Biopesticides, seed treatment, crop analytics',marketSize:'Israeli agbiotech exports ~$800M+ annually',adoption:'Strong R&D pipeline, global licensing model.',techs:['Biopesticides','Pheromone Traps','RNA-based Solutions','Microbiome'],companies:['Adama','STK Bio-ag','Lavie Bio','Groundwork BioAg'],challenges:['Regulatory timelines','Field trial locations','Scale-up'],opportunities:['Biological shift','Sustainable crop protection','Developing market access']},
+    {id:'agri-ai',name:'Agricultural AI & Robotics',icon:'🤖',desc:'Computer vision, autonomous systems, analytics',marketSize:'Israel AgTech AI companies raised $400M+ in 2023',adoption:'Primarily export-oriented. Global deployment.',techs:['Computer Vision','Drone Analytics','Robotic Harvesting','Predictive Models'],companies:['Taranis','Tevel','CropX','Phytech'],challenges:['Domestic market size','Talent competition from cybersecurity/fintech','Long sales cycles'],opportunities:['US/EU market access','Climate adaptation solutions','Global food security']}
+  ],
+  trends:[
+    {id:'food-security',name:'Food Security Tech',icon:'🌍',marketSize:'Global food security tech $12B+ by 2028',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2030',players:['Netafim','SupPlant','Taranis','SeeTree'],playerNote:'Israeli tech addressing global food security challenges, especially in water-scarce regions of Africa, Asia, and Middle East.',challenges:['Affordability','Infrastructure in target markets','Political complexity'],opportunities:['Development aid partnerships','Climate adaptation','South-South cooperation']},
+    {id:'indoor-ag',name:'Indoor & Urban Agriculture',icon:'🏢',marketSize:'Israeli indoor ag companies raised $200M+ recently',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2028',players:['Vertical Field','GreenWall','Flux','AutoAgronom'],playerNote:'Urban farming solutions leveraging Israel\'s greenhouse and controlled environment expertise.',challenges:['Energy costs','Scale economics','Crop variety limits'],opportunities:['Gulf state markets','Urban food resilience','Hotel/restaurant supply']},
+    {id:'alt-protein-il',name:'Alternative Proteins',icon:'🥩',marketSize:'Israel is #3 globally in alt-protein investment',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['Aleph Farms','Remilk','Redefine Meat','InnovoPro'],playerNote:'Israel is a global hub for cultivated meat and precision fermentation. Government actively supporting the sector.',challenges:['Regulatory approval globally','Production costs','Consumer acceptance'],opportunities:['Cultivated meat export','Dairy alternatives','B2B ingredient supply']},
+    {id:'agri-fintech',name:'AgriFinTech',icon:'💳',marketSize:'Emerging sector with several Israeli startups',importance:'Moderate',importanceColor:'#f59e0b',timeframe:'2025-2028',players:['AgriTask','Agritask','Taranis (data layer)'],playerNote:'Agricultural financial technology emerging as data-rich farming creates new insurance, credit, and commodity trading models.',challenges:['Market fragmentation','Farmer data privacy','Regulatory differences'],opportunities:['Parametric insurance','Commodity platforms','Supply chain financing']}
+  ]
+},
+br: {
+  flag:'🇧🇷', name:'Brazilian', country:'Brazil',
+  desc:'Brazil is an agricultural superpower and the world\'s largest tropical farming economy. Massive scale, diverse crops, and rapid technology adoption drive a booming AgTech sector.',
+  overview:[
+    {title:'National Agriculture Context', stats:[{v:'~65M hectares',l:'Cropland (IBGE, 2024)'},{v:'~5M farms',l:'Agricultural establishments'},{v:'$100B+ USD',l:'Agri-food exports (2024, record)'},{v:'#1 globally',l:'Soybeans, coffee, sugar, orange juice'}],
+     sources:'<a href="https://www.ibge.gov.br" target="_blank">IBGE</a> · <a href="https://www.embrapa.br" target="_blank">Embrapa</a>'},
+    {title:'AgTech Ecosystem', stats:[{v:'1,800+ startups',l:'Active AgTechs (ABStartups/Embrapa)'},{v:'$200M+',l:'AgTech VC investment (2023)'}], tags:['Embrapa','AgTech Garage','SP Ventures','BNDES']},
+    {title:'AgTech Strengths', stats:[{v:'Tropical Ag',l:'Unmatched expertise in tropical farming systems'},{v:'Cerrado Expansion',l:'Converting savanna to productive farmland'},{v:'Digital Platforms',l:'Solinftec, Aegro, InCeres leading'}]}
+  ],
+  marketIntro:'Brazil\'s AgTech sector has exploded, driven by the scale of operations, tropical crop diversity, and strong venture funding. Sao Paulo\'s "AgTech Valley" (Piracicaba region) anchors the ecosystem, with close ties to Embrapa research.',
+  segments:[
+    {id:'farm-mgmt-br',name:'Farm Management Platforms',icon:'💻',desc:'Digital ERP, field mapping, crop planning',marketSize:'~R$2-4B by 2027 (Brazil AgTech report)',adoption:'~25-30% among large operations. Low among smallholders.',techs:['Cloud Platforms','Satellite Imagery','Field Mapping','Financial Integration'],companies:['Solinftec','Aegro','InCeres','Agrosmart'],challenges:['Connectivity in rural areas','Smallholder adoption','Fragmented market'],opportunities:['Consolidation','Integrated platforms','Credit-linked solutions']},
+    {id:'precision-br',name:'Precision Agriculture',icon:'📐',desc:'Variable rate, GPS guidance, drone spraying',marketSize:'Brazil precision ag ~US$2B by 2027',adoption:'GPS guidance widespread in soy/corn. VRT growing rapidly.',techs:['GPS Auto-Steer','Drone Spraying','Variable Rate','Remote Sensing'],companies:['Jacto','Stara','Solinftec','Horus Aeronaves'],challenges:['Farm size variability','Infrastructure gaps','Cost for medium farms'],opportunities:['Drone spraying at scale','Tropical crop prescriptions','Double-crop optimization']},
+    {id:'biotech-br',name:'Tropical Biotech',icon:'🧬',desc:'Bioinputs, tropical seed tech, biologicals',marketSize:'Brazil bioinputs market >$3B (2024), growing 15%+ YoY',adoption:'Bioinputs used on >50% of soybean area.',techs:['Biological Nitrogen Fixation','Biopesticides','Seed Treatment','Inoculants'],companies:['Vittia','Koppert','Biome Makers','Total Biotecnologia'],challenges:['Quality standards','Distribution logistics','Climate variability'],opportunities:['Bioinput boom','Carbon farming','Regenerative systems']}
+  ],
+  trends:[
+    {id:'drone-spray',name:'Agricultural Drones',icon:'🚁',marketSize:'Brazil is the largest drone spraying market globally',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2027',players:['DJI Agriculture','Jacto','Horus','XAG'],playerNote:'Brazil approved commercial drone spraying. Market growing >50% YoY. Ideal for large-scale soy, corn, and coffee operations.',challenges:['Regulation still evolving','Battery/payload limits','Operator training'],opportunities:['Spray services model','Imaging + application','Integration with farm platforms']},
+    {id:'traceability-br',name:'Supply Chain Traceability',icon:'📦',marketSize:'Driven by EU deforestation regulation compliance',importance:'Critical',importanceColor:'#ef4444',timeframe:'2024-2028',players:['Agrotools','Visipec','Bayer ForwardFarming'],playerNote:'EU EUDR regulation forcing Brazilian exporters to prove deforestation-free supply chains. Creating massive demand for traceability tech.',challenges:['Smallholder inclusion','Data reliability','Cost of compliance'],opportunities:['EUDR compliance platforms','Blockchain traceability','Satellite monitoring']},
+    {id:'carbon-br',name:'Carbon & Regenerative Ag',icon:'🌱',marketSize:'Brazil has massive carbon farming potential on 65M+ hectares',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['Bcarbon','Moss','Re.green','CARGILL regen programs'],playerNote:'Brazil\'s tropical soils have high carbon sequestration potential. Major commodity buyers driving regenerative practices.',challenges:['MRV in tropical systems','Land tenure complexity','Permanence risk'],opportunities:['Carbon credit export','Regenerative premiums','Integrated crop-livestock-forestry']},
+    {id:'connectivity-br',name:'Rural Connectivity',icon:'📡',marketSize:'Brazil rural connectivity gap is a multi-billion R$ opportunity',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2027',players:['ConectarAGRO','Ativa','Starlink Brazil'],playerNote:'Rural connectivity is the biggest bottleneck for AgTech adoption in Brazil. Industry consortiums and satellite internet are closing the gap.',challenges:['Infrastructure cost','Vast distances','Terrain challenges'],opportunities:['IoT enablement','Real-time monitoring','Farm-to-market platforms']}
+  ]
+},
+au: {
+  flag:'🇦🇺', name:'Australian', country:'Australia',
+  desc:'Australia\'s vast, arid landscape and export-oriented agriculture drive innovation in water management, livestock tech, and remote sensing across enormous farm operations.',
+  overview:[
+    {title:'National Agriculture Context', stats:[{v:'~385M hectares',l:'Agricultural land (ABS, 2024)'},{v:'~85,000 farms',l:'Active farm businesses'},{v:'A$80B+',l:'Agricultural production (2024)'},{v:'#1 globally',l:'Wool, and major beef, wheat exporter'}],
+     sources:'<a href="https://www.abs.gov.au" target="_blank">ABS</a> · <a href="https://www.agriculture.gov.au" target="_blank">DAFF</a>'},
+    {title:'Innovation Ecosystem', stats:[{v:'400+ AgTech startups',l:'Active companies (AgriFutures)'},{v:'A$200M+',l:'AgTech investment (annual)'}], tags:['AgriFutures','GRDC','Sprout X','MLA Donor Company']},
+    {title:'AgTech Strengths', stats:[{v:'Remote Sensing',l:'Satellite and drone tech for vast properties'},{v:'Livestock Tech',l:'GPS tracking, virtual fencing, genetics'},{v:'Water Management',l:'Drought-resilient farming innovations'}]}
+  ],
+  marketIntro:'Australian agriculture operates at extreme scales in challenging environments. This drives innovation in remote monitoring, livestock management, water efficiency, and autonomous systems. Strong research institutions and government co-investment programs support the ecosystem.',
+  segments:[
+    {id:'livestock-au',name:'Livestock Technology',icon:'🐄',desc:'GPS tracking, virtual fencing, genetics',marketSize:'~A$1.5B+ livestock tech market by 2027',adoption:'Virtual fencing in trials. GPS ear tags growing rapidly.',techs:['Virtual Fencing','GPS Ear Tags','Genomic Selection','Automated Drafting'],companies:['Agersens (eShepherd)','Ceres Tag','Datamars','Gallagher'],challenges:['Connectivity on vast stations','Battery life','Animal welfare perception'],opportunities:['Autonomous herding','Methane monitoring','Provenance tracking']},
+    {id:'water-au',name:'Water & Drought Tech',icon:'💧',desc:'Irrigation efficiency, soil moisture, water trading',marketSize:'A$1B+ water management tech sector',adoption:'Precision irrigation growing. Soil moisture sensors mainstream in irrigated areas.',techs:['Soil Moisture Probes','Satellite ET Mapping','Automated Irrigation','Water Trading Platforms'],companies:['Goanna Ag','Manna Irrigation','Rubicon Water','WaterFind'],challenges:['Water allocation politics','Drought frequency','Infrastructure age'],opportunities:['Water-use efficiency','Desalination for ag','Climate-adaptive systems']},
+    {id:'remote-sensing-au',name:'Remote Sensing & Analytics',icon:'🛰️',desc:'Satellite imagery, drones, AI analytics',marketSize:'Australia remote sensing ag market ~A$500M+',adoption:'Satellite-based monitoring becoming standard for broadacre.',techs:['Satellite Multispectral','LiDAR','Drone Mapping','AI Crop Analytics'],companies:['FluroSat (now Regrow)','The Yield','DataFarming','Agtrix'],challenges:['Cloud cover in tropical regions','Ground truthing','Data overload'],opportunities:['Yield prediction','Insurance applications','Carbon MRV']}
+  ],
+  trends:[
+    {id:'virtual-fencing',name:'Virtual Fencing',icon:'📍',marketSize:'Estimated A$400M+ potential in Australia alone',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2027',players:['Agersens','Gallagher','Pairtree'],playerNote:'Australia leads globally in virtual fencing for livestock. Regulatory approval advancing. Could transform grazing management on vast stations.',challenges:['Animal welfare regulation','Connectivity','Cost per head'],opportunities:['Rotational grazing optimization','Carbon sequestration','Labor reduction']},
+    {id:'agri-carbon-au',name:'Carbon Farming',icon:'🌱',marketSize:'Australian Carbon Credit Units market A$2B+ (ERF)',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['Carbon Market Institute','GreenCollar','AgriProve','Regrow'],playerNote:'Australia\'s Emissions Reduction Fund creates significant carbon farming opportunities. Soil carbon and vegetation methods growing.',challenges:['Measurement permanence','Method crediting','Market price volatility'],opportunities:['Soil carbon methods','Vegetation regrowth','Livestock emissions reduction']},
+    {id:'autonomous-au',name:'Autonomous Farm Equipment',icon:'🚜',marketSize:'Growing with adoption of GPS auto-steer and autonomous platforms',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2028',players:['SwarmFarm','Agerris','CSIRO','John Deere AU'],playerNote:'Australia\'s large farms and labor shortages make it ideal for autonomous machinery. SwarmFarm pioneering small autonomous platforms.',challenges:['Regulation','Reliability in harsh conditions','Connectivity'],opportunities:['24/7 operations','Precision weed control','Reduced labor dependence']},
+    {id:'biosecurity-au',name:'Biosecurity Tech',icon:'🛡️',marketSize:'Growing priority post-varroa mite and foot-and-mouth scares',importance:'Critical',importanceColor:'#ef4444',timeframe:'2024-2027',players:['CSIRO','Animal Health Australia','Rapid test providers'],playerNote:'Biosecurity is existential for Australian agriculture. Technology for early detection, traceability, and rapid response is a national priority.',challenges:['Border surveillance scale','Diagnostic speed','Cost of preparedness'],opportunities:['AI-based pest detection','Traceability systems','Rapid diagnostics']}
+  ]
+},
+sg: {
+  flag:'🇸🇬', name:'Singaporean', country:'Singapore',
+  desc:'Singapore imports >90% of its food and has set a "30 by 30" goal to produce 30% of nutritional needs domestically by 2030, driving massive investment in urban farming and food tech.',
+  overview:[
+    {title:'National Context', stats:[{v:'<1% of land',l:'Available for agriculture'},{v:'>90%',l:'Of food is imported'},{v:'30 by 30',l:'Goal: 30% local production by 2030'},{v:'S$144M',l:'Singapore Food Story R&D fund'}],
+     sources:'<a href="https://www.sfa.gov.sg" target="_blank">Singapore Food Agency</a>'},
+    {title:'Innovation Ecosystem', stats:[{v:'200+ food tech startups',l:'Active companies'},{v:'S$300M+',l:'Food tech investment (cumulative)'}], tags:['SFA','GROW Accelerator','Enterprise SG','A*STAR']},
+    {title:'AgTech Strengths', stats:[{v:'Urban Farming',l:'Vertical farms, rooftop systems, container farms'},{v:'Aquaculture',l:'High-tech fish farming in limited space'},{v:'Alt Protein',l:'First country to approve cultivated meat'}]}
+  ],
+  marketIntro:'Singapore is a unique AgTech market focused on food security through technology. Despite minimal land, it has become Asia\'s food tech hub through heavy government investment, regulatory leadership (first to approve cultivated meat), and a dense startup ecosystem.',
+  segments:[
+    {id:'urban-farming-sg',name:'Urban & Vertical Farming',icon:'🏙️',desc:'Indoor farms, rooftop systems, container farms',marketSize:'Singapore urban farming ~S$150M+ by 2030',adoption:'Growing rapidly with government support and land tenders.',techs:['Vertical Towers','LED Grow Systems','Hydroponics','Climate Control AI'],companies:['Sustenir','Sky Greens','ComCrop','Archisen'],challenges:['Land cost','Energy cost','Limited crop variety'],opportunities:['30 by 30 contracts','Technology export','Tropical urban farming model']},
+    {id:'aquaculture-sg',name:'High-Tech Aquaculture',icon:'🐟',desc:'Coastal and land-based fish farming',marketSize:'Singapore aquaculture target: 15% of 30 by 30 goal',adoption:'Scaling rapidly with new coastal farm licenses.',techs:['Closed Containment','AI Feeding Systems','Water Quality Sensors','Breeding Tech'],companies:['Barramundi Group','Aquaculture Centre of Excellence','Apollo Aquaculture'],challenges:['Space constraints','Storm resilience','Feed sustainability'],opportunities:['RAS systems','Shrimp farming tech','Export to SE Asia']},
+    {id:'alt-protein-sg',name:'Alternative Proteins',icon:'🥬',desc:'Cultivated meat, plant-based, fermentation',marketSize:'Singapore is Asia\'s alt-protein capital',adoption:'First global approval of cultivated meat (2020). Multiple products in market.',techs:['Cell Culture','Precision Fermentation','Plant-Based Processing','Scaffolding'],companies:['Eat Just (GOOD Meat)','TurtleTree','Next Gen Foods','Shiok Meats'],challenges:['Production cost','Scale-up','Consumer price sensitivity'],opportunities:['Regulatory leadership','Asia market gateway','Ingredient platform licensing']}
+  ],
+  trends:[
+    {id:'food-resilience',name:'Food Resilience Tech',icon:'🛡️',marketSize:'National priority with multi-hundred million S$ investment',importance:'Critical',importanceColor:'#ef4444',timeframe:'2024-2030',players:['SFA','A*STAR','Temasek (subsidiary funds)'],playerNote:'COVID and geopolitical tensions accelerated Singapore\'s food security investment. Technology for local production and supply chain resilience is a national priority.',challenges:['Land scarcity','Energy costs','Import dependency'],opportunities:['Tech-enabled local production','Supply chain diversification','Regional food hub']},
+    {id:'cultivated-meat-sg',name:'Cultivated Meat',icon:'🥩',marketSize:'Singapore is global regulatory leader. Multiple approvals.',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2028',players:['Eat Just','TurtleTree','Shiok Meats','Umami Meats'],playerNote:'Singapore is the only country with multiple cultivated meat products approved for sale. Positioning as the global regulatory sandbox.',challenges:['Production scale','Cost per kg','Consumer education'],opportunities:['First-mover advantage','Regulatory export model','Asian protein demand']},
+    {id:'agri-data-sg',name:'AgriData & AI Platforms',icon:'📊',marketSize:'Growing hub for agricultural data analytics',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2028',players:['Gro Intelligence','Olam Digital','Wilmar data teams'],playerNote:'Singapore\'s position as a global commodity trading hub creates natural demand for agricultural data analytics and AI-driven market intelligence.',challenges:['Data access','Model accuracy','Market competition'],opportunities:['Commodity forecasting','Supply chain optimization','Climate risk modeling']},
+    {id:'insect-protein',name:'Insect Protein',icon:'🦗',marketSize:'Southeast Asia insect protein market growing >20% CAGR',importance:'Moderate',importanceColor:'#f59e0b',timeframe:'2025-2030',players:['Nutrition Technologies','Insectta','Protenga'],playerNote:'Singapore is becoming a hub for insect protein research and commercial production, particularly black soldier fly larvae for animal feed.',challenges:['Consumer acceptance','Regulatory frameworks','Scale-up economics'],opportunities:['Animal feed replacement','Organic waste processing','Circular economy models']}
+  ]
+},
+eu: {
+  flag:'🇪🇺', name:'European Union', country:'European Union',
+  desc:'The EU\'s Common Agricultural Policy, Farm to Fork strategy, and Green Deal are reshaping agriculture across 27 member states, driving massive investment in sustainable farming technology.',
+  overview:[
+    {title:'Agriculture Context', stats:[{v:'157M hectares',l:'Utilized agricultural area (Eurostat, 2024)'},{v:'~9.1M farms',l:'Agricultural holdings across 27 member states'},{v:'EUR 450B+',l:'Agricultural output (2024)'},{v:'EUR 55B/year',l:'Common Agricultural Policy budget'}],
+     sources:'<a href="https://ec.europa.eu/eurostat" target="_blank">Eurostat</a> · <a href="https://agriculture.ec.europa.eu" target="_blank">EU DG Agriculture</a>'},
+    {title:'Policy Framework', stats:[{v:'Farm to Fork',l:'50% pesticide reduction by 2030 target'},{v:'Green Deal',l:'Climate-neutral by 2050'}], tags:['Horizon Europe','EIT Food','CAP Eco-Schemes','Digital Europe']},
+    {title:'AgTech Strengths', stats:[{v:'Sustainability Tech',l:'Regulation-driven innovation in green ag'},{v:'Robotics',l:'Strong European robotics ecosystem'},{v:'Organic',l:'25% organic farmland target by 2030'}]}
+  ],
+  marketIntro:'The EU is the world\'s largest regulatory driver of sustainable agriculture technology. The Farm to Fork strategy, Green Deal, and reformed CAP are creating massive demand for solutions that reduce pesticides, cut emissions, improve traceability, and enable organic farming at scale.',
+  segments:[
+    {id:'sustainable-eu',name:'Sustainable Farming Tech',icon:'♻️',desc:'Pesticide reduction, organic systems, soil health',marketSize:'EU sustainable ag tech market EUR 5B+ by 2028',adoption:'Growing rapidly driven by regulatory mandates.',techs:['Biological Control','Precision Spraying','Soil Carbon Monitoring','Organic Systems'],companies:['Koppert','Biobest','Ecorobotix','xarvio (BASF)'],challenges:['Farm-level economics','Transition costs','Yield gaps during conversion'],opportunities:['CAP eco-scheme payments','Organic premium markets','Carbon farming credits']},
+    {id:'traceability-eu',name:'Supply Chain Traceability',icon:'📦',desc:'Farm-to-fork tracking, compliance, transparency',marketSize:'EUR 3B+ driven by EU regulation',adoption:'Mandatory for many supply chains under new regulations.',techs:['Blockchain','QR Coding','Satellite Monitoring','Digital Passports'],companies:['Connecting Food','FoodTrax','TE-FOOD','DNV Assurance'],challenges:['Fragmentation across 27 states','Small farm inclusion','Cost of compliance'],opportunities:['EUDR compliance','Digital product passports','Consumer transparency']},
+    {id:'robotics-eu',name:'Agricultural Robotics',icon:'🤖',desc:'Autonomous weeding, harvesting, monitoring',marketSize:'EU agri-robotics market EUR 2B+ by 2028',adoption:'Growing in high-value horticulture. Broadacre following.',techs:['Autonomous Weeding','Robotic Harvesting','Monitoring Drones','Phenotyping Robots'],companies:['Naio Technologies','Ecorobotix','Fendt (AGCO)','SITIA'],challenges:['Regulatory certification','Farm heterogeneity','Cost per hectare'],opportunities:['Labor replacement','Pesticide-free farming','Precision operations']}
+  ],
+  trends:[
+    {id:'farm-to-fork',name:'Farm to Fork Implementation',icon:'🍽️',marketSize:'Multi-billion EUR market transformation',importance:'Critical',importanceColor:'#ef4444',timeframe:'2024-2030',players:['EU Commission','Member state agencies','EIT Food'],playerNote:'Farm to Fork targets (50% pesticide reduction, 20% fertilizer reduction, 25% organic) are creating enormous technology demand across all 27 member states.',challenges:['Target achievability','Farmer resistance','Trade-offs with productivity'],opportunities:['Alternative crop protection','Precision nutrition','Organic transition tech']},
+    {id:'carbon-eu',name:'Carbon Farming Framework',icon:'🌱',marketSize:'EU carbon farming certification creating new market',importance:'Very High',importanceColor:'#ef4444',timeframe:'2024-2030',players:['EU DG Climate','Indigo Ag Europe','Soil Capital','CarbonFarm'],playerNote:'The EU Carbon Removal Certification Framework will standardize agricultural carbon credits across Europe, creating a unified market.',challenges:['Measurement standardization','Baseline setting','Additionality proof'],opportunities:['Certified carbon credits','Soil carbon payments','Agroforestry credits']},
+    {id:'digital-eu',name:'Digital Agriculture',icon:'📡',marketSize:'Horizon Europe investing EUR 900M+ in digital ag',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2028',players:['John Deere EU','365FarmNet','Agrimetrics','FIWARE'],playerNote:'The EU Digital Europe programme and Horizon Europe are funding interoperable farm data platforms, AI decision tools, and rural connectivity.',challenges:['Data governance (GDPR)','Interoperability','Digital divide'],opportunities:['Common data spaces','AI advisory tools','Rural broadband investment']},
+    {id:'organic-eu',name:'Organic Agriculture Scale-Up',icon:'🌿',marketSize:'EU organic market EUR 56B (2023), growing 8% CAGR',importance:'High',importanceColor:'#f59e0b',timeframe:'2024-2030',players:['IFOAM','BioSuisse','Naturland','National organic bodies'],playerNote:'EU target of 25% organic farmland by 2030 (currently ~10%) requires massive technology support for conversion and productivity.',challenges:['Yield gaps','Weed management','Input availability'],opportunities:['Organic transition tools','Biological inputs','Precision organic farming']}
+  ]
+}
+};
 
 function ecoExpandableSegments() {
+  const r = REGION_DATA[_currentRegion];
+  if (!r) return '';
+  const segs = r.segments;
   if (_ecoSegmentOpen) {
-    const s = ECO_SEGMENTS.find(x => x.id === _ecoSegmentOpen);
+    const s = segs.find(x => x.id === _ecoSegmentOpen);
     if (!s) { _ecoSegmentOpen = null; return ecoExpandableSegments(); }
     return '<div style="margin-bottom:4px"><button onclick="_ecoSegmentOpen=null;render(currentPage)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--text);font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:5px">← Back</button><span style="font-size:15px;font-weight:700;margin-left:10px;color:var(--text)">' + s.name + '</span></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">'
@@ -2553,7 +2681,7 @@ function ecoExpandableSegments() {
     + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Opportunities</div>' + s.opportunities.map(o => '<div style="font-size:12px;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px"><span style="color:var(--green)">●</span> ' + o + '</div>').join('') + '</div>'
     + '</div>';
   }
-  return '<div class="grid3">' + ECO_SEGMENTS.map(s =>
+  return '<div class="grid3">' + segs.map(s =>
     '<div class="market-card" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="_ecoSegmentOpen=\'' + s.id + '\';render(currentPage)" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">'
     + '<div style="font-size:28px;text-align:center;margin-bottom:8px">' + s.icon + '</div>'
     + '<h4 style="text-align:center">' + s.name + '</h4>'
@@ -2564,8 +2692,11 @@ function ecoExpandableSegments() {
 }
 
 function ecoExpandableTrends() {
+  const r = REGION_DATA[_currentRegion];
+  if (!r) return '';
+  const trends = r.trends;
   if (_ecoTrendOpen) {
-    const t = ECO_TRENDS.find(x => x.id === _ecoTrendOpen);
+    const t = trends.find(x => x.id === _ecoTrendOpen);
     if (!t) { _ecoTrendOpen = null; return ecoExpandableTrends(); }
     return '<div style="margin-bottom:4px"><button onclick="_ecoTrendOpen=null;render(currentPage)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--text);font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:5px">← Back</button><span style="font-size:15px;font-weight:700;margin-left:10px;color:var(--text)">' + t.name + '</span></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">'
@@ -2583,7 +2714,7 @@ function ecoExpandableTrends() {
     + '<div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Opportunities</div>' + t.opportunities.map(o => '<div style="font-size:12px;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px"><span style="color:var(--green)">●</span> ' + o + '</div>').join('') + '</div>'
     + '</div>';
   }
-  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' + ECO_TRENDS.map(t =>
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' + trends.map(t =>
     '<div class="market-card" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="_ecoTrendOpen=\'' + t.id + '\';render(currentPage)" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">'
     + '<div style="font-size:28px;text-align:center;margin-bottom:8px">' + t.icon + '</div>'
     + '<h4 style="text-align:center">' + t.name + '</h4>'
@@ -2593,34 +2724,39 @@ function ecoExpandableTrends() {
   ).join('') + '</div>';
 }
 
-function pgEcosystem(){return `
-<div class="page-hdr"><h1>Canadian AgTech Ecosystem Overview</h1>
-<p>A comprehensive view of Canada's agricultural technology landscape, innovations, and market dynamics.</p></div>
-<div class="grid3" style="margin-bottom:18px">
-<div class="eco-card"><h4>National Agriculture Context</h4>
-<div class="eco-stat"><div class="v">~65–70M acres</div><div class="l">Field crop acres (StatsCan, 2024–25)</div></div>
-<div class="eco-stat"><div class="v">~190,000 farms</div><div class="l">Active commercial farming operations</div></div>
-<div class="eco-stat"><div class="v">$100B+ CAD</div><div class="l">Agri-food exports (2024–25, record year)</div></div>
-<div class="eco-stat"><div class="v">107M tonnes</div><div class="l">Record grain &amp; oilseed production (2024–25)</div></div>
-<div class="src-row" style="margin-top:10px">🔗 <a href="https://agriculture.canada.ca/en/sector/overview" target="_blank">AAFC Sector Overview</a> &nbsp;·&nbsp; <a href="https://www150.statcan.gc.ca/n1/pub/95-640-x/2016001/p1/p1-01-eng.htm" target="_blank">Statistics Canada</a></div></div>
-<div class="eco-card"><h4>Public Support Ecosystem</h4>
-<div class="eco-stat"><div class="v">~30% public funding share</div><div class="l">Higher than US or UK markets</div></div>
-<p style="font-size:11px;color:var(--text-muted);margin:7px 0 4px">Key Support Programs:</p>
-<span class="sup-tag">Sustainable CAP</span><span class="sup-tag">PIC Supercluster</span><span class="sup-tag">CFIN Network</span><span class="sup-tag">AgriInnovate</span></div>
-<div class="eco-card"><h4>AgTech Strengths</h4>
-<div class="eco-stat"><div class="v">Grain & Oilseeds</div><div class="l">World-class precision ag adoption</div></div>
-<div class="eco-stat"><div class="v">Canola</div><div class="l">Global biotech & crop science leader</div></div>
-<div class="eco-stat"><div class="v">Smart Farms</div><div class="l">EMILI, Olds College, Glacier Farm</div></div></div>
-</div>
-<div class="card"><h3>📊 Market Dynamics &amp; Adoption</h3>
-<div class="sub">Click on a segment below to explore detailed market insights and opportunities.</div>
-<div class="sub" style="margin-bottom:14px">Canadian farmers and industry are increasingly adopting advanced technologies including IoT sensors, drones, GIS mapping, and data analytics. The Prairie provinces lead in precision agriculture adoption, with smart farm initiatives demonstrating technologies at scale.</div>
-${ecoExpandableSegments()}
-</div>
-<div class="card"><h3>🔭 Trends to Watch</h3>
-<div class="sub" style="margin-bottom:14px">Click on a trend below to explore market insights and investment opportunities.</div>
-${ecoExpandableTrends()}
-</div>`;}
+function pgEcosystem(){
+  const r = REGION_DATA[_currentRegion];
+  if (!r) return '<div class="page-hdr"><h1>Select a Region</h1><p>Choose a region from the sidebar to view ecosystem data.</p></div>';
+  // Build overview cards
+  let overviewHtml = '<div class="grid3" style="margin-bottom:18px">';
+  r.overview.forEach(card => {
+    overviewHtml += '<div class="eco-card"><h4>' + card.title + '</h4>';
+    (card.stats || []).forEach(st => {
+      overviewHtml += '<div class="eco-stat"><div class="v">' + st.v + '</div><div class="l">' + st.l + '</div></div>';
+    });
+    if (card.tags) {
+      overviewHtml += '<p style="font-size:11px;color:var(--text-muted);margin:7px 0 4px">Key Programs:</p>';
+      card.tags.forEach(tag => { overviewHtml += '<span class="sup-tag">' + tag + '</span>'; });
+    }
+    if (card.sources) {
+      overviewHtml += '<div class="src-row" style="margin-top:10px">🔗 ' + card.sources + '</div>';
+    }
+    overviewHtml += '</div>';
+  });
+  overviewHtml += '</div>';
+  return '<div class="page-hdr"><h1>' + r.flag + ' ' + r.name + ' AgTech Ecosystem Overview</h1>'
+    + '<p>' + r.desc + '</p></div>'
+    + overviewHtml
+    + '<div class="card"><h3>📊 Market Dynamics &amp; Adoption</h3>'
+    + '<div class="sub">Click on a segment below to explore detailed market insights and opportunities.</div>'
+    + '<div class="sub" style="margin-bottom:14px">' + r.marketIntro + '</div>'
+    + ecoExpandableSegments()
+    + '</div>'
+    + '<div class="card"><h3>🔭 Trends to Watch</h3>'
+    + '<div class="sub" style="margin-bottom:14px">Click on a trend below to explore market insights and investment opportunities.</div>'
+    + ecoExpandableTrends()
+    + '</div>';
+}
 
 // ════════════════════════════════════════════════
 // PAGE: INDUSTRY SEGMENTS
