@@ -38,8 +38,7 @@
   .nav-item:hover { background: var(--hover); color: var(--text); }
   .nav-item.active { background: var(--green-light); color: var(--green); font-weight: 600; }
   .nav-icon { font-size: 13px; flex-shrink: 0; }
-  .region-wrap { padding: 8px 12px; }
-  .region-lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text-faint); text-transform: uppercase; margin-bottom: 5px; }
+  .region-wrap { padding: 4px 0 2px 0; }
   .region-select { width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; }
   .sidebar-footer { padding: 12px; margin-top: auto; border-top: 1px solid var(--border); }
   .book-btn { width: 100%; padding: 9px 12px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -713,37 +712,39 @@
     <button class="how-btn" onclick="openModal('how-modal')">ℹ️ About FounderOps Center</button>
   </div>
   <div class="sidebar-section">
-    <div class="section-label">Global Resources</div>
+    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('global')"><span>Global Resources</span><span id="accordion-global-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
+    <div id="accordion-global-items">
     <button class="nav-item active" onclick="go('overview',this)"><span class="nav-icon">🌐</span> Global AgTech Overview</button>
     <button class="nav-item" onclick="go('journey',this)"><span class="nav-icon">🚀</span> Founder's Journey</button>
     <button class="nav-item" onclick="go('glossary',this)"><span class="nav-icon">📖</span> AgTech Glossary</button>
     <button class="nav-item" onclick="go('documents',this)"><span class="nav-icon">🧰</span> Founder Toolkit</button>
-    <!-- Media & Influencers merged into Community Hub -->
-    <!--<button class="nav-item" onclick="go('media',this)"><span class="nav-icon">📡</span> AgTech Media &amp; Influencers</button>-->
+    </div>
   </div>
-  <div class="region-wrap">
-    <div class="region-lbl">Region-Specific Data</div>
-    <select class="region-select" id="region-select" onchange="updateRegion(this.value)">
-      <option value="ca">🇨🇦 Canada</option>
-      <option value="us">🇺🇸 United States</option>
-      <option value="nl">🇳🇱 Netherlands</option>
-      <option value="il">🇮🇱 Israel</option>
-      <option value="br">🇧🇷 Brazil</option>
-      <option value="au">🇦🇺 Australia</option>
-      <option value="sg">🇸🇬 Singapore</option>
-      <option value="eu">🇪🇺 European Union</option>
-    </select>
-  </div>
-  <div class="sidebar-section">
+  <div class="sidebar-section" style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
+    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('region')"><span>Region-Specific Data</span><span id="accordion-region-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
+    <div id="accordion-region-items">
+    <div class="region-wrap" style="margin-bottom:2px">
+      <select class="region-select" id="region-select" onchange="updateRegion(this.value)">
+        <option value="ca">🇨🇦 Canada</option>
+        <option value="us">🇺🇸 United States</option>
+        <option value="nl">🇳🇱 Netherlands</option>
+        <option value="il">🇮🇱 Israel</option>
+        <option value="br">🇧🇷 Brazil</option>
+        <option value="au">🇦🇺 Australia</option>
+        <option value="sg">🇸🇬 Singapore</option>
+        <option value="eu">🇪🇺 European Union</option>
+      </select>
+    </div>
     <button class="nav-item" onclick="go('ecosystem',this)"><span class="nav-icon">📍</span> Ecosystem Overview</button>
     <button class="nav-item" onclick="go('segments',this)"><span class="nav-icon">📊</span> Industry Segments</button>
     <button class="nav-item" onclick="go('crops',this)"><span class="nav-icon">🌱</span> Crops</button>
     <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
     <button id="nav-investor-btn" class="nav-item" style="display:none" onclick="go('investor',this)"><span class="nav-icon">📈</span> Investor Dashboard</button>
+    </div>
   </div>
   <div id="sidebar-my-tools" class="sidebar-section" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
-    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleMyTools()"><span>My Tools</span><span id="my-tools-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
-    <div id="my-tools-items">
+    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('mytools')"><span>My Tools</span><span id="accordion-mytools-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
+    <div id="accordion-mytools-items">
     <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center</button>
     <button id="nav-hub-btn" class="nav-item" style="display:none" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
     <button id="nav-connections-btn" class="nav-item" style="display:none" onclick="go('connections',this)"><span class="nav-icon">🤝</span> My Connections</button>
@@ -1215,7 +1216,7 @@ function adminSwitchPersona(persona) {
   }
   _adminPersonaOverride = persona;
   // Create a fake profile with this persona to preview the UI
-  const fakeProfile = { ...(_userProfile || {}), persona, secondary_role: '' };
+  const fakeProfile = { ...(_userProfile || {}), persona, secondary_role: '', admin_tags: [] };
   applyPersonaUI(fakeProfile);
   render(currentPage);
   const label = (PERSONAS.find(p=>p.id===persona)||{}).label || persona;
@@ -1679,13 +1680,13 @@ function closeSidebar(){
   sb.classList.remove('mobile-open');
   if(ov) ov.classList.remove('show');
 }
-let _myToolsOpen = true;
-function toggleMyTools() {
-  _myToolsOpen = !_myToolsOpen;
-  const items = document.getElementById('my-tools-items');
-  const arrow = document.getElementById('my-tools-arrow');
-  if (items) items.style.display = _myToolsOpen ? '' : 'none';
-  if (arrow) arrow.style.transform = _myToolsOpen ? '' : 'rotate(-90deg)';
+const _accordionState = { global: true, region: true, mytools: true };
+function toggleAccordion(section) {
+  _accordionState[section] = !_accordionState[section];
+  const items = document.getElementById('accordion-' + section + '-items');
+  const arrow = document.getElementById('accordion-' + section + '-arrow');
+  if (items) items.style.display = _accordionState[section] ? '' : 'none';
+  if (arrow) arrow.style.transform = _accordionState[section] ? '' : 'rotate(-90deg)';
 }
 
 function toggleSidebar(){
