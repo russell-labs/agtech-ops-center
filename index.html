@@ -750,7 +750,6 @@
         <a href="https://www.linkedin.com/in/russellcole/" target="_blank" rel="noopener" style="font-size:10px;color:var(--green);text-decoration:none">LinkedIn ↗</a>
       </div>
     </div>
-    <button class="book-btn" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
     <button id="nav-profile-btn" style="display:none" onclick="go('profile',this)"></button>
     <button id="nav-action-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:var(--green);border:none;border-radius:7px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('action',this)">🎯 Action Center</button>
     <button id="nav-hub-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('hub',this)">🌐 Community Hub</button>
@@ -758,6 +757,7 @@
     <button id="nav-investor-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('investor',this)">📈 Investor Dashboard</button>
     <button id="nav-roadmap-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--green-mid);border-radius:7px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="go('roadmap',this)">🗺️ Product Roadmap</button>
     <button id="nav-admin-btn" style="display:none;width:100%;margin-top:6px;padding:7px 12px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;align-items:center;justify-content:center;gap:5px" onclick="goAdmin()">🔐 Admin Panel</button>
+    <button class="book-btn" style="margin-top:10px" onclick="openModal('book-modal')">📞 Book a Call with Russell</button>
   </div>
 </aside>
 
@@ -1162,8 +1162,9 @@ function applyPersonaUI(profile) {
   // Show/hide Investor Dashboard nav button
   const investorBtn = document.getElementById('nav-investor-btn');
   if (investorBtn) {
-    const showInvestor = key === 'investor' ||
-      (profile.secondary_role && (profile.secondary_role === 'investor' || profile.secondary_role.includes('investor')));
+    const hasInvestorTag = (profile.admin_tags || []).includes('investor_access');
+    const hasInvestorSecondary = profile.secondary_role && (profile.secondary_role === 'investor' || profile.secondary_role.includes('investor'));
+    const showInvestor = key === 'investor' || hasInvestorTag || hasInvestorSecondary;
     investorBtn.style.display = showInvestor ? 'flex' : 'none';
   }
 
@@ -1305,39 +1306,8 @@ function showLandingPage(isSignedOut) {
     <div class="lp-trust">Free to join &middot; Google sign-in &middot; No credit card required</div>
   </div>
 
-  <!-- Flywheel -->
-  <div class="lp-flywheel">
-    <div class="lp-section-label">The AgTech Flywheel</div>
-    <p style="text-align:center;font-size:13px;color:var(--text-muted);max-width:480px;margin:0 auto 24px;line-height:1.7">Every participant makes the ecosystem more valuable for everyone else.</p>
-    <div class="lp-flywheel-ring">
-      <div class="lp-fw-step">
-        <div class="lp-fw-icon">🚀</div>
-        <div class="lp-fw-label">Founders Build</div>
-        <div class="lp-fw-sub">Solutions for real farm problems</div>
-        <div class="lp-fw-arrow">→</div>
-      </div>
-      <div class="lp-fw-step">
-        <div class="lp-fw-icon">🌾</div>
-        <div class="lp-fw-label">Farmers Pilot</div>
-        <div class="lp-fw-sub">Validate tech on real operations</div>
-        <div class="lp-fw-arrow">→</div>
-      </div>
-      <div class="lp-fw-step">
-        <div class="lp-fw-icon">💰</div>
-        <div class="lp-fw-label">Investors Fund</div>
-        <div class="lp-fw-sub">Back startups with proven traction</div>
-        <div class="lp-fw-arrow">→</div>
-      </div>
-      <div class="lp-fw-step">
-        <div class="lp-fw-icon">🧭</div>
-        <div class="lp-fw-label">Advisors Guide</div>
-        <div class="lp-fw-sub">Mentor the next generation</div>
-      </div>
-    </div>
-  </div>
-
   <!-- Persona Carousel -->
-  <div class="lp-carousel" id="lp-carousel">
+  <div class="lp-carousel" id="lp-carousel" onmouseenter="lpCarouselHover(true)" onmouseleave="lpCarouselHover(false)">
     <div class="lp-section-label">Built for every role in AgTech</div>
     <div class="lp-carousel-track" id="lp-carousel-track">
 
@@ -1495,12 +1465,10 @@ function showLandingPage(isSignedOut) {
       <div>
         <div class="lp-founder-quote">I've spent 8+ years building AgTech companies. Soil amendments, drone and satellite imaging, AI tools that help farmers get more from their data. I pitched investors, ran feedback loops with growers, built teams, handled the business admin, and lived through the highs and lows that every AgTech founder knows. Through all of it, the thing I kept coming back to was connecting people. Introducing a founder to the right investor. Getting a farmer on a call with a startup that could actually solve their problem. It wasn't always related to my own business. I just liked doing it.</div>
         <div class="lp-founder-quote" style="margin-top:0">If I'd had something like this platform when I was in the thick of it, I would have been way better off. Now I have the ability to build it, so that's exactly what I'm doing. People are at the heart of everything and I can't wait to see where this goes.</div>
-        <div style="display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap">
-          <div>
-            <div class="lp-founder-name">Russell Cole</div>
-            <div class="lp-founder-role">Founder & Connector-in-Chief</div>
-          </div>
-          <a href="https://www.linkedin.com/in/russellcole/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--green);text-decoration:none;font-weight:600;padding:6px 14px;border:1px solid var(--green-mid);border-radius:6px">LinkedIn →</a>
+        <div style="margin-top:16px">
+          <div class="lp-founder-name">Russell Cole</div>
+          <div class="lp-founder-role">Founder & Connector-in-Chief</div>
+          <a href="https://www.linkedin.com/in/russellcole/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:var(--green);text-decoration:none;font-weight:600;padding:6px 14px;border:1px solid var(--green-mid);border-radius:6px">LinkedIn →</a>
         </div>
         <div class="lp-founder-creds">
           <span class="lp-founder-cred">8+ Years in AgTech</span>
@@ -1547,6 +1515,7 @@ function hideLanding() {
 
 // ── Landing Page Carousel ──
 let _lpSlide = 0;
+let _lpHovered = false;
 const LP_SLIDE_COUNT = 4;
 
 function lpCarouselGo(idx) {
@@ -1567,10 +1536,12 @@ function lpCarouselMove(dir) {
   lpCarouselGo(next);
 }
 
-// Auto-advance carousel every 6 seconds
+function lpCarouselHover(hovering) { _lpHovered = hovering; }
+
+// Auto-advance carousel every 6 seconds, pause on hover
 setInterval(() => {
   const landing = document.getElementById('landing-page');
-  if (landing) lpCarouselMove(1);
+  if (landing && !_lpHovered) lpCarouselMove(1);
 }, 6000);
 
 // ── LINKS REGISTRY ────────────────────────────────────────────────
@@ -5003,8 +4974,17 @@ function connDiscoverTab(p, pauseStatus) {
     const otherPref = tierOrder.indexOf(other.intro_tier_pref || 'explorer');
     const meetsOtherPref = myTier >= otherPref;
     const result = scoreMatch(p, other);
-    if (result.score >= 15) {
+    if (result.score >= 5) {
       matches.push({ other, score: result.score, reasons: result.reasons, meetsOtherPref, tierGap: otherPref - myTier });
+    }
+  }
+  // If no scored matches, show all active users as potential connections
+  if (matches.length === 0 && active.length > 0) {
+    for (const other of active) {
+      const otherTier = tierOrder.indexOf(other.tier || 'explorer');
+      const otherPref = tierOrder.indexOf(other.intro_tier_pref || 'explorer');
+      const meetsOtherPref = myTier >= otherPref;
+      matches.push({ other, score: 1, reasons: ['Part of the AgTech ecosystem'], meetsOtherPref, tierGap: otherPref - myTier });
     }
   }
   matches.sort((a, b) => b.score - a.score);
@@ -5039,6 +5019,13 @@ function connDiscoverTab(p, pauseStatus) {
     const o = m.other;
     const scoreColor = m.score >= 60 ? 'var(--green)' : m.score >= 40 ? '#f59e0b' : '#94a3b8';
     const td = tierDef(o.tier || 'explorer');
+    const oBadges = calcBadges(o);
+    const badgeDefs = getBadgesForPersona(o.persona);
+    const badgePills = oBadges.slice(0, 4).map(bid => {
+      const bdef = badgeDefs.find(b => b.id === bid);
+      return bdef ? `<span style="font-size:9px;padding:2px 7px;border-radius:99px;background:rgba(34,197,94,.08);color:var(--green);font-weight:600;border:1px solid rgba(34,197,94,.15)">${bdef.icon} ${bdef.label}</span>` : '';
+    }).filter(Boolean).join('');
+    const badgeOverflow = oBadges.length > 4 ? `<span style="font-size:9px;padding:2px 7px;color:var(--text-faint)">+${oBadges.length - 4} more</span>` : '';
     return `<div class="conn-card">
       <div class="cc-score" style="background:${scoreColor}">${m.score}%</div>
       <div class="cc-hdr">
@@ -5048,6 +5035,7 @@ function connDiscoverTab(p, pauseStatus) {
           <div class="cc-meta">${personaIcon(o.persona)} ${personaLabel(o.persona)}${o.organization ? ' · ' + o.organization : ''}${o.location ? ' · ' + o.location : ''}</div>
         </div>
       </div>
+      ${badgePills ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">${badgePills}${badgeOverflow}</div>` : ''}
       <div class="cc-reasons">${m.reasons.map(r => `<span class="cc-reason">${r}</span>`).join('')}</div>
       ${o.persona === 'founder' && o.what_building ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;padding:8px;background:var(--hover);border-radius:6px"><strong style="color:var(--text)">Building:</strong> ${o.what_building.substring(0,120)}${o.what_building.length>120?'...':''}</div>` : ''}
       ${o.persona === 'investor' && o.check_size ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;padding:8px;background:var(--hover);border-radius:6px"><strong style="color:var(--text)">Check Size:</strong> ${o.check_size}${o.investment_stages?.length ? ' · Stages: ' + o.investment_stages.join(', ') : ''}</div>` : ''}
@@ -5090,7 +5078,7 @@ function connDiscoverTab(p, pauseStatus) {
   <div class="card">
     <h3>🔍 Recommended Connections</h3>
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">AI-matched based on your persona, stage, needs, focus areas, and location. Request an introduction and Russell will connect you.</p>
-    ${requestable.length ? `<div class="conn-discover-grid">${matchCards}</div>` : `<div class="conn-empty"><div class="ce-icon">🌱</div><p>No available matches yet. As more people join the ecosystem, you'll see connections here.<br>In the meantime, complete your profile and claim milestones to improve your match quality.</p></div>`}
+    ${requestable.length ? `<div class="conn-discover-grid">${matchCards}</div>` : `<div class="conn-empty"><div class="ce-icon">🌱</div><p>No strong matches right now, but that doesn't mean there's no one worth talking to.</p><p style="margin-top:8px;font-size:13px;color:var(--text-muted)">Browse the people already in the ecosystem below. As more people join and complete their profiles, smarter matches will appear here automatically.</p>${active.length > 0 ? `<div style="margin-top:16px"><h4 style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">👥 People in the Ecosystem</h4><div class="conn-discover-grid">${active.slice(0,12).map(o => { const td = tierDef(o.tier || 'explorer'); const oBadges = calcBadges(o); return \`<div class="conn-card"><div class="cc-hdr"><div class="cc-avatar">\${o.avatar_url ? \`<img src="\${o.avatar_url}">\` : (o.full_name||'?')[0].toUpperCase()}</div><div><div class="cc-name">\${o.full_name || 'Anonymous'} <span style="font-size:11px;color:\${td.color};font-weight:600">\${td.icon}</span></div><div class="cc-meta">\${personaIcon(o.persona)} \${personaLabel(o.persona)}\${o.organization ? ' · ' + o.organization : ''}\${o.location ? ' · ' + o.location : ''}</div></div></div>\${oBadges.length > 0 ? \`<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">\${oBadges.slice(0,4).map(bid => { const bdef = getBadgesForPersona(o.persona).find(b=>b.id===bid); return bdef ? \`<span style="font-size:9px;padding:2px 7px;border-radius:99px;background:rgba(34,197,94,.08);color:var(--green);font-weight:600;border:1px solid rgba(34,197,94,.15)">\${bdef.icon} \${bdef.label}</span>\` : ''; }).join('')}\${oBadges.length > 4 ? \`<span style="font-size:9px;padding:2px 7px;color:var(--text-faint)">+\${oBadges.length - 4} more</span>\` : ''}</div>\` : ''}<div class="cc-actions"><button class="conn-btn primary" \${pauseStatus.paused ? 'disabled title="Complete pending outcome reports first"' : ''} onclick="requestIntro('\${o.id}',1,[&quot;Part of the AgTech ecosystem&quot;])">🤝 Request Intro</button></div></div>\`; }).join('')}</div></div>` : '<p style="margin-top:12px;font-size:12px;color:var(--text-faint)">You\'re one of the first here. Invite someone you think would benefit from being part of this network.</p>'}`}
   </div>
   ${tierGatedHtml}`;
 }
@@ -5641,7 +5629,7 @@ const PERSONA_RECS = {
     { icon:'🎯', title:'Complete your FounderOps profile', sub:'Unlock tier-gated connections and personalized matches', action:'profile', type:'action' },
     { icon:'🏆', title:'Apply to 2–3 accelerators above', sub:'Most have rolling deadlines — don\'t wait for "the right time"', type:'tip' },
     { icon:'📰', title:'Subscribe to AgFunderNews + iGrow', sub:'Stay current on deals, trends, and who\'s raising', type:'tip' },
-    { icon:'🤝', title:'Join AgTech Alchemy on Slack', sub:'The most active founder community in AgTech', action:'hub', type:'action' },
+    { icon:'🤝', title:'Join AgTech Alchemy on Slack', sub:'The most active founder community in AgTech', url:'https://www.linkedin.com/company/agtech-alchemy', type:'action' },
     { icon:'📅', title:'Attend the next World Agri-Tech event', sub:'Best networking ROI in the industry — put it on your calendar', type:'tip' }
   ],
   'growth-stage': [
@@ -5689,14 +5677,18 @@ function pgActionCenter() {
     <div class="ac-section">
       <div class="ac-section-hdr"><h3>⚡ Recommended For You</h3></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
-        ${recs.map(r => `<div class="rec-card" ${r.action ? `style="cursor:pointer" onclick="go('${r.action}')"` : ''}>
+        ${recs.map(r => {
+          const clickAttr = r.url ? `style="cursor:pointer" onclick="window.open('${r.url}','_blank')"` :
+                            r.action ? `style="cursor:pointer" onclick="go('${r.action}')"` : '';
+          return `<div class="rec-card" ${clickAttr}>
           <div class="rec-icon">${r.icon}</div>
           <div class="rec-body">
             <div class="rec-title">${r.title}</div>
             <div class="rec-sub">${r.sub}</div>
           </div>
-          ${r.action ? '<div style="color:var(--green);font-size:14px">→</div>' : ''}
-        </div>`).join('')}
+          ${(r.action || r.url) ? '<div style="color:var(--green);font-size:14px">→</div>' : ''}
+        </div>`;
+        }).join('')}
       </div>
     </div>
 
