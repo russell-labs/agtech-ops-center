@@ -46,7 +46,7 @@
 
   /* ── MAIN ── */
   #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  .topbar { height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; }
+  .topbar { height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 8px; flex-shrink: 0; }
   .toggle-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px; padding: 4px 6px; border-radius: 5px; }
   .toggle-btn:hover { background: var(--hover); }
   .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
@@ -770,7 +770,7 @@
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="topbar-title">Founder Ops Center</div>
     <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
-    <select id="admin-persona-switcher" style="display:none;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer" onchange="adminSwitchPersona(this.value)">
+    <select id="admin-persona-switcher" style="display:none;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:10px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;max-width:150px" onchange="adminSwitchPersona(this.value)">
       <option value="">👁️ View as: My Account</option>
       <option value="founder">🚀 Founder</option>
       <option value="investor">💰 Investor</option>
@@ -781,8 +781,8 @@
       <option value="service_provider">⚖️ Service Provider</option>
       <option value="government">🏛️ Government</option>
     </select>
-    <button id="admin-preview-wiz-btn" style="display:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;white-space:nowrap" onclick="previewWizard()">🧙 Preview Wizard</button>
-    <div style="position:relative" id="user-menu-wrap">
+    <button id="admin-preview-wiz-btn" style="display:none;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:10px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0" onclick="previewWizard()" title="Preview onboarding wizard for the selected persona">🧙 Wizard</button>
+    <div style="position:relative;flex-shrink:0" id="user-menu-wrap">
       <button class="signin-btn" id="topbar-user-btn" onclick="openModal('signin-modal')">→ Sign In</button>
       <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:200px;z-index:200;overflow:hidden">
         <div id="user-dropdown-info" style="padding:14px 16px;border-bottom:1px solid var(--border)">
