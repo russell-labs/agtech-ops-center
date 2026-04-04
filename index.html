@@ -1065,6 +1065,33 @@ function applyUser(user, isNew) {
 
   // Check for existing profile — block check, then show wizard if new
   loadProfile(user.id).then(async profile => {
+    // If no profile found by auth ID, check for a pre-created profile by email
+    if (!profile && email) {
+      const { data: preCre } = await _supabase.from('pre_created_profiles').select('*').eq('email', email.toLowerCase()).maybeSingle();
+      if (preCre && preCre.profile_data) {
+        // Migrate: create a real profile from the pre-created data
+        const pd = preCre.profile_data;
+        const newProfile = {
+          id: user.id,
+          email: email,
+          full_name: name || pd.full_name || email.split('@')[0],
+          avatar_url: user.user_metadata?.avatar_url || null,
+          needs_review: true,
+          pre_created: true,
+          ...pd
+        };
+        const { data: mData, error: mErr } = await upsertProfile(newProfile);
+        if (!mErr && mData) {
+          profile = mData;
+          // Clean up the pre_created_profiles row
+          await _supabase.from('pre_created_profiles').delete().eq('email', email.toLowerCase());
+          toast('👋 Welcome! Russell pre-loaded your profile — please review it.');
+        } else {
+          console.error('Pre-created profile migration error:', mErr);
+        }
+      }
+    }
+
     _userProfile = profile;
     if (profile && profile.blocked) {
       showBlockedScreen();
@@ -1077,6 +1104,14 @@ function applyUser(user, isNew) {
     }
     if (!profile || !profile.onboarding_complete) {
       setTimeout(() => showWizard(), 800);
+    } else if (profile.needs_review) {
+      // Pre-created account — show edit wizard so they can review and confirm
+      toast('📋 Please review your profile and make any changes.');
+      setTimeout(() => {
+        editWizard();
+        // Override the save to also clear needs_review
+        _wizNeedsReviewMode = true;
+      }, 800);
     } else {
       // Sync badges, tier, and completeness
       _userProfile = await syncProfileMeta(profile);
@@ -1227,12 +1262,32 @@ function adminSwitchPersona(persona) {
   toast('👁️ Previewing as: ' + label);
 }
 
-let _wizPreviewMode = false;
+let _wizPreviewMode = false; // false, 'preview', or 'create'
+
 function previewWizard() {
-  // Use the currently selected persona from the switcher, or start fresh
+  // Show a small popover with two choices: Preview or Create Account
+  const btn = document.getElementById('admin-preview-wiz-btn');
+  const existing = document.getElementById('wiz-mode-popover');
+  if (existing) { existing.remove(); return; }
+  const pop = document.createElement('div');
+  pop.id = 'wiz-mode-popover';
+  pop.style.cssText = 'position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:300;min-width:220px;overflow:hidden';
+  pop.innerHTML = '<div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em">Onboarding Wizard</div>'
+    + '<button onclick="launchAdminWizard(\'preview\');document.getElementById(\'wiz-mode-popover\').remove()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit;text-align:left" onmouseover="this.style.background=\'var(--hover)\'" onmouseout="this.style.background=\'none\'"><span style="font-size:18px">🧙</span><span><strong>Preview Wizard</strong><br><span style="font-size:10px;color:var(--text-muted)">Walk through the flow without saving</span></span></button>'
+    + '<button onclick="launchAdminWizard(\'create\');document.getElementById(\'wiz-mode-popover\').remove()" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--text);font-family:inherit;text-align:left;border-top:1px solid var(--border)" onmouseover="this.style.background=\'var(--hover)\'" onmouseout="this.style.background=\'none\'"><span style="font-size:18px">👤</span><span><strong>Create Account</strong><br><span style="font-size:10px;color:var(--text-muted)">Pre-load a real profile for someone</span></span></button>';
+  btn.parentElement.style.position = 'relative';
+  btn.parentElement.appendChild(pop);
+  // Close on outside click
+  setTimeout(() => {
+    const closer = (e) => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('click', closer); } };
+    document.addEventListener('click', closer);
+  }, 10);
+}
+
+function launchAdminWizard(mode) {
   const switcher = document.getElementById('admin-persona-switcher');
   const selectedPersona = switcher ? switcher.value : '';
-  _wizPreviewMode = true;
+  _wizPreviewMode = mode; // 'preview' or 'create'
   wizStep = 0;
   wizData = {
     persona: selectedPersona, organization: '', job_title: '', linkedin_url: '', location: '',
@@ -1242,9 +1297,9 @@ function previewWizard() {
     institution: '', research_focus: '', open_to_collab: false,
     service_type: '', startup_experience: false,
     agtech_focus: [], goals_platform: '', goals_general: '', how_heard: '',
-    secondary_role: '', consent_accepted: false
+    secondary_role: '', consent_accepted: false,
+    _preCreateEmail: ''
   };
-  // If a persona is already chosen, skip straight to basics
   if (selectedPersona) wizStep = 1;
   wizRender();
 }
@@ -3911,24 +3966,41 @@ function wizRender() {
     </label>`;
   }
 
-  const previewBanner = _wizPreviewMode ? '<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 12px;margin-bottom:8px;font-size:11px;color:#b45309;font-weight:600;text-align:center">🧙 Preview Mode — no changes will be saved</div>' : '';
-  const closePreviewBtn = _wizPreviewMode ? '<button class="wiz-btn wiz-btn-secondary" onclick="closeWizard();_wizPreviewMode=false" style="margin-right:auto">✕ Close Preview</button>' : '';
-  const lastStepBtn = _wizPreviewMode
-    ? '<button class="wiz-btn wiz-btn-primary" onclick="closeWizard();_wizPreviewMode=false;toast(\'✅ Wizard preview complete\')">Done Previewing</button>'
-    : '<button class="wiz-btn wiz-btn-primary" onclick="wizSave()">Complete Profile &rarr;</button>';
+  // Admin wizard mode banner
+  let modeBanner = '';
+  if (_wizPreviewMode === 'preview') {
+    modeBanner = '<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 12px;margin-bottom:8px;font-size:11px;color:#b45309;font-weight:600;text-align:center">🧙 Preview Mode — no changes will be saved</div>';
+  } else if (_wizPreviewMode === 'create') {
+    modeBanner = '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:6px 12px;margin-bottom:8px;font-size:11px;color:var(--green);font-weight:600;text-align:center">👤 Create Account — this will pre-load a real user profile</div>';
+  }
 
-  root.innerHTML = `<div class="wiz-overlay">
-    <div class="wiz-box">
-      ${previewBanner}
+  // Last-step buttons differ by mode
+  let lastStepBtn = '';
+  if (_wizPreviewMode === 'preview') {
+    lastStepBtn = '<button class="wiz-btn wiz-btn-primary" onclick="closeWizard();toast(\'✅ Wizard preview complete\')">Done Previewing</button>';
+  } else if (_wizPreviewMode === 'create') {
+    lastStepBtn = '<button class="wiz-btn wiz-btn-primary" onclick="wizSavePreCreated()">Create Account &rarr;</button>';
+  } else {
+    lastStepBtn = '<button class="wiz-btn wiz-btn-primary" onclick="wizSave()">Complete Profile &rarr;</button>';
+  }
+
+  // X close button (always available in admin modes)
+  const xClose = _wizPreviewMode ? '<button onclick="closeWizard()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;color:var(--text-muted);cursor:pointer;padding:4px 8px;line-height:1" title="Close">&times;</button>' : '';
+
+  root.innerHTML = `<div class="wiz-overlay" ${_wizPreviewMode ? 'onclick="if(event.target===this)closeWizard()"' : ''}>
+    <div class="wiz-box" style="position:relative">
+      ${xClose}
+      ${modeBanner}
       <div class="wiz-header">
-        <h2>${_wizPreviewMode ? '🧙 Preview: ' : ''}Set Up Your Profile</h2>
+        <h2>${_wizPreviewMode === 'preview' ? '🧙 Preview: ' : _wizPreviewMode === 'create' ? '👤 Create: ' : ''}Set Up Your Profile</h2>
         <p>Step ${wizStep+1} of ${total} — ${['Who you are','Basic info','Your details','Goals & context','Join the ecosystem'][wizStep]}</p>
       </div>
       <div class="wiz-progress">${dots}</div>
       <div class="wiz-body">${body}</div>
+      ${_wizPreviewMode === 'create' && step === 'basics' ? '<div style="padding:0 28px 8px"><label class="wiz-label" style="color:var(--green);font-weight:700">📧 User\'s Email Address (required)</label><input id="wiz-precreate-email" type="email" class="wiz-input" placeholder="their.email@example.com" value="' + (wizData._preCreateEmail || '') + '" style="border-color:var(--green)"></div>' : ''}
       <div class="wiz-footer">
-        ${closePreviewBtn}
-        ${wizStep > 0 ? '<button class="wiz-btn wiz-btn-secondary" onclick="wizBack()">&larr; Back</button>' : '<div></div>'}
+        ${_wizPreviewMode ? '<button class="wiz-btn wiz-btn-secondary" onclick="closeWizard()" style="margin-right:auto">✕ Close</button>' : ''}
+        ${wizStep > 0 ? '<button class="wiz-btn wiz-btn-secondary" onclick="wizBack()">&larr; Back</button>' : (!_wizPreviewMode ? '<div></div>' : '')}
         ${wizStep < total-1
           ? `<button class="wiz-btn wiz-btn-primary" onclick="wizNext()">Continue &rarr;</button>`
           : lastStepBtn}
@@ -3951,6 +4023,10 @@ function wizCollectInputs() {
     wizData.job_title = v('wiz-title');
     wizData.linkedin_url = v('wiz-linkedin');
     wizData.location = v('wiz-location');
+    // Capture pre-create email if in create mode
+    if (_wizPreviewMode === 'create') {
+      wizData._preCreateEmail = v('wiz-precreate-email');
+    }
   } else if (WIZ_STEPS[wizStep] === 'details') {
     if (wizData.persona === 'founder') {
       wizData.company_name = v('wiz-company');
@@ -4025,7 +4101,8 @@ function wizNext() {
 
 function wizBack() { wizCollectInputs(); wizStep--; wizRender(); }
 
-function closeWizard() { document.getElementById('wiz-root').innerHTML = ''; _wizPreviewMode = false; }
+let _wizNeedsReviewMode = false;
+function closeWizard() { document.getElementById('wiz-root').innerHTML = ''; _wizPreviewMode = false; _wizNeedsReviewMode = false; }
 
 async function wizSave() {
   wizCollectInputs();
@@ -4045,6 +4122,8 @@ async function wizSave() {
     onboarding_complete: true,
     consent_accepted: true,
     consent_accepted_at: new Date().toISOString(),
+    needs_review: false,
+    pre_created: false,
     ...wizData
   };
   const { data, error } = await upsertProfile(profile);
@@ -4075,6 +4154,68 @@ async function wizSave() {
   if (hbtn) hbtn.style.display = 'block';
   // Apply persona-tailored UI after wizard completion
   applyPersonaUI(_userProfile);
+  render(currentPage);
+}
+
+// ── PRE-CREATE ACCOUNT (admin wizard) ──
+async function wizSavePreCreated() {
+  wizCollectInputs();
+  const email = (wizData._preCreateEmail || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) { toast('⚠️ Please enter a valid email address for this user'); return; }
+  if (!wizData.persona) { toast('⚠️ Please select a persona'); wizStep = 0; wizRender(); return; }
+
+  // Show saving state
+  const saveBtns = document.querySelectorAll('.wiz-btn.wiz-btn-primary');
+  saveBtns.forEach(b => { b.disabled = true; b.textContent = '⏳ Creating...'; });
+
+  // Check if email already exists in profiles or pre_created_profiles
+  const { data: existingProfile } = await _supabase.from('profiles').select('id,email,full_name').eq('email', email).maybeSingle();
+  if (existingProfile) {
+    saveBtns.forEach(b => { b.disabled = false; b.textContent = 'Create Account →'; });
+    toast('⚠️ A profile with email ' + email + ' already exists (' + (existingProfile.full_name || 'unnamed') + ')');
+    return;
+  }
+  const { data: existingPre } = await _supabase.from('pre_created_profiles').select('email').eq('email', email).maybeSingle();
+  if (existingPre) {
+    saveBtns.forEach(b => { b.disabled = false; b.textContent = 'Create Account →'; });
+    toast('⚠️ A pre-created profile for ' + email + ' already exists');
+    return;
+  }
+
+  // Build the profile data — strip internal fields
+  const cleanData = { ...wizData };
+  delete cleanData._preCreateEmail;
+  delete cleanData.consent_accepted; // they'll consent on first login
+
+  const profileData = {
+    full_name: cleanData.organization || email.split('@')[0],
+    onboarding_complete: true,
+    needs_review: true,
+    consent_accepted: false,
+    tier: 'explorer',
+    badges: [],
+    profile_completeness: 0,
+    ...cleanData
+  };
+
+  // Store in pre_created_profiles table (keyed by email, profile data as JSONB)
+  const { error } = await _supabase.from('pre_created_profiles').insert({
+    email: email,
+    profile_data: profileData,
+    created_by: currentUser ? currentUser.email : 'admin'
+  });
+
+  if (error) {
+    saveBtns.forEach(b => { b.disabled = false; b.textContent = 'Create Account →'; });
+    toast('❌ Error creating account: ' + (error.message || 'Unknown error'));
+    console.error('wizSavePreCreated error:', error);
+    return;
+  }
+
+  closeWizard();
+  toast('✅ Account pre-created for ' + email + '! When they log in, their profile will be ready for review.');
+
+  // Refresh the admin view
   render(currentPage);
 }
 
