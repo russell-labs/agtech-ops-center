@@ -721,8 +721,8 @@
     </div>
   </div>
   <div class="sidebar-section" style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
-    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('region')"><span>Region-Specific Data</span><span id="accordion-region-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
-    <div id="accordion-region-items">
+    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('region')"><span>Region-Specific Data</span><span id="accordion-region-arrow" style="font-size:10px;transition:transform .2s;transform:rotate(-90deg)">▼</span></div>
+    <div id="accordion-region-items" style="display:none">
     <div class="region-wrap" style="margin-bottom:2px">
       <select class="region-select" id="region-select" onchange="updateRegion(this.value)">
         <option value="ca">🇨🇦 Canada</option>
@@ -742,8 +742,8 @@
     </div>
   </div>
   <div id="sidebar-my-tools" class="sidebar-section" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
-    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('mytools')"><span>My Tools</span><span id="accordion-mytools-arrow" style="font-size:10px;transition:transform .2s">▼</span></div>
-    <div id="accordion-mytools-items">
+    <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('mytools')"><span>My Tools</span><span id="accordion-mytools-arrow" style="font-size:10px;transition:transform .2s;transform:rotate(-90deg)">▼</span></div>
+    <div id="accordion-mytools-items" style="display:none">
     <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center</button>
     <button id="nav-hub-btn" class="nav-item" style="display:none" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
     <button id="nav-connections-btn" class="nav-item" style="display:none" onclick="go('connections',this)"><span class="nav-icon">🤝</span> My Connections</button>
@@ -1831,7 +1831,7 @@ function closeSidebar(){
   sb.classList.remove('mobile-open');
   if(ov) ov.classList.remove('show');
 }
-const _accordionState = { global: true, region: true, mytools: true };
+const _accordionState = { global: true, region: false, mytools: false };
 function toggleAccordion(section) {
   _accordionState[section] = !_accordionState[section];
   const items = document.getElementById('accordion-' + section + '-items');
