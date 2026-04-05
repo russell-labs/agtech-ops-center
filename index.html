@@ -2082,9 +2082,30 @@ function toggleStat(id){
 // ════════════════════════════════════════════════
 // PAGE: GLOBAL OVERVIEW
 // ════════════════════════════════════════════════
-function pgOverview(){return `
+function pgOverview(){
+  const _pWelcome = (() => {
+    if (!currentUser || !_userProfile || !_userProfile.persona) return '';
+    const name = _userProfile.full_name ? _userProfile.full_name.split(' ')[0] : '';
+    const msgs = {
+      founder: { icon:'🚀', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your AgTech founder intelligence hub. Check your <a href="#" onclick="go(\'action\');return false" style="color:var(--green);font-weight:600">Action Center</a> for personalized next steps.' },
+      investor: { icon:'📈', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your deal flow dashboard is live. Check the <a href="#" onclick="go(\'investor\');return false" style="color:var(--green);font-weight:600">Investor Dashboard</a> for founder pipeline and market data.' },
+      farmer: { icon:'🌾', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Explore AgTech innovations built for your operation. Browse <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem Overview</a> for your region.' },
+      advisor: { icon:'🧭', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Mentor the next generation of AgTech. See <a href="#" onclick="go(\'hub\');return false" style="color:var(--green);font-weight:600">Community Hub</a> for connections.' },
+      researcher: { icon:'🔬', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Research intelligence and collaboration. Your <a href="#" onclick="go(\'action\');return false" style="color:var(--green);font-weight:600">Action Center</a> has personalized recommendations.' },
+      industry_pro: { icon:'⚙️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Industry intelligence for agriculture professionals. Explore the <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem</a>.' },
+      service_provider: { icon:'⚖️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Serve the AgTech ecosystem. Browse <a href="#" onclick="go(\'hub\');return false" style="color:var(--green);font-weight:600">Community Hub</a> to find founders.' },
+      government: { icon:'🏛️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Policy intelligence and ecosystem data. See <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem Overview</a> for your region.' }
+    };
+    const m = msgs[_userProfile.persona] || msgs.founder;
+    return `<div style="padding:14px 18px;border-radius:10px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.15);margin-bottom:20px;display:flex;gap:12px;align-items:center">
+      <span style="font-size:24px;flex-shrink:0">${m.icon}</span>
+      <div><div style="font-size:14px;font-weight:700;color:var(--text)">${m.title}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">${m.sub}</div></div>
+    </div>`;
+  })();
+  return `
+${_pWelcome}
 <div class="page-hdr"><h1>Global Agriculture &amp; AgTech Overview</h1>
-<p>Worldwide agricultural technology landscape, innovation hotspots, investment trends, and emerging opportunities for founders.</p></div>
+<p>Worldwide agricultural technology landscape, innovation hotspots, investment trends, and emerging opportunities.</p></div>
 
 <div class="grid4" style="margin-bottom:20px">
   ${statCard('4.8B ha','Global Agricultural Land','FAO Data','stat-land',`
