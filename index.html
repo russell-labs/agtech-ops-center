@@ -744,7 +744,7 @@
   <div id="sidebar-my-tools" class="sidebar-section" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
     <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('mytools')"><span>My Tools</span><span id="accordion-mytools-arrow" style="font-size:10px;transition:transform .2s;transform:rotate(-90deg)">▼</span></div>
     <div id="accordion-mytools-items" style="display:none">
-    <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center <span id="nav-action-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 4px;margin-left:auto"></span></button>
+    <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center <span id="nav-action-badge" style="display:none;font-size:11px;margin-left:auto;flex-shrink:0;line-height:1;align-items:center;gap:2px">🔔<span id="nav-action-count" style="background:#ef4444;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;vertical-align:middle;line-height:1"></span></span></button>
     <button id="nav-hub-btn" class="nav-item" style="display:none" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
     <button id="nav-connections-btn" class="nav-item" style="display:none" onclick="go('connections',this)"><span class="nav-icon">🤝</span> My Connections</button>
     <button id="nav-roadmap-btn" class="nav-item" style="display:none" onclick="go('roadmap',this)"><span class="nav-icon">🗺️</span> Product Roadmap</button>
@@ -768,7 +768,6 @@
   <div class="topbar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="topbar-title">Founder Ops Center</div>
-    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
     <select id="admin-persona-switcher" style="display:none;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:10px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;max-width:150px" onchange="adminSwitchPersona(this.value)">
       <option value="">👁️ View as: My Account</option>
       <option value="founder">🚀 Founder</option>
@@ -790,6 +789,7 @@
           <div id="ud-email" style="font-size:11px;color:var(--text-muted);margin-top:2px"></div>
         </div>
         <button onclick="closeUserDropdown();go('profile',this)" style="width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">👤 My Profile</button>
+        <button id="theme-btn" onclick="toggleTheme()" style="width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">🌙 Dark Mode</button>
         <button id="ud-admin-btn" onclick="closeUserDropdown();goAdmin()" style="display:none;width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:var(--text);cursor:pointer;font-family:inherit;display:none;align-items:center;gap:8px;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">🔐 Admin Panel</button>
         <button onclick="closeUserDropdown();signOut()" style="width:100%;padding:10px 16px;background:none;border:none;text-align:left;font-size:13px;color:#dc2626;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='none'">↪ Sign Out</button>
       </div>
@@ -1888,13 +1888,13 @@ function onboardSignup(){
 // ── THEME ─────────────────────────────────────────────────────────
 function toggleTheme(){
   const dark = document.documentElement.classList.toggle('dark');
-  document.getElementById('theme-btn').textContent = dark ? '☀️ Light' : '🌙 Dark';
+  document.getElementById('theme-btn').textContent = dark ? '☀️ Light Mode' : '🌙 Dark Mode';
   try { localStorage.setItem('foc-theme', dark ? 'dark' : 'light'); } catch(e){}
 }
 function restoreTheme(){
   try {
     const t = localStorage.getItem('foc-theme');
-    if(t === 'dark'){ document.documentElement.classList.add('dark'); document.getElementById('theme-btn').textContent = '☀️ Light'; }
+    if(t === 'dark'){ document.documentElement.classList.add('dark'); document.getElementById('theme-btn').textContent = '☀️ Light Mode'; }
   } catch(e){}
 }
 
@@ -3746,7 +3746,7 @@ function updateNotifBell() {
   if (notifs.length > 0) {
     badge.style.display = 'flex';
     badge.textContent = notifs.length;
-    if (navBadge) { navBadge.style.display = 'flex'; navBadge.textContent = notifs.length; }
+    if (navBadge) { navBadge.style.display = 'inline-flex'; const nc = document.getElementById('nav-action-count'); if (nc) nc.textContent = notifs.length; }
   } else {
     badge.style.display = 'none';
     if (navBadge) navBadge.style.display = 'none';
