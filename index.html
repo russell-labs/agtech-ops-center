@@ -6806,6 +6806,12 @@ let investorDealFilter = '';
 function pgInvestorDashboard() {
   if (!currentUser) return guestGateCard('investor');
 
+  // Load profiles for pipeline if not yet loaded
+  if (!_allProfiles.length) {
+    loadAllProfiles().then(profiles => { _allProfiles = profiles; render('investor'); });
+    return `<div class="page-hdr"><h1>📈 Investor Dashboard</h1><p>Loading pipeline data...</p></div><div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading founder pipeline...</p></div>`;
+  }
+
   const allDeals = _supabaseDeals.length ? _supabaseDeals : INVESTOR_DEALS;
   const regionLabel = _currentRegion ? (REGION_DATA[_currentRegion]||{}).country||_currentRegion.toUpperCase() : 'Global';
   const regionFlag = _currentRegion ? (REGION_DATA[_currentRegion]||{}).flag||'' : '';
@@ -7085,24 +7091,114 @@ function pgInvestorDashboard() {
     </div>
   </div>`;
 
+  // ── Founder Pipeline (from platform profiles) ──
+  const pipelineFounders = _allProfiles.filter(p =>
+    p.persona === 'founder' && p.onboarding_complete && !p.blocked &&
+    (p.funding_status || (p.biggest_needs && p.biggest_needs.includes('Funding')))
+  );
+  const raisingNow = pipelineFounders.filter(p => p.biggest_needs && p.biggest_needs.includes('Funding'));
+  const byStage = {};
+  pipelineFounders.forEach(p => {
+    const s = (COMPANY_STAGES.find(x=>x.id===p.company_stage)||{}).label || p.company_stage || 'Unknown';
+    byStage[s] = (byStage[s]||0) + 1;
+  });
+  const bySector = {};
+  pipelineFounders.forEach(p => {
+    const segs = p.segments || p.target_sectors || [];
+    if (segs.length) segs.forEach(s => { bySector[s] = (bySector[s]||0)+1; });
+    else { const b = p.what_building || 'Other'; bySector[b.split(' ').slice(0,3).join(' ')] = (bySector[b.split(' ').slice(0,3).join(' ')]||0)+1; }
+  });
+
+  const pipelineSection = `<div class="hub-accordion ${_investorOpen.pipeline ? 'open' : ''}">
+    <div class="ha-header" onclick="investorToggle('pipeline')">
+      <span class="ha-icon">🌱</span><span class="ha-title">Founder Pipeline — Live from the Network</span>
+      <span class="ha-count">${pipelineFounders.length} founder${pipelineFounders.length!==1?'s':''}</span><span class="ha-arrow">▼</span>
+    </div>
+    <div class="ha-body">
+      ${pipelineFounders.length ? `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px">
+        <div class="ac-card" style="text-align:center;padding:16px">
+          <div style="font-size:24px;font-weight:800;color:var(--green)">${pipelineFounders.length}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Active Founders</div>
+        </div>
+        <div class="ac-card" style="text-align:center;padding:16px">
+          <div style="font-size:24px;font-weight:800;color:var(--green)">${raisingNow.length}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Seeking Funding</div>
+        </div>
+        <div class="ac-card" style="text-align:center;padding:16px">
+          <div style="font-size:24px;font-weight:800;color:var(--green)">${Object.keys(byStage).length}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Stage Spread</div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">By Stage</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${Object.entries(byStage).sort((a,b)=>b[1]-a[1]).map(([s,c]) =>
+            `<div style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12px"><span style="font-weight:700;color:var(--green)">${c}</span> <span style="color:var(--text-muted)">${s}</span></div>`
+          ).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+        ${pipelineFounders.slice(0,12).map(p => {
+          const stage = (COMPANY_STAGES.find(x=>x.id===p.company_stage)||{}).label || 'Early';
+          const funding = (FUNDING_STATUSES.find(x=>x.id===p.funding_status)||{}).label || '';
+          const seeking = p.biggest_needs && p.biggest_needs.includes('Funding');
+          return `<div class="ac-card" style="padding:14px;cursor:pointer" onclick="go('profile')">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              ${p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover">' : '<div style="width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">'+(p.full_name||'?').charAt(0).toUpperCase()+'</div>'}
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.full_name||'Anonymous Founder'}</div>
+                <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.company_name||''}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.what_building||'Building in AgTech'}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <span class="ac-tag type">${stage}</span>
+              ${funding ? '<span class="ac-tag persona">'+funding+'</span>' : ''}
+              ${seeking ? '<span class="ac-tag" style="background:#dcfce7;color:#166534">Seeking Funding</span>' : ''}
+              ${p.location ? '<span class="ac-tag" style="background:var(--hover);color:var(--text-faint)">📍 '+p.location+'</span>' : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      ${pipelineFounders.length > 12 ? '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)">Showing 12 of '+pipelineFounders.length+' founders. <a href="#" onclick="go(\'hub\');return false" style="color:var(--green)">View all in Community Hub →</a></div>' : ''}
+      ` : `<div style="text-align:center;padding:30px">
+        <div style="font-size:28px;margin-bottom:8px">🌱</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Pipeline is Growing</div>
+        <div style="font-size:12px;color:var(--text-muted);max-width:400px;margin:0 auto">As founders join the platform and complete their profiles, they'll appear here — filtered by stage, sector, and funding needs. Early-stage deal flow that's hard to find anywhere else.</div>
+      </div>`}
+    </div>
+  </div>`;
+
+  // ── Disclaimer Banner ──
+  const disclaimer = `<div style="padding:14px 18px;border-radius:10px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);margin-bottom:20px;display:flex;gap:12px;align-items:flex-start">
+    <span style="font-size:18px;flex-shrink:0">🚀</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">We're Early — And That's the Point</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Founder Ops Center is building the first dedicated AgTech deal flow network. Our founder pipeline grows as new startups join the platform — giving you access to early-stage opportunities before they hit the usual channels. The market intelligence below provides broader context, but the real value is the live network above. We're growing fast and appreciate your patience as we scale.</div>
+    </div>
+  </div>`;
+
   return `<div class="page-hdr">
     <h1>📈 Investor Dashboard</h1>
-    <p>AgTech market intelligence, deal flow, and ecosystem comparison across 8 regions. ${_supabaseDeals.length ? '<span style="color:var(--green);font-weight:600">Live data</span>' : 'Data sourced from AgFunder, PitchBook, and industry reports.'}</p>
+    <p>Live founder pipeline and AgTech market intelligence across 8 regions.</p>
   </div>
+  ${disclaimer}
+  ${pipelineSection}
   ${regionBar}
   ${snapshot}
   ${maturityIndex}
   ${capitalFlow}
-  ${fundingHistory}
   ${sectorHeatmap}
   ${dealSection}
+  ${fundingHistory}
   ${vcSection}
   ${exitSection}
   ${newsSection}
-  <div style="text-align:center;padding:16px;font-size:11px;color:var(--text-faint)">Data last updated Q3 2025. Sources: AgFunder, PitchBook, Crunchbase, company press releases. Figures are approximate.</div>`;
+  <div style="text-align:center;padding:16px;font-size:11px;color:var(--text-faint)">Market data last updated Q3 2025. Sources: AgFunder, PitchBook, Crunchbase, company press releases. Pipeline data is live from the platform.</div>`;
 }
 
-let _investorOpen = { maturity: true, flow: true, funding: false, sectors: true, deals: true, vcs: false, exits: false, news: false };
+let _investorOpen = { pipeline: true, maturity: true, flow: true, funding: false, sectors: true, deals: true, vcs: false, exits: false, news: false };
 let _investorRegionFilter = '';
 let _supabaseDeals = [];
 function investorToggle(section) { _investorOpen[section] = !_investorOpen[section]; render('investor'); }
