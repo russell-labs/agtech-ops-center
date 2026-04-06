@@ -523,6 +523,7 @@
   .tag-farmer { background:#fef9c3;color:#854d0e; } html.dark .tag-farmer { background:#713f12;color:#fde047; }
   .tag-investor { background:#dbeafe;color:#1e40af; } html.dark .tag-investor { background:#1e3a5f;color:#93c5fd; }
   .tag-advisor { background:#fef3c7;color:#92400e; } html.dark .tag-advisor { background:#78350f;color:#fde68a; }
+  .tag-ecosystem_manager { background:#dbeafe;color:#1e40af; } html.dark .tag-ecosystem_manager { background:#1e3a5f;color:#93c5fd; }
   .tag-researcher { background:#ede9fe;color:#5b21b6; } html.dark .tag-researcher { background:#3b0764;color:#c4b5fd; }
   .tag-industry_pro { background:#f1f5f9;color:#475569; } html.dark .tag-industry_pro { background:#334155;color:#cbd5e1; }
   .tag-service_provider { background:#fce7f3;color:#9d174d; } html.dark .tag-service_provider { background:#831843;color:#f9a8d4; }
@@ -768,6 +769,7 @@
     <button class="nav-item" onclick="go('accelerators',this)"><span class="nav-icon">⚡</span> Accelerator Hub</button>
     <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
     <button id="nav-investor-btn" class="nav-item" style="display:none" onclick="go('investor',this)"><span class="nav-icon">📈</span> Investor Dashboard</button>
+    <button id="nav-ecosystem-btn" class="nav-item" style="display:none" onclick="go('ecosystem_ws',this)"><span class="nav-icon">🏗️</span> Ecosystem Workspace</button>
     </div>
   </div>
   <div id="sidebar-my-tools" class="sidebar-section" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
@@ -801,12 +803,9 @@
       <option value="">👁️ View as: My Account</option>
       <option value="founder">🚀 Founder</option>
       <option value="investor">💰 Investor</option>
-      <option value="farmer">🌾 Farmer</option>
+      <option value="ecosystem_manager">🏗️ Ecosystem Manager</option>
       <option value="advisor">🧭 Advisor</option>
-      <option value="researcher">🔬 Researcher</option>
-      <option value="industry_pro">🏭 Industry Pro</option>
-      <option value="service_provider">⚖️ Service Provider</option>
-      <option value="government">🏛️ Government</option>
+      <option value="farmer">🌾 Farmer</option>
     </select>
     <button id="admin-preview-wiz-btn" style="display:none;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:10px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0" onclick="previewWizard()" title="Preview onboarding wizard for the selected persona">🧙 Wizard</button>
     <button id="notif-bell" style="display:none;position:relative;background:none;border:none;font-size:18px;cursor:pointer;padding:4px;flex-shrink:0;line-height:1" onclick="go('action',null)" title="Notifications">🔔<span id="notif-badge" style="display:none;position:absolute;top:-2px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 4px;line-height:1;border:2px solid var(--surface)"></span></button>
@@ -964,16 +963,16 @@
       <p style="margin-bottom:18px;font-size:13px;color:var(--text-muted)">Help us personalise your experience</p>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px">
         <button onclick="setFounderType('Early-Stage Founder')" class="founder-type-btn" style="padding:15px 10px;background:var(--hover);border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all .15s">
-          <div style="font-size:24px;margin-bottom:5px">🌱</div><div style="font-size:12px;font-weight:700;color:var(--text)">Early-Stage</div><div style="font-size:11px;color:var(--text-muted)">Idea to MVP</div>
+          <div style="font-size:24px;margin-bottom:5px">🌱</div><div style="font-size:12px;font-weight:700;color:var(--text)">Early-Stage Founder</div><div style="font-size:11px;color:var(--text-muted)">Idea to MVP</div>
         </button>
         <button onclick="setFounderType('Growth-Stage Founder')" class="founder-type-btn" style="padding:15px 10px;background:var(--hover);border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all .15s">
-          <div style="font-size:24px;margin-bottom:5px">📈</div><div style="font-size:12px;font-weight:700;color:var(--text)">Growth-Stage</div><div style="font-size:11px;color:var(--text-muted)">Revenue & scaling</div>
+          <div style="font-size:24px;margin-bottom:5px">📈</div><div style="font-size:12px;font-weight:700;color:var(--text)">Growth-Stage Founder</div><div style="font-size:11px;color:var(--text-muted)">Revenue & scaling</div>
         </button>
         <button onclick="setFounderType('Investor / Advisor')" class="founder-type-btn" style="padding:15px 10px;background:var(--hover);border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all .15s">
           <div style="font-size:24px;margin-bottom:5px">💼</div><div style="font-size:12px;font-weight:700;color:var(--text)">Investor / Advisor</div><div style="font-size:11px;color:var(--text-muted)">Supporting founders</div>
         </button>
-        <button onclick="setFounderType('Researcher / Educator')" class="founder-type-btn" style="padding:15px 10px;background:var(--hover);border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all .15s">
-          <div style="font-size:24px;margin-bottom:5px">🔬</div><div style="font-size:12px;font-weight:700;color:var(--text)">Researcher</div><div style="font-size:11px;color:var(--text-muted)">Academia & R&D</div>
+        <button onclick="setFounderType('Ecosystem Manager')" class="founder-type-btn" style="padding:15px 10px;background:var(--hover);border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all .15s">
+          <div style="font-size:24px;margin-bottom:5px">🏗️</div><div style="font-size:12px;font-weight:700;color:var(--text)">Ecosystem Manager</div><div style="font-size:11px;color:var(--text-muted)">Accelerators & hubs</div>
         </button>
       </div>
       <button onclick="dismissOnboard()" style="width:100%;padding:8px;background:none;border:none;font-size:12px;color:var(--text-faint);cursor:pointer">Skip this step</button>
@@ -1169,15 +1168,12 @@ function notifyNewUser(name, email) {
 // PERSONA-TAILORED UI
 // ══════════════════════════════════════════════════════════════
 const PERSONA_UI = {
-  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','crops','resources'] },
-  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','crops','resources'] },
-  'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','crops','resources'], extraNav:['investor'] },
-  'farmer':        { brand:'Farmer Ops Center',   icon:'🌾', tagline:'Discover AgTech innovations built for your operation.', nav:['overview','glossary','ecosystem','crops','resources'] },
-  'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','resources'] },
-  'researcher':    { brand:'Research Ops Center',  icon:'R', tagline:'AgTech research, industry data, and collaboration opportunities.', nav:['overview','glossary','ecosystem','crops','resources'] },
-  'service':       { brand:'AgTech Ops Center',    icon:'S', tagline:'Serve the AgTech ecosystem with market intelligence.', nav:['overview','glossary','ecosystem','resources'] },
-  'industry':      { brand:'AgTech Ops Center',    icon:'⚙️', tagline:'Industry intelligence for agriculture professionals.', nav:['overview','glossary','ecosystem','crops','resources'] },
-  'government':    { brand:'AgTech Policy Center', icon:'🏛️', tagline:'Policy intelligence and AgTech ecosystem data.', nav:['overview','glossary','ecosystem','resources'] }
+  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','crops','resources','mentors','venture','accelerators'] },
+  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','crops','resources','mentors','venture','accelerators'] },
+  'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','crops','resources','mentors'], extraNav:['investor'] },
+  'ecosystem_mgr': { brand:'Ecosystem Ops Center', icon:'🏗️', tagline:'Your command center for managing AgTech programs and cohorts.', nav:['overview','ecosystem','mentors','accelerators','crops','resources','glossary'], extraNav:['ecosystem_ws'] },
+  'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','mentors','resources'] },
+  'farmer':        { brand:'Farmer Ops Center',   icon:'🌾', tagline:'Discover AgTech innovations built for your operation.', nav:['overview','glossary','ecosystem','crops','resources'] }
 };
 
 function getActivePersona() {
@@ -1192,12 +1188,9 @@ function getPersonaKey(profile) {
   const map = {
     'founder': (profile.company_stage && ['series_a','series_b','scaling','growth'].some(s => (profile.company_stage||'').includes(s))) ? 'growth-stage' : 'early-stage',
     'investor': 'investor',
-    'farmer': 'farmer',
+    'ecosystem_manager': 'ecosystem_mgr',
     'advisor': 'advisor',
-    'researcher': 'researcher',
-    'industry_pro': 'industry',
-    'service_provider': 'service',
-    'government': 'government'
+    'farmer': 'farmer'
   };
   return map[p] || 'early-stage'; // default fallback
 }
@@ -1250,6 +1243,15 @@ function applyPersonaUI(profile) {
     const hasInvestorSecondary = profile.secondary_role && (profile.secondary_role === 'investor' || profile.secondary_role.includes('investor'));
     const showInvestor = key === 'investor' || key === 'advisor' || hasInvestorTag || hasInvestorSecondary;
     investorBtn.style.display = showInvestor ? 'block' : 'none';
+  }
+
+  // Show/hide Ecosystem Workspace nav button
+  const ecoBtn = document.getElementById('nav-ecosystem-btn');
+  if (ecoBtn) {
+    const hasEcoTag = (profile.admin_tags || []).includes('ecosystem_access');
+    const hasEcoSecondary = profile.secondary_role === 'ecosystem_manager';
+    const showEco = key === 'ecosystem_mgr' || hasEcoTag || hasEcoSecondary || isAdmin;
+    ecoBtn.style.display = showEco ? 'block' : 'none';
   }
 
   // Rename Journey and Toolkit for non-founder personas
@@ -2262,10 +2264,7 @@ function pgOverview(){
       investor: { icon:'📈', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your deal flow dashboard is live. Check the <a href="#" onclick="go(\'investor\');return false" style="color:var(--green);font-weight:600">Investor Dashboard</a> for founder pipeline and market data.' },
       farmer: { icon:'🌾', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Explore AgTech innovations built for your operation. Browse <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem Overview</a> for your region.' },
       advisor: { icon:'🧭', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Mentor the next generation of AgTech. See <a href="#" onclick="go(\'hub\');return false" style="color:var(--green);font-weight:600">Community Hub</a> for connections.' },
-      researcher: { icon:'🔬', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Research intelligence and collaboration. Your <a href="#" onclick="go(\'action\');return false" style="color:var(--green);font-weight:600">Action Center</a> has personalized recommendations.' },
-      industry_pro: { icon:'⚙️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Industry intelligence for agriculture professionals. Explore the <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem</a>.' },
-      service_provider: { icon:'⚖️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Serve the AgTech ecosystem. Browse <a href="#" onclick="go(\'hub\');return false" style="color:var(--green);font-weight:600">Community Hub</a> to find founders.' },
-      government: { icon:'🏛️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Policy intelligence and ecosystem data. See <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem Overview</a> for your region.' }
+      ecosystem_manager: { icon:'🏗️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your program workspace is ready. Open your <a href="#" onclick="go(\'ecosystem_ws\');return false" style="color:var(--green);font-weight:600">Ecosystem Workspace</a> to manage your startup pipeline.' }
     };
     const m = msgs[_wp] || msgs.founder;
     return `<div style="padding:14px 18px;border-radius:10px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.15);margin-bottom:20px;display:flex;gap:12px;align-items:center">
@@ -7934,12 +7933,9 @@ async function updateIntroTierPref(userId, tierPref) {
 const PERSONAS = [
   { id:'founder', icon:'🚀', label:'Founder', desc:'Building an AgTech startup' },
   { id:'investor', icon:'💰', label:'Investor', desc:'Investing in AgTech' },
-  { id:'farmer', icon:'🌾', label:'Farmer / Grower', desc:'Farming or ranching operations' },
+  { id:'ecosystem_manager', icon:'🏗️', label:'Ecosystem Manager', desc:'Running accelerators, incubators & hubs' },
   { id:'advisor', icon:'🧭', label:'Advisor / Mentor', desc:'Guiding startups' },
-  { id:'researcher', icon:'🔬', label:'Researcher', desc:'Academic or R&D' },
-  { id:'industry_pro', icon:'🏭', label:'Industry Professional', desc:'Working in agriculture' },
-  { id:'service_provider', icon:'⚖️', label:'Service Provider', desc:'Legal, finance, marketing' },
-  { id:'government', icon:'🏛️', label:'Government / Policy', desc:'Ag policy & regulation' }
+  { id:'farmer', icon:'🌾', label:'Farmer / Grower', desc:'Farming or ranching operations' }
 ];
 const FARM_TYPES = ['Row Crops','Greenhouse / Indoor','Livestock','Dairy','Orchard / Vineyard','Mixed Farming','Organic','Specialty Crops'];
 const FARM_INTERESTS = ['Trying new technology','Joining pilot programs','Connecting with startups','Learning about innovations','Finding funding/grants','Sustainability practices'];
@@ -8073,16 +8069,19 @@ function wizRender() {
       <input class="wiz-input" id="wiz-advcount" value="${wizData.advising_count||''}" oninput="wizData.advising_count=this.value" placeholder="e.g. 3, None yet">
       <label class="wiz-label">What kind of startups do you want to help?</label>
       <textarea class="wiz-textarea" id="wiz-advinterests" oninput="wizData.advisor_interests=this.value" placeholder="Stage, focus area, type of help...">${wizData.advisor_interests||''}</textarea>`;
-    } else if (wizData.persona === 'researcher') {
-      body = `<label class="wiz-label">Institution</label>
-      <input class="wiz-input" id="wiz-institution" value="${wizData.institution||''}" oninput="wizData.institution=this.value" placeholder="e.g. University of Guelph">
-      <label class="wiz-label">Research Focus</label>
-      <textarea class="wiz-textarea" id="wiz-research" oninput="wizData.research_focus=this.value" placeholder="Describe your research area...">${wizData.research_focus||''}</textarea>
-      <label class="wiz-label">Open to startup collaboration?</label>
-      <div class="chip-grid">
-        <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=true;wizRender()">Yes, actively looking</div>
-        <div class="chip ${!wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=false;wizRender()">Not at this time</div>
-      </div>`;
+    } else if (wizData.persona === 'ecosystem_manager') {
+      const PROGRAM_TYPES = ['Accelerator','Incubator','Innovation Hub','University Program','Government Program','Corporate Venture','Tech Validator','Regional Hub'];
+      const ECO_NEEDS = ['Startup Deal Flow','Mentor Network','Investor Connections','Program Metrics & Reporting','Cohort Management','Cross-Ecosystem Sharing','Pilot Matching with Farms','Grant & Funding Tracking'];
+      body = `<label class="wiz-label">Program / Organization Name</label>
+      <input class="wiz-input" id="wiz-program-name" value="${wizData.company_name||wizData.organization||''}" oninput="wizData.company_name=this.value" placeholder="e.g. Grand Farm, WET Center, Plug and Play">
+      <label class="wiz-label">Program Type</label>
+      <div class="chip-grid">${PROGRAM_TYPES.map(t => `<div class="chip ${(wizData.agtech_focus||[]).includes(t)?'selected':''}" onclick="wizToggleChip('agtech_focus','${t}')">${t}</div>`).join('')}</div>
+      <label class="wiz-label">How many startups are in your current cohort?</label>
+      <input class="wiz-input" id="wiz-cohort-size" value="${wizData.team_size||''}" oninput="wizData.team_size=this.value" placeholder="e.g. 12, 25, 50+">
+      <label class="wiz-label">What does your program need most?</label>
+      <div class="chip-grid">${ECO_NEEDS.map(n => `<div class="chip ${(wizData.biggest_needs||[]).includes(n)?'selected':''}" onclick="wizToggleChip('biggest_needs','${n}')">${n}</div>`).join('')}</div>
+      <label class="wiz-label">Describe your ecosystem</label>
+      <textarea class="wiz-textarea" id="wiz-eco-desc" oninput="wizData.what_building=this.value" placeholder="What types of startups do you support? What's your geographic focus? What makes your program unique?">${wizData.what_building||''}</textarea>`;
     } else if (wizData.persona === 'farmer') {
       body = `<label class="wiz-label">Farm Type</label>
       <div class="chip-grid">${FARM_TYPES.map(f => `<div class="chip ${(wizData.agtech_focus||[]).includes(f)?'selected':''}" onclick="wizToggleChip('agtech_focus','${f}')">${f}</div>`).join('')}</div>
@@ -8098,14 +8097,6 @@ function wizRender() {
       <div class="chip-grid">
         <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=true;wizRender()">Yes, actively looking</div>
         <div class="chip ${!wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=false;wizRender()">Maybe, depends on the product</div>
-      </div>`;
-    } else if (wizData.persona === 'service_provider') {
-      body = `<label class="wiz-label">Type of Service</label>
-      <input class="wiz-input" id="wiz-service" value="${wizData.service_type||''}" oninput="wizData.service_type=this.value" placeholder="e.g. IP Law, Accounting, Marketing Agency">
-      <label class="wiz-label">Experience working with startups?</label>
-      <div class="chip-grid">
-        <div class="chip ${wizData.startup_experience?'selected':''}" onclick="wizData.startup_experience=true;wizRender()">Yes</div>
-        <div class="chip ${!wizData.startup_experience?'selected':''}" onclick="wizData.startup_experience=false;wizRender()">No, but interested</div>
       </div>`;
     } else {
       body = `<label class="wiz-label">Your Role</label>
@@ -8131,12 +8122,9 @@ function wizRender() {
     const personaValue = {
       founder: 'curated deal flow visibility, investor introductions at the right stage, a trusted network of advisors, and structured milestone tracking that proves your traction to the market',
       investor: 'pre-qualified AgTech deal flow with milestone-verified founder profiles, structured due diligence data, and warm introductions to the highest-potential startups in the ecosystem',
+      ecosystem_manager: 'a private workspace to manage your startup pipeline, coordinate mentors and investors, track cohort progress, and generate program reports — replacing your Airtable, Google Drive, and spreadsheet patchwork with one intelligent layer',
       advisor: 'meaningful connections with founders who match your expertise, recognition for your contributions through our milestone system, and a network of co-advisors across the AgTech landscape',
-      researcher: 'pathways to commercialize your research through startup collaborations, visibility to founders who need your expertise, and a network bridging academia and industry',
-      farmer: 'early access to AgTech innovations, pilot partnerships with startups building tools for your operation, and a direct voice shaping the products being built for agriculture',
-      service_provider: 'qualified leads from AgTech founders who need your services, ecosystem visibility, and trusted partner status through our milestone verification system',
-      government: 'real-time visibility into your AgTech ecosystem\'s health, data-driven insights for program design, and a direct channel to the founders and investors in your region',
-      industry_pro: 'access to innovative startups solving problems in your supply chain, partnership opportunities, and the ability to influence AgTech innovation from the inside'
+      farmer: 'early access to AgTech innovations, pilot partnerships with startups building tools for your operation, and a direct voice shaping the products being built for agriculture'
     }[wizData.persona] || 'access to the AgTech ecosystem, curated connections, and milestone-based progression that unlocks deeper opportunities as you contribute';
 
     body = `<div style="text-align:center;margin-bottom:16px">
@@ -11310,13 +11298,424 @@ let _investorRegionFilter = '';
 let _supabaseDeals = [];
 function investorToggle(section) { _investorOpen[section] = !_investorOpen[section]; render('investor'); }
 
+// ══════════════════════════════════════════════════════════════
+// ECOSYSTEM MANAGER WORKSPACE
+// ══════════════════════════════════════════════════════════════
+let _ecoTab = 'pipeline';
+let _ecoPipelineFilter = 'all';
+let _ecoStartups = [];
+let _ecoMentorAssignments = [];
+let _ecoActivityLog = [];
+
+// Initialize ecosystem workspace data from localStorage
+function loadEcoData() {
+  try {
+    _ecoStartups = JSON.parse(localStorage.getItem('foc_eco_startups') || '[]');
+    _ecoMentorAssignments = JSON.parse(localStorage.getItem('foc_eco_mentor_assign') || '[]');
+    _ecoActivityLog = JSON.parse(localStorage.getItem('foc_eco_activity') || '[]');
+  } catch(e) { _ecoStartups = []; _ecoMentorAssignments = []; _ecoActivityLog = []; }
+  // Seed demo data if empty
+  if (_ecoStartups.length === 0) {
+    _ecoStartups = [
+      { id:1, name:'CropSense AI', founder:'Sarah Chen', email:'sarah@cropsense.ai', stage:'mvp', sector:'Precision Agriculture', status:'active', cohort:'Spring 2026', joined:'2026-01-15', mentors:['Walt Duflock'], notes:'Computer vision for pest detection. Strong technical team.', milestones:[{name:'MVP Complete',done:true},{name:'First Pilot',done:true},{name:'LOI Secured',done:false},{name:'Seed Round',done:false}], readiness:65 },
+      { id:2, name:'AgriChain', founder:'Miguel Torres', email:'miguel@agrichain.io', stage:'idea', sector:'Supply Chain', status:'screening', cohort:'Spring 2026', joined:'2026-02-20', mentors:[], notes:'Blockchain-based traceability for organic produce.', milestones:[{name:'MVP Complete',done:false},{name:'First Pilot',done:false},{name:'LOI Secured',done:false},{name:'Seed Round',done:false}], readiness:20 },
+      { id:3, name:'SoilSync', founder:'Priya Patel', email:'priya@soilsync.com', stage:'revenue', sector:'Soil & Water Tech', status:'active', cohort:'Fall 2025', joined:'2025-09-01', mentors:['Bob Lawson','Lisa Chen'], notes:'IoT soil sensors with ML analytics. $45K MRR.', milestones:[{name:'MVP Complete',done:true},{name:'First Pilot',done:true},{name:'LOI Secured',done:true},{name:'Seed Round',done:false}], readiness:85 },
+      { id:4, name:'FarmBot Plus', founder:'James Wright', email:'james@farmbotplus.com', stage:'mvp', sector:'Robotics & Automation', status:'active', cohort:'Spring 2026', joined:'2026-01-10', mentors:['Walt Duflock'], notes:'Autonomous weeding robot for row crops. Hardware prototype v2.', milestones:[{name:'MVP Complete',done:true},{name:'First Pilot',done:false},{name:'LOI Secured',done:false},{name:'Seed Round',done:false}], readiness:45 },
+      { id:5, name:'GreenVault', founder:'Amara Osei', email:'amara@greenvault.ag', stage:'idea', sector:'Sustainability / Climate', status:'graduated', cohort:'Fall 2025', joined:'2025-06-15', mentors:['Diana Torres'], notes:'Carbon credit marketplace for smallholder farms. Raised $1.2M seed.', milestones:[{name:'MVP Complete',done:true},{name:'First Pilot',done:true},{name:'LOI Secured',done:true},{name:'Seed Round',done:true}], readiness:100 },
+      { id:6, name:'AquaYield', founder:'Tom Baker', email:'tom@aquayield.co', stage:'mvp', sector:'Indoor / Vertical Farming', status:'paused', cohort:'Spring 2026', joined:'2026-02-01', mentors:[], notes:'Hydroponic nutrient optimization. Founder taking personal leave.', milestones:[{name:'MVP Complete',done:true},{name:'First Pilot',done:false},{name:'LOI Secured',done:false},{name:'Seed Round',done:false}], readiness:35 }
+    ];
+    saveEcoData();
+  }
+}
+
+function saveEcoData() {
+  try {
+    localStorage.setItem('foc_eco_startups', JSON.stringify(_ecoStartups));
+    localStorage.setItem('foc_eco_mentor_assign', JSON.stringify(_ecoMentorAssignments));
+    localStorage.setItem('foc_eco_activity', JSON.stringify(_ecoActivityLog));
+  } catch(e) {}
+}
+
+function ecoAddActivity(text) {
+  _ecoActivityLog.unshift({ text, ts: new Date().toISOString() });
+  if (_ecoActivityLog.length > 100) _ecoActivityLog = _ecoActivityLog.slice(0, 100);
+  saveEcoData();
+}
+
+function ecoSwitchTab(tab) { _ecoTab = tab; render('ecosystem_ws'); }
+function ecoPipelineFilter(f) { _ecoPipelineFilter = f; render('ecosystem_ws'); }
+
+function ecoAddStartup() {
+  const name = prompt('Startup name:');
+  if (!name) return;
+  const founder = prompt('Founder name:');
+  const email = prompt('Founder email:');
+  const sector = prompt('Sector (e.g. Precision Agriculture, Supply Chain):') || 'General AgTech';
+  const id = Math.max(0, ..._ecoStartups.map(s=>s.id)) + 1;
+  _ecoStartups.push({
+    id, name, founder: founder||'TBD', email: email||'', stage:'idea', sector,
+    status:'screening', cohort:'Spring 2026', joined: new Date().toISOString().split('T')[0],
+    mentors:[], notes:'', milestones:[{name:'MVP Complete',done:false},{name:'First Pilot',done:false},{name:'LOI Secured',done:false},{name:'Seed Round',done:false}], readiness:0
+  });
+  ecoAddActivity('Added startup: ' + name);
+  saveEcoData();
+  render('ecosystem_ws');
+}
+
+function ecoUpdateStatus(id, newStatus) {
+  const s = _ecoStartups.find(x=>x.id===id);
+  if (!s) return;
+  const old = s.status;
+  s.status = newStatus;
+  ecoAddActivity(s.name + ': ' + old + ' → ' + newStatus);
+  saveEcoData();
+  render('ecosystem_ws');
+}
+
+function ecoToggleMilestone(startupId, milestoneIdx) {
+  const s = _ecoStartups.find(x=>x.id===startupId);
+  if (!s || !s.milestones[milestoneIdx]) return;
+  s.milestones[milestoneIdx].done = !s.milestones[milestoneIdx].done;
+  s.readiness = Math.round((s.milestones.filter(m=>m.done).length / s.milestones.length) * 100);
+  ecoAddActivity(s.name + ': ' + (s.milestones[milestoneIdx].done ? '✅' : '⬜') + ' ' + s.milestones[milestoneIdx].name);
+  saveEcoData();
+  render('ecosystem_ws');
+}
+
+function ecoAssignMentor(startupId) {
+  const s = _ecoStartups.find(x=>x.id===startupId);
+  if (!s) return;
+  const mentorName = prompt('Mentor name to assign to ' + s.name + ':');
+  if (!mentorName) return;
+  if (!s.mentors.includes(mentorName)) {
+    s.mentors.push(mentorName);
+    ecoAddActivity('Assigned ' + mentorName + ' → ' + s.name);
+    saveEcoData();
+    render('ecosystem_ws');
+  }
+}
+
+function ecoRemoveMentor(startupId, mentorName) {
+  const s = _ecoStartups.find(x=>x.id===startupId);
+  if (!s) return;
+  s.mentors = s.mentors.filter(m => m !== mentorName);
+  ecoAddActivity('Removed ' + mentorName + ' from ' + s.name);
+  saveEcoData();
+  render('ecosystem_ws');
+}
+
+function ecoEditNotes(startupId) {
+  const s = _ecoStartups.find(x=>x.id===startupId);
+  if (!s) return;
+  const notes = prompt('Notes for ' + s.name + ':', s.notes);
+  if (notes !== null) {
+    s.notes = notes;
+    saveEcoData();
+    render('ecosystem_ws');
+  }
+}
+
+let _ecoDetailId = null;
+function ecoShowDetail(id) { _ecoDetailId = id; render('ecosystem_ws'); }
+function ecoCloseDetail() { _ecoDetailId = null; render('ecosystem_ws'); }
+
+function pgEcosystemWorkspace() {
+  loadEcoData();
+  const profile = _userProfile || {};
+  const programName = profile.company_name || profile.organization || 'My Program';
+
+  // Stats
+  const total = _ecoStartups.length;
+  const active = _ecoStartups.filter(s=>s.status==='active').length;
+  const screening = _ecoStartups.filter(s=>s.status==='screening').length;
+  const graduated = _ecoStartups.filter(s=>s.status==='graduated').length;
+  const paused = _ecoStartups.filter(s=>s.status==='paused').length;
+  const avgReadiness = total ? Math.round(_ecoStartups.reduce((a,s)=>a+s.readiness,0)/total) : 0;
+  const totalMentors = [...new Set(_ecoStartups.flatMap(s=>s.mentors))].length;
+  const needMentors = _ecoStartups.filter(s=>s.status==='active' && s.mentors.length===0).length;
+
+  // Tabs
+  const tabs = [
+    {id:'pipeline',label:'Startup Pipeline',icon:'📊'},
+    {id:'mentors',label:'Mentor Coordination',icon:'🧑‍🏫'},
+    {id:'metrics',label:'Program Metrics',icon:'📈'},
+    {id:'activity',label:'Activity Log',icon:'📋'}
+  ];
+  const tabBar = tabs.map(t => `<button onclick="ecoSwitchTab('${t.id}')" style="padding:10px 18px;border:none;background:${_ecoTab===t.id?'var(--green)':'var(--hover)'};color:${_ecoTab===t.id?'#fff':'var(--text-muted)'};border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">${t.icon} ${t.label}</button>`).join('');
+
+  // Detail view
+  if (_ecoDetailId) {
+    const s = _ecoStartups.find(x=>x.id===_ecoDetailId);
+    if (!s) { _ecoDetailId = null; }
+    else {
+      const stageColors = {idea:'#3b82f6',mvp:'#f59e0b',revenue:'#22c55e',scaling:'#8b5cf6'};
+      const statusColors = {screening:'#6366f1',active:'#22c55e',paused:'#f59e0b',graduated:'#8b5cf6',dropped:'#ef4444'};
+      const milestonesHtml = s.milestones.map((m,i) => `
+        <div onclick="ecoToggleMilestone(${s.id},${i})" style="display:flex;align-items:center;gap:10px;padding:12px;background:${m.done?'var(--accent-bg)':'var(--hover)'};border:1px solid ${m.done?'var(--green-mid)':'var(--border)'};border-radius:8px;cursor:pointer;transition:all .15s">
+          <div style="width:24px;height:24px;border-radius:6px;border:2px solid ${m.done?'var(--green)':'var(--border)'};background:${m.done?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0">${m.done?'✓':''}</div>
+          <span style="font-size:13px;font-weight:600;color:${m.done?'var(--green)':'var(--text)'}">${m.name}</span>
+        </div>`).join('');
+
+      const mentorBadges = s.mentors.length ? s.mentors.map(m => `<span style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:6px;font-size:11px;font-weight:600;color:var(--green)">${m} <span onclick="event.stopPropagation();ecoRemoveMentor(${s.id},'${m.replace(/'/g,"\\'")}')" style="cursor:pointer;color:var(--text-faint);font-size:14px;margin-left:2px">&times;</span></span>`).join(' ') : '<span style="color:var(--text-faint);font-size:12px">No mentors assigned</span>';
+
+      // Readiness ring
+      const pct = s.readiness;
+      const circumference = 2 * Math.PI * 38;
+      const offset = circumference - (pct/100) * circumference;
+      const ringColor = pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
+
+      return `<div style="max-width:900px;margin:0 auto;padding:24px">
+        <button onclick="ecoCloseDetail()" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:4px">← Back to Pipeline</button>
+        <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:24px;flex-wrap:wrap">
+          <div style="flex:1;min-width:300px">
+            <h1 style="font-size:26px;font-weight:900;color:var(--text);margin:0 0 6px">${s.name}</h1>
+            <div style="font-size:14px;color:var(--text-muted);margin-bottom:12px">${s.founder} · ${s.email || 'No email'}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;background:${stageColors[s.stage]||'#6b7280'}22;color:${stageColors[s.stage]||'#6b7280'};border:1px solid ${stageColors[s.stage]||'#6b7280'}44">${s.stage.toUpperCase()}</span>
+              <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;background:${statusColors[s.status]||'#6b7280'}22;color:${statusColors[s.status]||'#6b7280'};border:1px solid ${statusColors[s.status]||'#6b7280'}44">${s.status.toUpperCase()}</span>
+              <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:var(--hover);color:var(--text-muted);border:1px solid var(--border)">${s.sector}</span>
+              <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:var(--hover);color:var(--text-muted);border:1px solid var(--border)">Cohort: ${s.cohort}</span>
+            </div>
+            <div style="padding:14px;background:var(--hover);border:1px solid var(--border);border-radius:10px;margin-bottom:16px">
+              <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px">NOTES</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.7">${s.notes || '<em style="color:var(--text-faint)">No notes yet</em>'}</div>
+              <button onclick="ecoEditNotes(${s.id})" style="margin-top:8px;padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text-muted);cursor:pointer">Edit Notes</button>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" stroke-width="6"/>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="${ringColor}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" transform="rotate(-90 50 50)"/>
+              <text x="50" y="46" text-anchor="middle" font-size="20" font-weight="900" fill="${ringColor}">${pct}%</text>
+              <text x="50" y="60" text-anchor="middle" font-size="8" fill="var(--text-muted)">READINESS</text>
+            </svg>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+          <div>
+            <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 12px">Milestones</h3>
+            <div style="display:flex;flex-direction:column;gap:8px">${milestonesHtml}</div>
+          </div>
+          <div>
+            <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 12px">Assigned Mentors</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${mentorBadges}</div>
+            <button onclick="ecoAssignMentor(${s.id})" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ Assign Mentor</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:var(--text-muted);padding:8px 0">Move to:</span>
+          ${['screening','active','paused','graduated','dropped'].filter(st=>st!==s.status).map(st => `<button onclick="ecoUpdateStatus(${s.id},'${st}')" style="padding:6px 14px;background:${statusColors[st]||'#6b7280'}15;color:${statusColors[st]||'#6b7280'};border:1px solid ${statusColors[st]||'#6b7280'}44;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">${st.charAt(0).toUpperCase()+st.slice(1)}</button>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+
+  let content = '';
+
+  if (_ecoTab === 'pipeline') {
+    const statusOrder = ['screening','active','paused','graduated','dropped'];
+    const statusLabels = {screening:'🔍 Screening',active:'🟢 Active',paused:'⏸️ Paused',graduated:'🎓 Graduated',dropped:'❌ Dropped'};
+    const statusColors = {screening:'#6366f1',active:'#22c55e',paused:'#f59e0b',graduated:'#8b5cf6',dropped:'#ef4444'};
+
+    // Filter buttons
+    const filterBtns = [{id:'all',label:'All ('+total+')'}].concat(statusOrder.map(st => ({id:st,label:statusLabels[st]+' ('+_ecoStartups.filter(s=>s.status===st).length+')'}))).map(f => `<button onclick="ecoPipelineFilter('${f.id}')" style="padding:6px 14px;border:1px solid ${_ecoPipelineFilter===f.id?'var(--green)':'var(--border)'};background:${_ecoPipelineFilter===f.id?'var(--accent-bg)':'var(--surface)'};color:${_ecoPipelineFilter===f.id?'var(--green)':'var(--text-muted)'};border-radius:8px;font-size:11px;font-weight:600;cursor:pointer">${f.label}</button>`).join('');
+
+    const filtered = _ecoPipelineFilter === 'all' ? _ecoStartups : _ecoStartups.filter(s=>s.status===_ecoPipelineFilter);
+    const stageLabels = {idea:'Idea',mvp:'MVP',revenue:'Revenue',scaling:'Scaling'};
+    const stageColors = {idea:'#3b82f6',mvp:'#f59e0b',revenue:'#22c55e',scaling:'#8b5cf6'};
+
+    const cards = filtered.map(s => {
+      const pct = s.readiness;
+      const barColor = pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
+      return `<div onclick="ecoShowDetail(${s.id})" style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .15s;border-left:4px solid ${statusColors[s.status]||'var(--border)'}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--text)">${s.name}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${s.founder}</div>
+          </div>
+          <span style="padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;background:${stageColors[s.stage]||'#6b7280'}18;color:${stageColors[s.stage]||'#6b7280'}">${stageLabels[s.stage]||s.stage}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">${s.sector} · ${s.cohort}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div style="flex:1;height:6px;background:var(--hover);border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${barColor};border-radius:3px;transition:width .3s"></div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${barColor}">${pct}%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;gap:4px">${s.mentors.slice(0,2).map(m => `<span style="padding:2px 6px;background:var(--accent-bg);border-radius:4px;font-size:10px;color:var(--green);font-weight:600">${m.split(' ')[0]}</span>`).join('')}${s.mentors.length>2?`<span style="font-size:10px;color:var(--text-faint)">+${s.mentors.length-2}</span>`:''}</div>
+          <span style="font-size:10px;color:var(--text-faint)">${s.milestones.filter(m=>m.done).length}/${s.milestones.length} milestones</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    content = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${filterBtns}</div>
+      <button onclick="ecoAddStartup()" style="padding:8px 18px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ Add Startup</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">${cards || '<div style="text-align:center;padding:40px;color:var(--text-faint)">No startups in this view</div>'}</div>`;
+
+  } else if (_ecoTab === 'mentors') {
+    // Mentor coordination view
+    const allMentors = [...new Set(_ecoStartups.flatMap(s=>s.mentors))].sort();
+    const unmentored = _ecoStartups.filter(s=>s.status==='active' && s.mentors.length===0);
+
+    const mentorCards = allMentors.map(m => {
+      const assigned = _ecoStartups.filter(s=>s.mentors.includes(m));
+      return `<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff">${m.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${m}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${assigned.length} startup${assigned.length!==1?'s':''} assigned</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">${assigned.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--hover);border-radius:6px;font-size:11px">
+          <span style="font-weight:600;color:var(--text)">${s.name}</span>
+          <span style="color:var(--text-faint)">${s.stage}</span>
+        </div>`).join('')}</div>
+      </div>`;
+    }).join('');
+
+    const unmentoredCards = unmentored.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface);border:1px solid #fde68a;border-radius:8px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${s.name}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${s.founder} · ${s.sector}</div>
+      </div>
+      <button onclick="ecoAssignMentor(${s.id})" style="padding:6px 14px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Assign</button>
+    </div>`).join('');
+
+    content = `${unmentored.length ? `<div style="margin-bottom:20px">
+      <h3 style="font-size:14px;font-weight:800;color:#f59e0b;margin:0 0 10px">⚠️ Active Startups Without Mentors (${unmentored.length})</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">${unmentoredCards}</div>
+    </div>` : ''}
+    <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 12px">Mentor Assignments</h3>
+    ${allMentors.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">${mentorCards}</div>` : '<div style="text-align:center;padding:40px;color:var(--text-faint)">No mentors assigned yet. Open a startup detail to assign mentors.</div>'}`;
+
+  } else if (_ecoTab === 'metrics') {
+    // Program metrics
+    const stagesCount = {idea:0,mvp:0,revenue:0,scaling:0};
+    _ecoStartups.forEach(s => { if (stagesCount[s.stage] !== undefined) stagesCount[s.stage]++; });
+    const sectors = {};
+    _ecoStartups.forEach(s => { sectors[s.sector] = (sectors[s.sector]||0)+1; });
+    const sortedSectors = Object.entries(sectors).sort((a,b)=>b[1]-a[1]);
+    const topPerformers = [..._ecoStartups].sort((a,b)=>b.readiness-a.readiness).slice(0,5);
+
+    const stageBar = (label, count, color) => {
+      const pct = total ? Math.round((count/total)*100) : 0;
+      return `<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="font-weight:600;color:var(--text)">${label}</span><span style="color:var(--text-muted)">${count} (${pct}%)</span></div>
+        <div style="height:8px;background:var(--hover);border-radius:4px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:4px"></div></div>
+      </div>`;
+    };
+
+    content = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
+      <div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+        <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 16px">Pipeline by Stage</h3>
+        ${stageBar('Idea / Research', stagesCount.idea, '#3b82f6')}
+        ${stageBar('MVP / Prototype', stagesCount.mvp, '#f59e0b')}
+        ${stageBar('Early Revenue', stagesCount.revenue, '#22c55e')}
+        ${stageBar('Scaling', stagesCount.scaling, '#8b5cf6')}
+      </div>
+      <div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+        <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 16px">Sectors</h3>
+        ${sortedSectors.map(([sector,count]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--hover);font-size:12px"><span style="color:var(--text)">${sector}</span><span style="font-weight:700;color:var(--green)">${count}</span></div>`).join('')}
+      </div>
+      <div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+        <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 16px">Top Performers</h3>
+        ${topPerformers.map((s,i) => {
+          const barColor = s.readiness >= 75 ? '#22c55e' : s.readiness >= 40 ? '#f59e0b' : '#ef4444';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i<topPerformers.length-1?'border-bottom:1px solid var(--hover)':''}">
+            <span style="font-size:16px;font-weight:900;color:var(--text-faint);width:20px">${i+1}</span>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:700;color:var(--text)">${s.name}</div>
+              <div style="font-size:10px;color:var(--text-muted)">${s.founder}</div>
+            </div>
+            <span style="font-size:13px;font-weight:800;color:${barColor}">${s.readiness}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+        <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 16px">Program Health</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="text-align:center;padding:14px;background:var(--accent-bg);border-radius:8px">
+            <div style="font-size:24px;font-weight:900;color:var(--green)">${avgReadiness}%</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Avg Readiness</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--hover);border-radius:8px">
+            <div style="font-size:24px;font-weight:900;color:var(--text)">${totalMentors}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Active Mentors</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:${needMentors>0?'#fef3c7':'var(--hover)'};border-radius:8px">
+            <div style="font-size:24px;font-weight:900;color:${needMentors>0?'#f59e0b':'var(--text)'}">${needMentors}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Need Mentors</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:#f0fdf4;border-radius:8px">
+            <div style="font-size:24px;font-weight:900;color:#8b5cf6">${graduated}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Graduated</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  } else if (_ecoTab === 'activity') {
+    const logItems = _ecoActivityLog.slice(0, 50).map(a => {
+      const d = new Date(a.ts);
+      const timeStr = d.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+      return `<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--hover)">
+        <div style="font-size:11px;color:var(--text-faint);min-width:110px;white-space:nowrap">${timeStr}</div>
+        <div style="font-size:12px;color:var(--text)">${a.text}</div>
+      </div>`;
+    }).join('');
+
+    content = `<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+      <h3 style="font-size:14px;font-weight:800;color:var(--text);margin:0 0 16px">Recent Activity</h3>
+      ${logItems || '<div style="text-align:center;padding:40px;color:var(--text-faint)">No activity yet. Start managing your startups to see activity here.</div>'}
+    </div>`;
+  }
+
+  // Stat cards
+  const statCards = [
+    {label:'Total Startups',value:total,icon:'🚀',color:'var(--green)'},
+    {label:'Active',value:active,icon:'🟢',color:'#22c55e'},
+    {label:'Screening',value:screening,icon:'🔍',color:'#6366f1'},
+    {label:'Graduated',value:graduated,icon:'🎓',color:'#8b5cf6'},
+    {label:'Avg Readiness',value:avgReadiness+'%',icon:'📊',color:avgReadiness>=60?'#22c55e':avgReadiness>=30?'#f59e0b':'#ef4444'},
+    {label:'Mentors Active',value:totalMentors,icon:'🧑‍🏫',color:'var(--green)'}
+  ].map(s => `<div style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;text-align:center">
+    <div style="font-size:20px;margin-bottom:4px">${s.icon}</div>
+    <div style="font-size:22px;font-weight:900;color:${s.color}">${s.value}</div>
+    <div style="font-size:10px;font-weight:600;color:var(--text-muted);margin-top:2px">${s.label}</div>
+  </div>`).join('');
+
+  return `<div style="max-width:1100px;margin:0 auto;padding:24px">
+    <div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:900">🏗️</div>
+        <div>
+          <h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0">Ecosystem Workspace</h1>
+          <div style="font-size:13px;color:var(--text-muted)">${programName} · Your command center for managing startups, mentors, and program outcomes</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px">${statCards}</div>
+
+    <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">${tabBar}</div>
+
+    ${content}
+  </div>`;
+}
+
 const pages = {
   overview: pgOverview, segments: pgSegments, journey: pgJourney, glossary: pgGlossary,
   documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem,
   crops: pgCrops, mentors: pgMentors, accelerators: pgAccelerators, venture: pgVenture, resources: pgResources,
   admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone,
   connections: pgUserConnections, hub: pgCommunityHub, action: pgActionCenter,
-  investor: pgInvestorDashboard
+  investor: pgInvestorDashboard, ecosystem_ws: pgEcosystemWorkspace
 };
 
 // Pages guests can see in full
@@ -11382,7 +11781,7 @@ restoreTheme(); // Restore theme immediately before async auth check
     document.querySelector('.fab').style.display = '';
     applyUser(session.user, false);
     const savedPage = (() => { try { return localStorage.getItem('foc-page'); } catch(e){ return null; } })();
-    const validPages = ['overview','segments','resources','journey','documents','admin','roadmap','glossary','media','ecosystem','crops','mentors','accelerators','venture','profile','connections','hub','action','investor'];
+    const validPages = ['overview','segments','resources','journey','documents','admin','roadmap','glossary','media','ecosystem','crops','mentors','accelerators','venture','profile','connections','hub','action','investor','ecosystem_ws'];
     const startPage = savedPage && validPages.includes(savedPage) ? savedPage : 'overview';
     currentPage = startPage;
     render(startPage);
