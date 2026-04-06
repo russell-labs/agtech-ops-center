@@ -6970,6 +6970,74 @@ async function submitVentureApplication(){
   document.body.appendChild(modal);
 }
 
+function vsEmailAction(type, email, name, startupName) {
+  const firstName = (name || '').split(' ')[0] || 'there';
+  const emails = {
+    confirm: {
+      subject: `We received your idea — ${startupName || 'Your Submission'} | FounderOps Center`,
+      body: `Hi ${firstName},\n\nThank you for submitting your idea${startupName ? ' for ' + startupName : ''} to the FounderOps Venture Studio. We're excited to learn about what you're building.\n\nHere's what happens next:\n\n- Our team will review your submission within the next 30 days, or at our next monthly review — whichever comes first.\n- If we have questions, we'll reach out directly.\n- In the meantime, explore the FounderOps ecosystem — browse market data, connect with mentors, and discover accelerator programs at founderopscenter.com.\n\nYour idea matters. The AgTech ecosystem needs more people like you who are willing to think differently about how we grow, feed, and sustain.\n\nWe'll be in touch soon.\n\nBest,\nRussell Cole\nFounder, FounderOps Center\nfounderopscenter.com`
+    },
+    info: {
+      subject: `Quick follow-up on ${startupName || 'your submission'} | FounderOps Center`,
+      body: `Hi ${firstName},\n\nThanks again for submitting ${startupName || 'your idea'} to the FounderOps Venture Studio. We've reviewed your submission and are intrigued.\n\nWe'd love to learn a bit more before our next review. Could you help us with:\n\n1. [Specific question about the idea]\n2. [Specific question about the team/market]\n3. [Any additional context needed]\n\nNo rush — just reply to this email whenever you have a chance.\n\nBest,\nRussell Cole\nFounder, FounderOps Center`
+    },
+    call: {
+      subject: `Let's talk about ${startupName || 'your idea'} — FounderOps Center`,
+      body: `Hi ${firstName},\n\nThanks for submitting ${startupName || 'your idea'} to the FounderOps Venture Studio. We've been reviewing your submission and would love to connect for a quick call.\n\nWould any of these times work for a 20-minute chat?\n\n- [Option 1]\n- [Option 2]\n- [Option 3]\n\nOr feel free to book directly: https://calendly.com/[your-link]\n\nLooking forward to hearing more about what you're building.\n\nBest,\nRussell Cole\nFounder, FounderOps Center`
+    },
+    accept: {
+      subject: `Great news — ${startupName || 'your idea'} has been accepted! | FounderOps Venture Studio`,
+      body: `Hi ${firstName},\n\nI'm excited to let you know that ${startupName || 'your idea'} has been accepted into the FounderOps Venture Studio pipeline.\n\nWhat this means:\n\n- You'll be connected with relevant mentors and advisors in the AgTech ecosystem\n- We'll help you refine your pitch and strategy\n- You'll get visibility to our investor network when you're ready\n- Access to our full ecosystem of accelerators, market data, and founder resources\n\nNext step: Let's schedule a kickoff call to discuss your roadmap and how we can best support you.\n\nWould any of these times work?\n\n- [Option 1]\n- [Option 2]\n- [Option 3]\n\nCongratulations — let's build something great.\n\nBest,\nRussell Cole\nFounder, FounderOps Center\nfounderopscenter.com`
+    },
+    decline: {
+      subject: `Update on ${startupName || 'your submission'} | FounderOps Center`,
+      body: `Hi ${firstName},\n\nThank you for submitting ${startupName || 'your idea'} to the FounderOps Venture Studio. We appreciate you sharing your vision with us.\n\nAfter review, we've decided not to move forward with this particular idea at this time. This doesn't mean your idea isn't valuable — it may simply not be the right fit for our current focus areas.\n\nHere's how you can keep building:\n\n- Stay active on the platform — browse market data, connect with mentors, and discover opportunities at founderopscenter.com\n- You're welcome to submit a new idea anytime — we review submissions monthly\n- Connect with our accelerator partners who may be a great fit for your stage\n\nKeep innovating. The AgTech space needs more founders thinking about these problems.\n\nBest,\nRussell Cole\nFounder, FounderOps Center`
+    }
+  };
+  const e = emails[type];
+  if (!e) return;
+  const mailto = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(e.subject) + '&body=' + encodeURIComponent(e.body);
+  window.open(mailto, '_blank');
+  toast('📧 Email draft opened for ' + (name || email));
+}
+
+async function vsStatusAction(idx, newStatus) {
+  const sub = _ventureSubmissions[idx];
+  if (!sub) return;
+  const name = sub.founderName || '';
+  const email = sub.founderEmail || '';
+  const startupName = sub.name || '';
+
+  if (!confirm((newStatus === 'Approved' ? '✅ Accept' : '❌ Decline') + ' "' + startupName + '" by ' + name + '?\n\nThis will update the status and open an email to notify them.')) return;
+
+  // Update status
+  sub.status = newStatus;
+  localStorage.setItem('foc_venture_submissions', JSON.stringify(_ventureSubmissions));
+  try {
+    await _supabase.from('venture_submissions').update({ status: newStatus }).eq('id', sub.id);
+  } catch(e) {}
+
+  // Open the appropriate email
+  vsEmailAction(newStatus === 'Approved' ? 'accept' : 'decline', email, name, startupName);
+
+  toast((newStatus === 'Approved' ? '✅ Accepted' : '❌ Declined') + ': ' + startupName);
+  render('admin');
+}
+
+async function vsSaveNotes(idx) {
+  const sub = _ventureSubmissions[idx];
+  if (!sub) return;
+  const textarea = document.getElementById('vs-notes-' + idx);
+  if (!textarea) return;
+  const notes = textarea.value;
+  sub.admin_notes = notes;
+  localStorage.setItem('foc_venture_submissions', JSON.stringify(_ventureSubmissions));
+  try {
+    await _supabase.from('venture_submissions').update({ admin_notes: notes }).eq('id', sub.id);
+  } catch(e) {}
+  toast('💾 Notes saved');
+}
+
 async function updateVentureStatus(idx, newStatus) {
   const sub = _ventureSubmissions[idx];
   if (!sub) return;
@@ -9616,7 +9684,24 @@ function pgAdmin(){
                 <div style="font-size:13px;color:var(--text);line-height:1.5">${sub.notes}</div>
               </div>` : ''}
             </div>
-            <div style="display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <!-- Admin Actions -->
+            <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+              <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:10px">Admin Actions</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+                <button onclick="vsEmailAction('confirm','${sub.founderEmail}','${(sub.founderName||'').replace(/'/g,'\\&#39;')}','${(sub.name||'').replace(/'/g,'\\&#39;')}')" style="padding:8px 14px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📧 Send Confirmation</button>
+                <button onclick="vsEmailAction('info','${sub.founderEmail}','${(sub.founderName||'').replace(/'/g,'\\&#39;')}','${(sub.name||'').replace(/'/g,'\\&#39;')}')" style="padding:8px 14px;background:#fefce8;color:#854d0e;border:1px solid #fde68a;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📋 Request More Info</button>
+                <button onclick="vsEmailAction('call','${sub.founderEmail}','${(sub.founderName||'').replace(/'/g,'\\&#39;')}','${(sub.name||'').replace(/'/g,'\\&#39;')}')" style="padding:8px 14px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📞 Schedule Call</button>
+                <button onclick="vsStatusAction(${idx},'Approved')" style="padding:8px 14px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">✅ Accept & Notify</button>
+                <button onclick="vsStatusAction(${idx},'Declined')" style="padding:8px 14px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">❌ Decline & Notify</button>
+              </div>
+
+              <!-- Admin Notes -->
+              <div style="margin-bottom:14px">
+                <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px">Internal Notes</div>
+                <textarea id="vs-notes-${idx}" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;min-height:60px;box-sizing:border-box" placeholder="Add internal notes about this submission...">${sub.admin_notes || ''}</textarea>
+                <button onclick="vsSaveNotes(${idx})" style="margin-top:6px;padding:6px 14px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">💾 Save Notes</button>
+              </div>
+
               <span style="font-size:11px;color:var(--text-faint)">Submitted: ${submitted.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})} at ${submitted.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})}</span>
             </div>
           </div>
