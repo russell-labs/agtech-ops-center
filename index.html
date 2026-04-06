@@ -1122,6 +1122,224 @@ const _supabase = supabase.createClient(
   'sb_publishable_YpJNsFLhMw1Xhsloy9V0ng_XXGLtPFY'
 );
 
+// ── AUTOMATED EMAIL SYSTEM ───────────────────────────────────────
+// Sends transactional emails via Supabase Edge Function → Resend API
+const EDGE_FN_URL = 'https://odvwxgxhacotiuyjyqtk.supabase.co/functions/v1/send-email';
+
+// Reusable HTML email wrapper — founder headshot + personal note at top
+function focEmailWrap(bodyHtml, opts = {}) {
+  const showFounder = opts.founderNote !== false;
+  const founderNote = opts.founderNote || '';
+  const headshotUrl = 'https://founderopscenter.com/assets/Russ%20headshot%20nuetral%20background.jpg.png';
+  const founderTopBlock = showFounder ? `
+  <!-- Founder personal intro -->
+  <tr><td style="padding:28px 32px 0">
+    <table cellpadding="0" cellspacing="0" border="0" style="width:100%"><tr>
+      <td style="width:60px;vertical-align:top;padding-right:14px">
+        <img src="${headshotUrl}" alt="Russell Cole" width="52" height="52" style="border-radius:50%;display:block;object-fit:cover;border:2px solid #059669">
+      </td>
+      <td style="vertical-align:top">
+        <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#111827">Russell Cole</p>
+        <p style="margin:0;font-size:12px;color:#6b7280">Founder, FounderOps Center</p>
+      </td>
+    </tr></table>
+    <p style="margin:16px 0 0;font-size:14px;color:#374151;line-height:1.6">${founderNote}</p>
+  </td></tr>` : '';
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f4f6;padding:32px 16px">
+<tr><td align="center">
+<table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+  <!-- Header -->
+  <tr><td style="background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:24px 32px;text-align:center">
+    <h1 style="margin:0;font-size:20px;color:#ffffff;font-weight:700;letter-spacing:-0.3px">🌱 FounderOps Center</h1>
+    <p style="margin:4px 0 0;font-size:11px;color:rgba(255,255,255,0.8);font-weight:500">AgTech Ecosystem Intelligence</p>
+  </td></tr>
+  ${founderTopBlock}
+  <!-- Body -->
+  <tr><td style="padding:${showFounder ? '20px' : '32px'} 32px 12px;color:#374151;font-size:14px;line-height:1.65">${bodyHtml}</td></tr>
+  <!-- Footer -->
+  <tr><td style="padding:24px 32px;border-top:1px solid #e5e7eb;margin-top:20px">
+    <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center">
+      <a href="https://founderopscenter.com" style="color:#059669;text-decoration:none;font-weight:600">founderopscenter.com</a><br>
+      Connecting founders, investors, and ecosystems in AgTech<br><br>
+      <span style="color:#d1d5db">You received this because you're part of the FounderOps Center community.</span>
+    </p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+// Email template library
+const FOC_EMAIL_TEMPLATES = {
+  welcome(name, persona = 'founder') {
+    const first = (name || '').split(' ')[0] || 'there';
+    const p = {
+      founder: {
+        subject: `Welcome to FounderOps Center, ${first}!`,
+        note: `Hey ${first} — welcome to FounderOps Center! I built this platform because AgTech founders deserve better tools and stronger networks. You now have access to market intelligence, investor matching, and a community that gets what you're building. Don't hesitate to hit reply — I read every one.`,
+        bullets: `
+          <li style="margin-bottom:8px"><strong>Explore market intelligence</strong> — real-time data on AgTech sectors, funding, and trends</li>
+          <li style="margin-bottom:8px"><strong>Get investor-matched</strong> — our AI connects you with investors aligned to your stage and sector</li>
+          <li style="margin-bottom:8px"><strong>Tap the network</strong> — browse advisors, ecosystems, and fellow founders building in AgTech</li>`,
+        cta: 'Open Your Dashboard →'
+      },
+      investor: {
+        subject: `Welcome to FounderOps Center, ${first}!`,
+        note: `Hey ${first} — welcome to FounderOps Center! I built this platform to give AgTech investors a better lens into the ecosystem. You now have access to curated deal flow, founder pipelines, and market intelligence you won't find anywhere else. Hit reply anytime — I'm always around.`,
+        bullets: `
+          <li style="margin-bottom:8px"><strong>Browse deal flow</strong> — curated AgTech startups filtered by stage, sector, and funding status</li>
+          <li style="margin-bottom:8px"><strong>Get founder-matched</strong> — our AI surfaces founders aligned with your thesis and check size</li>
+          <li style="margin-bottom:8px"><strong>Track the market</strong> — real-time intelligence on AgTech sectors, trends, and competitive landscape</li>`,
+        cta: 'Open Your Deal Flow →'
+      },
+      advisor: {
+        subject: `Welcome to FounderOps Center, ${first}!`,
+        note: `Hey ${first} — welcome to FounderOps Center! Advisors like you are what make this ecosystem work. You now have access to founders who need your expertise, plus market intelligence and ecosystem connections that keep you plugged in. Hit reply anytime — I'd love to hear what you're working on.`,
+        bullets: `
+          <li style="margin-bottom:8px"><strong>Connect with founders</strong> — get matched with AgTech startups that need your specific expertise</li>
+          <li style="margin-bottom:8px"><strong>Stay plugged in</strong> — market intelligence, ecosystem updates, and emerging trends</li>
+          <li style="margin-bottom:8px"><strong>Build your presence</strong> — your profile is visible to founders and investors across the network</li>`,
+        cta: 'Open Your Dashboard →'
+      },
+      ecosystem_manager: {
+        subject: `Welcome to FounderOps Center, ${first}!`,
+        note: `Hey ${first} — welcome to FounderOps Center! I built the Ecosystem Workspace specifically for program managers like you. You'll have tools to manage your pipeline, track cohorts, and connect your startups with investors and resources across the network. Let's build something great together.`,
+        bullets: `
+          <li style="margin-bottom:8px"><strong>Claim your workspace</strong> — manage applications, track startups, and run your cohort from one place</li>
+          <li style="margin-bottom:8px"><strong>Cross-pollinate</strong> — connect your startups with investors and advisors across the ecosystem</li>
+          <li style="margin-bottom:8px"><strong>Benchmark &amp; report</strong> — ecosystem intelligence and performance data at your fingertips</li>`,
+        cta: 'Open Your Workspace →'
+      },
+      researcher: {
+        subject: `Welcome to FounderOps Center, ${first}!`,
+        note: `Hey ${first} — welcome to FounderOps Center! Researchers and academics are a critical piece of the AgTech puzzle. You now have access to market data, startup pipelines, and a network of founders and investors who want to bridge the gap between the lab and the field. Hit reply anytime.`,
+        bullets: `
+          <li style="margin-bottom:8px"><strong>Explore market data</strong> — real-time intelligence on AgTech sectors, funding, and innovation trends</li>
+          <li style="margin-bottom:8px"><strong>Find collaborators</strong> — connect with founders turning research into products</li>
+          <li style="margin-bottom:8px"><strong>Stay informed</strong> — ecosystem updates, new programs, and commercial opportunities</li>`,
+        cta: 'Open Your Dashboard →'
+      },
+      service_provider: {
+        subject: `Welcome to FounderOps Center, ${first}!`,
+        note: `Hey ${first} — welcome to FounderOps Center! Service providers play a huge role in helping AgTech startups scale. You're now connected to a growing network of founders, investors, and ecosystem managers who could use what you offer. Hit reply if you want to chat.`,
+        bullets: `
+          <li style="margin-bottom:8px"><strong>Get discovered</strong> — your profile is visible to founders and programs across the ecosystem</li>
+          <li style="margin-bottom:8px"><strong>Find opportunities</strong> — browse startups by stage, needs, and sector alignment</li>
+          <li style="margin-bottom:8px"><strong>Stay connected</strong> — market intelligence and ecosystem updates relevant to your services</li>`,
+        cta: 'Open Your Dashboard →'
+      }
+    };
+    const cfg = p[persona] || p.founder;
+    return {
+      subject: cfg.subject,
+      html: focEmailWrap(`
+        <p>Here's what you can do right now:</p>
+        <ul style="padding-left:20px;margin:16px 0">${cfg.bullets}</ul>
+        <div style="text-align:center;margin:28px 0 12px">
+          <a href="https://founderopscenter.com" style="display:inline-block;padding:13px 32px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px">${cfg.cta}</a>
+        </div>
+      `, { founderNote: cfg.note })
+    };
+  },
+
+  ecoAccepted(name, programName, inviteCode) {
+    const first = (name || '').split(' ')[0] || 'there';
+    return {
+      subject: `${programName} is now on FounderOps Center!`,
+      html: focEmailWrap(`
+        <p>Here's what's now unlocked for you:</p>
+        <ul style="padding-left:20px;margin:16px 0">
+          <li style="margin-bottom:8px">A verified listing visible to founders, investors, and advisors</li>
+          <li style="margin-bottom:8px">Your Ecosystem Workspace — pipeline, applications, and cohort tracking</li>
+          <li style="margin-bottom:8px">Cross-ecosystem intelligence and founder/investor matching</li>
+        </ul>
+        <div style="background:#f0fdf4;padding:16px;border-radius:8px;margin:20px 0;text-align:center">
+          <p style="margin:0 0 4px;font-size:12px;color:#6b7280">Your Invite Code</p>
+          <p style="margin:0;font-size:20px;font-weight:700;color:#059669;letter-spacing:1px">${inviteCode}</p>
+        </div>
+        <p><strong>Next step:</strong> Go to <a href="https://founderopscenter.com" style="color:#059669">founderopscenter.com</a> → Partner Ecosystems → find your listing → "Claim as Manager" → enter your invite code.</p>
+      `, { founderNote: `Hey ${first} — great news! <strong>${programName}</strong> has been approved and added to the FounderOps Center partner ecosystem directory. Programs like yours are exactly what makes this network stronger. I'm excited to have you on board.` })
+    };
+  },
+
+  ecoDeclined(name, programName) {
+    const first = (name || '').split(' ')[0] || 'there';
+    return {
+      subject: `Update on your listing application | FounderOps Center`,
+      html: focEmailWrap(`
+        <p>After review, we've decided not to add this listing at this time. This could be due to focus area alignment, program stage, or capacity — it's not a reflection of your program's quality.</p>
+        <p>You're welcome to:</p>
+        <ul style="padding-left:20px;margin:16px 0">
+          <li style="margin-bottom:8px">Stay active on the platform in your current role</li>
+          <li style="margin-bottom:8px">Reapply as your program evolves</li>
+          <li style="margin-bottom:8px">Connect with existing partner ecosystems for collaboration</li>
+        </ul>
+        <p>I'd love to stay in touch and revisit this down the road.</p>
+      `, { founderNote: `Hey ${first} — thanks for taking the time to apply to list <strong>${programName}</strong> on FounderOps Center. I appreciate your interest and wanted to reach out personally.` })
+    };
+  },
+
+  monthlyCheckin(name) {
+    const first = (name || '').split(' ')[0] || 'there';
+    return {
+      subject: `Your monthly AgTech pulse | FounderOps Center`,
+      html: focEmailWrap(`
+        <p>Here's what's happening:</p>
+        <ul style="padding-left:20px;margin:16px 0">
+          <li style="margin-bottom:8px">New startups and investors added to the platform</li>
+          <li style="margin-bottom:8px">Fresh deal flow and ecosystem updates</li>
+          <li style="margin-bottom:8px">Connection opportunities matched for your profile</li>
+        </ul>
+        <div style="text-align:center;margin:28px 0 12px">
+          <a href="https://founderopscenter.com" style="display:inline-block;padding:13px 32px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px">See What's New →</a>
+        </div>
+      `, { founderNote: `Hey ${first} — it's been a busy month in AgTech and the platform keeps getting better because of active members like you. Wanted to personally check in and share what's new. Hit reply anytime — I'm always around.` })
+    };
+  },
+
+  reEngagement(name) {
+    const first = (name || '').split(' ')[0] || 'there';
+    return {
+      subject: `We miss you, ${first} — a lot has changed | FounderOps Center`,
+      html: focEmailWrap(`
+        <p>Here's what you might have missed:</p>
+        <ul style="padding-left:20px;margin:16px 0">
+          <li style="margin-bottom:8px">New startups, investors, and partner ecosystems</li>
+          <li style="margin-bottom:8px">Updated market intelligence and deal flow data</li>
+          <li style="margin-bottom:8px">Connection matches waiting for your review</li>
+        </ul>
+        <div style="text-align:center;margin:28px 0 12px">
+          <a href="https://founderopscenter.com" style="display:inline-block;padding:13px 32px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px">Come Back & Explore →</a>
+        </div>
+      `, { founderNote: `Hey ${first} — it's been a while and I wanted to reach out personally. A lot has happened on FounderOps Center since your last visit, and there are people in the network who'd benefit from connecting with you. Hope to see you back soon.` })
+    };
+  }
+};
+
+// Core send function — fires and forgets, logs to console, shows toast on failure
+async function sendAutoEmail(to, subject, html) {
+  try {
+    const res = await fetch(EDGE_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, subject, html })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('sendAutoEmail failed:', data);
+      return { success: false, error: data };
+    }
+    console.log('📧 Email sent:', { to, subject, id: data.id });
+    return { success: true, id: data.id };
+  } catch (err) {
+    console.error('sendAutoEmail error:', err);
+    return { success: false, error: err.message };
+  }
+}
+
 // Listen for auth state changes (session check happens in INIT block at bottom)
 _supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
@@ -1202,6 +1420,7 @@ function applyUser(user, isNew) {
   if (!localStorage.getItem(seenKey)) {
     localStorage.setItem(seenKey, '1');
     notifyNewUser(name, email);
+    // Welcome email now fires after onboarding completes (persona-tailored)
   }
   const logins = getLogins();
   const existing = logins.find(l => l.id === user.id);
@@ -9123,6 +9342,13 @@ async function wizSave() {
   // Show ecosystem manager bridge if persona is ecosystem_manager
   const _isNewEcoManager = cleanProfile.persona === 'ecosystem_manager' && _wizPreviewMode !== 'preview' && _wizPreviewMode !== 'create';
   toast('🎉 Profile created! Russell will review and connect you with the right people.');
+  // Send persona-tailored welcome email after onboarding
+  if (_wizPreviewMode !== 'preview' && _wizPreviewMode !== 'create') {
+    const welName = _userProfile.full_name || currentUser.name || currentUser.email.split('@')[0];
+    const welPersona = _userProfile.persona || cleanProfile.persona || 'founder';
+    const wel = FOC_EMAIL_TEMPLATES.welcome(welName, welPersona);
+    sendAutoEmail(currentUser.email, wel.subject, wel.html);
+  }
   if (_isNewEcoManager) {
     setTimeout(() => openModal('eco-bridge-modal'), 800);
   }
@@ -13423,7 +13649,12 @@ function ecoAdminApproveListing(listingId) {
   };
   PARTNER_ECOSYSTEMS.push(newEco);
 
-  // Send acceptance email
+  // Send automated acceptance email via Resend
+  if (listing.managerEmail) {
+    const tpl = FOC_EMAIL_TEMPLATES.ecoAccepted(listing.managerName || 'there', listing.programName, inviteCode);
+    sendAutoEmail(listing.managerEmail, tpl.subject, tpl.html);
+  }
+  // Also open mailto for Russell to review/personalize if desired
   ecoListingEmailAction('accept', listing.managerEmail, listing.managerName, listing.programName);
 
   toast('✅ ' + listing.programName + ' approved and added to Partner Ecosystems! Invite code: ' + inviteCode);
@@ -13437,6 +13668,11 @@ function ecoAdminDenyListing(listingId) {
   listing.reviewed_at = new Date().toISOString();
   listing.reviewed_by = currentUser?.email || 'admin';
   saveEcoListings();
+  // Send automated decline email via Resend
+  if (listing.managerEmail) {
+    const tpl = FOC_EMAIL_TEMPLATES.ecoDeclined(listing.managerName || 'there', listing.programName);
+    sendAutoEmail(listing.managerEmail, tpl.subject, tpl.html);
+  }
   ecoListingEmailAction('decline', listing.managerEmail, listing.managerName, listing.programName);
   toast('❌ Listing application from ' + listing.managerName + ' denied');
   render(currentPage);
