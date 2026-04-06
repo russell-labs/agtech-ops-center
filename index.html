@@ -1205,7 +1205,30 @@ function applyUser(user, isNew) {
       if (rmBtn) rmBtn.style.display = 'block';
     }
     if (!profile || !profile.onboarding_complete) {
-      setTimeout(() => showWizard(), 800);
+      // If user came from "Share Your Idea" CTA, skip onboarding and go straight to Venture Studio
+      if (_ventureStudioAfterSignIn) {
+        _ventureStudioAfterSignIn = false;
+        localStorage.removeItem('foc_venture_after_signin');
+        // Create minimal founder profile so they can access the platform
+        const minProfile = {
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+          persona: 'founder',
+          onboarding_complete: false
+        };
+        const { error: upErr } = await _supabase.from('profiles').upsert(minProfile, { onConflict: 'id' });
+        if (!upErr) _userProfile = { ...minProfile, ...(profile || {}), persona: 'founder' };
+        applyPersonaUI(_userProfile || minProfile);
+        document.getElementById('sidebar').style.display = '';
+        document.getElementById('main').style.display = '';
+        document.getElementById('landing-page').style.display = 'none';
+        go('venture');
+        // Show a gentle reminder to complete their profile later
+        setTimeout(() => toast('💡 After submitting your idea, complete your profile for full platform access.'), 2000);
+      } else {
+        setTimeout(() => showWizard(), 800);
+      }
     } else if (profile.needs_review) {
       // Pre-created account — show edit wizard so they can review and confirm
       toast('📋 Please review your profile and make any changes.');
@@ -1225,6 +1248,7 @@ function applyUser(user, isNew) {
       // Check if user came from "Share Your Idea" on landing page
       if (_ventureStudioAfterSignIn) {
         _ventureStudioAfterSignIn = false;
+        localStorage.removeItem('foc_venture_after_signin');
         go('venture');
       } else if (currentPage) {
         render(currentPage);
@@ -1539,7 +1563,7 @@ function showLandingPage(isSignedOut) {
       <div style="font-size:22px;margin-bottom:6px">💡</div>
       <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">Got an idea for an AgTech innovation?</div>
       <p style="font-size:13px;color:var(--text-muted);line-height:1.6;margin:0 0 14px">You don't need a company to start. Share your idea and we'll help you figure out the next step — whether that's finding a co-founder, joining our venture studio, or just getting feedback.</p>
-      <button onclick="_ventureStudioAfterSignIn=true;enterApp()" class="lp-cta-big" style="font-size:14px;padding:12px 28px">Share Your Idea &rarr;</button>
+      <button onclick="_ventureStudioAfterSignIn=true;localStorage.setItem('foc_venture_after_signin','true');enterApp()" class="lp-cta-big" style="font-size:14px;padding:12px 28px">Share Your Idea &rarr;</button>
     </div>
   </div>
 
@@ -1732,7 +1756,7 @@ function showLandingPage(isSignedOut) {
   document.body.appendChild(landing);
 }
 
-let _ventureStudioAfterSignIn = false;
+let _ventureStudioAfterSignIn = localStorage.getItem('foc_venture_after_signin') === 'true';
 
 function enterApp() {
   hideLanding();
