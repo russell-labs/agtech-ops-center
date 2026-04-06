@@ -8683,15 +8683,38 @@ async function wizSave() {
     if (PROFILE_COLUMNS.includes(key)) cleanProfile[key] = profile[key];
   }
 
-  const { data, error } = await upsertProfile(cleanProfile);
+  console.log('wizSave cleanProfile keys:', Object.keys(cleanProfile));
+  console.log('wizSave cleanProfile:', JSON.stringify(cleanProfile, null, 2));
+
+  let { data, error } = await upsertProfile(cleanProfile);
+
+  // If full upsert fails, try a minimal save with just core fields
   if (error) {
-    saveBtns.forEach(b => { b.disabled = false; b.textContent = 'Complete Profile →'; });
-    const msg = error.message || '';
-    if (msg.includes('permission') || msg.includes('policy')) toast('❌ Permission error — please sign out and sign back in');
-    else if (msg.includes('network') || msg.includes('fetch')) toast('❌ Network error — check your connection and try again');
-    else toast('❌ Error saving profile — please try again');
-    console.error('wizSave error:', error);
-    return;
+    console.error('wizSave full upsert error:', error);
+    console.warn('Attempting minimal profile save...');
+    const minimalProfile = {
+      id: currentUser.id,
+      email: currentUser.email,
+      full_name: currentUser.name,
+      persona: wizData.persona,
+      organization: wizData.organization || '',
+      onboarding_complete: true,
+      consent_accepted: true,
+      consent_accepted_at: new Date().toISOString(),
+      needs_review: false
+    };
+    const retry = await upsertProfile(minimalProfile);
+    if (retry.error) {
+      console.error('wizSave minimal upsert also failed:', retry.error);
+      saveBtns.forEach(b => { b.disabled = false; b.textContent = 'Complete Profile →'; });
+      const msg = (retry.error.message || error.message || '') + ' | code: ' + (retry.error.code || error.code || 'unknown');
+      toast('❌ Save failed: ' + msg);
+      return;
+    }
+    // Minimal save worked — log which columns caused the issue
+    console.warn('Minimal save succeeded! Full save had extra columns that failed. Error was:', error.message, error.code, error.details);
+    data = retry.data;
+    toast('⚠️ Profile saved with core fields — some details may need re-entry');
   }
   _userProfile = data || profile;
   // Sync badges and tier for newly created profile
