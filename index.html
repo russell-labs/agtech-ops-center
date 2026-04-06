@@ -722,6 +722,10 @@
     .vs-card-actions { width: 100% !important; }
     /* Admin tab bar mobile */
     .admin-tab-bar button { padding: 8px 12px !important; font-size: 11px !important; }
+    #eco-listing-modal .modal { max-width: 95vw !important; }
+    #eco-bridge-modal .modal { max-width: 95vw !important; }
+    #eco-listing-modal-content [style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    #eco-listing-modal-content [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
   }
   @media(max-width:400px){
     .lp-who-grid { grid-template-columns:1fr; }
@@ -945,6 +949,49 @@
           <textarea id="eco-verify-note" placeholder="Anything else that helps verify your role (e.g. 'I spoke with Russell Cole about joining the platform')" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:13px;min-height:60px;resize:vertical;box-sizing:border-box"></textarea>
         </div>
         <button onclick="ecoClaimRequestVerify()" style="padding:11px 20px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">📨 Submit Verification Request</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST YOUR ECOSYSTEM MODAL -->
+<div class="overlay" id="eco-listing-modal" onclick="if(event.target===this)closeModal('eco-listing-modal')">
+  <div class="modal" style="max-width:600px">
+    <button class="modal-close" onclick="closeModal('eco-listing-modal')">✕</button>
+    <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <div style="font-size:18px;font-weight:800;color:var(--text)">🏗️ List Your Ecosystem</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Apply to add your program to the FounderOps Center partner directory</div>
+    </div>
+    <div id="eco-listing-modal-content"></div>
+  </div>
+</div>
+
+<!-- ECOSYSTEM ONBOARDING BRIDGE MODAL -->
+<div class="overlay" id="eco-bridge-modal" onclick="if(event.target===this)closeModal('eco-bridge-modal')">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="closeModal('eco-bridge-modal')">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:40px;margin-bottom:8px">🏗️</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text)">Welcome, Ecosystem Manager!</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:6px">Connect your program to the FounderOps Center network</div>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div onclick="closeModal('eco-bridge-modal');go('accelerators')" style="padding:20px;border:2px solid var(--green-mid);border-radius:14px;background:var(--accent-bg);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--green-mid)';this.style.transform='none'">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span style="font-size:24px">🔑</span>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Claim Your Program</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.6">Your program is already listed on our platform. Claim it as a manager to unlock your Ecosystem Workspace with pipeline management, application review, and startup metrics.</div>
+      </div>
+      <div onclick="closeModal('eco-bridge-modal');openListEcosystemForm()" style="padding:20px;border:2px solid var(--border);border-radius:14px;background:var(--surface);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#6366f1';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span style="font-size:24px">📋</span>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">List a New Program</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.6">Your program isn't listed yet. Submit an application to add it to our partner directory. Once approved, you'll get a verified listing and access to the Ecosystem Workspace.</div>
+      </div>
+      <div onclick="closeModal('eco-bridge-modal')" style="padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--hover);cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='var(--hover)'">
+        <div style="font-size:13px;color:var(--text-muted)">Skip for now — I'll explore the platform first</div>
       </div>
     </div>
   </div>
@@ -2238,6 +2285,7 @@ function go(page, btn){
   // Handle compound navigation (e.g. 'admin_deals' → admin page + deals tab)
   if (page === 'admin_deals') { adminTab = 'deals'; page = 'admin'; }
   if (page === 'admin_venture') { adminTab = 'venture_studio'; page = 'admin'; }
+  if (page === 'admin_eco') { adminTab = 'eco_claims'; page = 'admin'; }
   if (page === 'admin_claims') { adminTab = 'eco_claims'; page = 'admin'; }
   if (page !== 'crops') _selectedCrop = null; // reset crop detail when leaving crops
   _selectedMentor = null; // always reset mentor detail when navigating (allows back button to work)
@@ -5370,6 +5418,28 @@ const PARTNER_ECOSYSTEMS = [
     startupCount:'15+',
     founded:'2024',
     claimed:true
+  },
+  {
+    id:'wgi', slug:'western-growers-innovation',
+    name:'Western Growers Center for Innovation & Technology',
+    shortName:'Western Growers Innovation',
+    org:'Western Growers Association',
+    manager:'Walt Duflock',
+    managerTitle:'VP of Innovation',
+    location:'Salinas, California',
+    country:'US',
+    type:'Industry Innovation Hub',
+    focus:['Precision Agriculture','Labor & Automation','Food Safety','Supply Chain','Water Management'],
+    description:'Western Growers Center for Innovation & Technology accelerates the development and adoption of new technologies for the specialty crop industry. Backed by an association representing half of US fresh produce, they connect AgTech startups directly with growers for real-world field trials and go-to-market partnerships across California and Arizona.',
+    highlights:['Represents 50% of US fresh produce','Direct grower access for field trials','Salinas Valley AgTech corridor','Labor & automation focus'],
+    website:'https://wginnovation.com',
+    logo:'wgi',
+    color:'#1b5e20',
+    accentColor:'#66bb6a',
+    startupCount:'50+',
+    founded:'2016',
+    claimed:false,
+    inviteCode:'WGI-2026-WD'
   }
 ];
 
@@ -7473,6 +7543,12 @@ function pgAccelerators(){
     // Grid view
     let html = '<div><div class="page-hdr"><h1>🤝 Partner Ecosystems</h1><p>' + PARTNER_ECOSYSTEMS.length + ' verified programs actively managing startups on the platform. These are real programs run by people we know.</p></div>';
 
+    // "List Your Ecosystem" CTA
+    html += '<div style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid var(--green-mid);border-radius:14px;padding:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">';
+    html += '<div style="flex:1;min-width:200px"><div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Run an AgTech program?</div><div style="font-size:13px;color:var(--text-muted)">List your accelerator, incubator, or innovation hub on FounderOps Center. Get a verified profile, Ecosystem Workspace, and cross-network intelligence.</div></div>';
+    html += '<button onclick="openListEcosystemForm()" style="padding:12px 24px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 4px 12px rgba(22,163,74,.25)">List Your Ecosystem →</button>';
+    html += '</div>';
+
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">';
     PARTNER_ECOSYSTEMS.forEach(eco => {
       html += '<div style="background:var(--card);border:2px solid ' + eco.color + '22;border-radius:14px;padding:20px;cursor:pointer;transition:all .2s" onclick="_selectedPartnerEco=\'' + eco.id + '\';render(\'accelerators\')" onmouseover="this.style.boxShadow=\'0 8px 20px ' + eco.color + '22\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.boxShadow=\'\';this.style.transform=\'translateY(0)\'">';
@@ -7836,20 +7912,66 @@ async function deleteUser(userId, userName) {
   render('admin');
 }
 
-// ── QUARTERLY CHECK-IN ────────────────────────────────────────
+// ── MONTHLY CHECK-IN ────────────────────────────────────────
 function openCheckinModal() {
   if (!currentUser || !_userProfile) return;
   const p = _userProfile;
   const personaDefs = PERSONA_BADGES[p.persona] || [];
   const earned = p.badges || [];
   const unearned = personaDefs.filter(b => !earned.includes(b.id) && !b.autoCheck);
+  const isEcoMgr = p.persona === 'ecosystem_manager';
+
+  // Persona-specific check-in questions
+  const ecoMgrFields = isEcoMgr ? `
+    <div style="margin-bottom:14px;padding:14px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:10px">🏗️ Program Health Update</div>
+      <div style="display:grid;gap:10px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Current cohort enrollment</label>
+          <input id="checkin-eco-enrollment" type="text" placeholder="e.g. 12 startups, 3 new this month" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Upcoming events or pitch competitions</label>
+          <input id="checkin-eco-events" type="text" placeholder="e.g. Demo Day June 15, Pitch Night July 1" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Applications status</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="checkin-eco-apps-btn" onclick="this.classList.toggle('selected');this.style.background=this.classList.contains('selected')?'var(--green)':'var(--surface)';this.style.color=this.classList.contains('selected')?'#fff':'var(--text-muted)'" data-val="open" style="padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text-muted)">Open for applications</button>
+            <button class="checkin-eco-apps-btn" onclick="this.classList.toggle('selected');this.style.background=this.classList.contains('selected')?'var(--green)':'var(--surface)';this.style.color=this.classList.contains('selected')?'#fff':'var(--text-muted)'" data-val="closed" style="padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text-muted)">Applications closed</button>
+            <button class="checkin-eco-apps-btn" onclick="this.classList.toggle('selected');this.style.background=this.classList.contains('selected')?'var(--green)':'var(--surface)';this.style.color=this.classList.contains('selected')?'#fff':'var(--text-muted)'" data-val="rolling" style="padding:5px 12px;border:1px solid var(--border);border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text-muted)">Rolling basis</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Notable startup wins or graduations</label>
+          <input id="checkin-eco-wins" type="text" placeholder="e.g. CropSense AI raised $2M seed, FarmBot Plus graduated" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">What do you need from the FounderOps network?</label>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            ${['Startup deal flow','Mentor referrals','Investor intros','Cross-ecosystem collabs','Pilot farms','Visibility/PR'].map(need =>
+              '<button class="checkin-eco-need-btn" onclick="this.classList.toggle(\'selected\');this.style.background=this.classList.contains(\'selected\')?\'var(--green)\':\'var(--surface)\';this.style.color=this.classList.contains(\'selected\')?\'#fff\':\'var(--text-muted)\'" data-val="' + need + '" style="padding:4px 10px;border:1px solid var(--border);border-radius:14px;font-size:10px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text-muted)">' + need + '</button>'
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </div>` : '';
+
+  // Persona-specific placeholder
+  const placeholders = {
+    founder: 'e.g. Closed our seed round, started 2 new pilots, hired a CTO...',
+    investor: 'e.g. Made 2 new investments, raised a new fund, joined a board...',
+    advisor: 'e.g. Started advising 2 new startups, published an article...',
+    ecosystem_manager: 'e.g. Launched new cohort, hosted demo day, signed partnership...',
+    farmer: 'e.g. Started using precision sensors, completed harvest, trying new tools...'
+  };
 
   const html = `<div class="badge-claim-overlay" onclick="if(event.target===this)this.remove()">
-    <div class="badge-claim-box" style="max-width:520px">
+    <div class="badge-claim-box" style="max-width:${isEcoMgr ? '580' : '520'}px">
       <div style="text-align:center;margin-bottom:16px">
         <div style="font-size:40px;margin-bottom:8px">📋</div>
-        <h3 style="margin:0 0 4px;font-size:18px">Quarterly Check-In</h3>
-        <p style="font-size:12px;color:var(--text-muted);margin:0">Quick update to keep your profile current and your status active</p>
+        <h3 style="margin:0 0 4px;font-size:18px">Monthly Check-In</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin:0">Quick update to keep your profile current and the ecosystem healthy</p>
       </div>
 
       <div style="margin-bottom:14px">
@@ -7861,8 +7983,10 @@ function openCheckinModal() {
       </div>
 
       <div id="checkin-changes" style="display:none">
-        <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:6px">What's new? (brief update)</label>
-        <textarea id="checkin-update-text" style="width:100%;min-height:60px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;font-family:inherit;margin-bottom:12px" placeholder="e.g. Closed our seed round, started 2 new pilots, hired a CTO..."></textarea>
+        ${ecoMgrFields}
+
+        <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:6px">${isEcoMgr ? 'Additional notes' : 'What\'s new? (brief update)'}</label>
+        <textarea id="checkin-update-text" style="width:100%;min-height:60px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;font-family:inherit;margin-bottom:12px" placeholder="${placeholders[p.persona] || placeholders.founder}"></textarea>
 
         ${unearned.length > 0 ? `
           <label style="font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:8px">Any new milestones to claim?</label>
@@ -7893,12 +8017,39 @@ async function submitCheckin(type) {
     updates.tier = calcTier(updates.badges);
   }
 
+  // Collect ecosystem manager-specific check-in data
+  const isEcoMgr = _userProfile?.persona === 'ecosystem_manager';
+  if (isEcoMgr && type === 'updated') {
+    const enrollment = (document.getElementById('checkin-eco-enrollment') || {}).value || '';
+    const events = (document.getElementById('checkin-eco-events') || {}).value || '';
+    const wins = (document.getElementById('checkin-eco-wins') || {}).value || '';
+    const appStatus = [...document.querySelectorAll('.checkin-eco-apps-btn.selected')].map(b => b.dataset.val).join(', ');
+    const needs = [...document.querySelectorAll('.checkin-eco-need-btn.selected')].map(b => b.dataset.val);
+
+    // Build a structured check-in entry
+    const ecoUpdate = [];
+    if (enrollment) ecoUpdate.push('Enrollment: ' + enrollment);
+    if (events) ecoUpdate.push('Events: ' + events);
+    if (appStatus) ecoUpdate.push('Applications: ' + appStatus);
+    if (wins) ecoUpdate.push('Wins: ' + wins);
+    if (needs.length) ecoUpdate.push('Needs: ' + needs.join(', '));
+    if (ecoUpdate.length) {
+      const fullNote = '[' + new Date().toLocaleDateString() + ' ECO] ' + ecoUpdate.join(' | ');
+      updates.checkin_notes = (updates.checkin_notes || (_userProfile.checkin_notes || '')) + '\n' + fullNote;
+    }
+    // Store latest program metrics in profile for admin visibility
+    if (enrollment || events || appStatus) {
+      updates.biggest_needs = needs.length > 0 ? needs : (_userProfile.biggest_needs || []);
+      // Store eco check-in data as a JSON note appended to checkin_notes
+    }
+  }
+
   const { error } = await _supabase.from('profiles').update(updates).eq('id', currentUser.id);
   if (!error) {
     Object.assign(_userProfile, updates);
     const msg = type === 'no_changes'
       ? '✅ Check-in recorded — you\'re all set!'
-      : `✅ Check-in complete!${newBadges.length ? ' ' + newBadges.length + ' new milestone(s) claimed!' : ''}`;
+      : `✅ Check-in complete!${newBadges.length ? ' ' + newBadges.length + ' new milestone(s) claimed!' : ''}${isEcoMgr ? ' Program health updated.' : ''}`;
     toast(msg);
     updateNotifBell();
     render(currentPage);
@@ -8142,15 +8293,20 @@ function getNotifications() {
     }
   }
 
-  // 8. Admin: New venture studio submissions — route to admin venture studio tab
-  if (isAdmin && _ventureSubmissions.length) {
-    const newSubs = _ventureSubmissions.filter(s => s.status === 'New');
-    if (newSubs.length) {
-      notifs.push({ icon:'🚀', title:newSubs.length + ' new Venture Studio submission' + (newSubs.length > 1 ? 's' : ''), desc:'Review ' + (newSubs.length > 1 ? 'these ideas' : 'this idea') + ' in the Venture Studio tab.', action:'admin_venture', priority:1 });
+  // 8. Admin: New ecosystem listing applications
+  if (isAdmin && _ecoListings.length) {
+    const pendingEcoListings = _ecoListings.filter(l => l.status === 'pending');
+    if (pendingEcoListings.length) {
+      notifs.push({ icon:'🏗️', title:pendingEcoListings.length + ' new ecosystem listing application' + (pendingEcoListings.length > 1 ? 's' : ''), desc:'Review ' + (pendingEcoListings.length > 1 ? 'these programs' : 'this program') + ' in the Ecosystems tab.', action:'admin_eco', priority:1 });
     }
-    const reviewSubs = _ventureSubmissions.filter(s => s.status === 'Under Review');
-    if (reviewSubs.length) {
-      notifs.push({ icon:'📋', title:reviewSubs.length + ' submission' + (reviewSubs.length > 1 ? 's' : '') + ' under review', desc:'Continue reviewing in the Venture Studio tab.', action:'admin_venture', priority:2 });
+  }
+
+  // 9. Admin: New venture studio submissions — route to admin venture studio tab
+  if (isAdmin && _ventureSubmissions.length) {
+    const lastSeen = localStorage.getItem('foc_vs_last_seen') || '0';
+    const unseenNew = _ventureSubmissions.filter(s => s.status === 'New' && new Date(s.createdAt || 0).getTime() > parseInt(lastSeen));
+    if (unseenNew.length) {
+      notifs.push({ icon:'🚀', title:unseenNew.length + ' new Venture Studio submission' + (unseenNew.length > 1 ? 's' : ''), desc:'Review ' + (unseenNew.length > 1 ? 'these ideas' : 'this idea') + ' in the Venture Studio tab.', action:'admin_venture', priority:1 });
     }
   }
 
@@ -8964,7 +9120,12 @@ async function wizSave() {
   // Sync badges and tier for newly created profile
   _userProfile = await syncProfileMeta(_userProfile);
   closeWizard();
+  // Show ecosystem manager bridge if persona is ecosystem_manager
+  const _isNewEcoManager = cleanProfile.persona === 'ecosystem_manager' && _wizPreviewMode !== 'preview' && _wizPreviewMode !== 'create';
   toast('🎉 Profile created! Russell will review and connect you with the right people.');
+  if (_isNewEcoManager) {
+    setTimeout(() => openModal('eco-bridge-modal'), 800);
+  }
   // Show profile nav + My Tools section
   const pbtn = document.getElementById('nav-profile-btn');
   if (pbtn) pbtn.style.display = 'flex';
@@ -9197,7 +9358,7 @@ function pgProfile() {
     return `<div class="card" style="margin-top:14px;border-left:4px solid ${isOverdue ? '#ef4444' : isWarning ? '#f59e0b' : 'var(--green)'}">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
         <div>
-          <h3 style="margin:0 0 4px">${isOverdue ? '⚠️' : '📋'} Quarterly Check-In</h3>
+          <h3 style="margin:0 0 4px">${isOverdue ? '⚠️' : '📋'} Monthly Check-In</h3>
           <p style="font-size:12px;color:var(--text-muted);margin:0">${lastCheckin
             ? `Last check-in: ${lastCheckin.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})} (${daysSinceCheckin} days ago)`
             : 'You haven\'t completed a check-in yet'}</p>
@@ -9301,6 +9462,11 @@ function pgAdmin(){
         ${(p.agtech_focus||[]).length ? `<div style="margin-top:8px"><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint)">AgTech Focus</span>${chipList(p.agtech_focus)}</div>` : ''}
         ${(p.expertise_areas||[]).length ? `<div style="margin-top:8px"><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint)">Expertise</span>${chipList(p.expertise_areas)}</div>` : ''}
         ${(p.investment_stages||[]).length ? `<div style="margin-top:8px"><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint)">Investment Stages</span>${chipList(p.investment_stages)}</div>` : ''}
+        ${p.persona === 'ecosystem_manager' && p.checkin_notes ? (() => {
+          const ecoEntries = (p.checkin_notes || '').split('\n').filter(l => l.includes(' ECO]')).slice(-1);
+          if (!ecoEntries.length) return '';
+          return '<div style="margin-top:10px;padding:10px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:8px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--green);margin-bottom:6px">🏗️ Latest Program Check-In</div><div style="font-size:11px;color:var(--text);line-height:1.6">' + ecoEntries[0].replace(/\[.*?\]\s*/, '').split(' | ').map(item => '<div>' + item + '</div>').join('') + '</div></div>';
+        })() : ''}
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
           <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-faint);display:block;margin-bottom:4px">📝 Admin Notes (only you can see this)</label>
           <textarea class="admin-notes-area" id="notes-${p.id}" onblur="saveNotes('${p.id}')">${p.admin_notes||''}</textarea>
@@ -9363,10 +9529,12 @@ function pgAdmin(){
 
   // Admin tab bar helper
   const pendingClaims = _ecoClaimRequests.filter(r => r.status === 'pending').length;
+  const pendingListings = _ecoListings.filter(l => l.status === 'pending').length;
   const pendingVenture = _ventureSubmissions.filter(v => v.status === 'New' || v.status === 'Under Review').length;
+  const ecoClaimsBadge = pendingClaims + pendingListings;
   const adminTabBar = (active) => `<div class="admin-tab-bar" style="display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--border);flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch">
     ${['directory','connections','deals','venture_studio','eco_claims','roadmap','investor'].map(t => {
-      const labels = {directory:'👥 User Directory', connections:'🧠 Smart Connections', deals:'📈 Deal Manager', venture_studio:'🚀 Venture Studio' + (pendingVenture > 0 ? ' (' + pendingVenture + ')' : ''), eco_claims:'🏗️ Ecosystem Claims' + (pendingClaims > 0 ? ' (' + pendingClaims + ')' : ''), roadmap:'🗺️ Product Roadmap', investor:'💼 Investor Opportunity'};
+      const labels = {directory:'👥 User Directory', connections:'🧠 Smart Connections', deals:'📈 Deal Manager', venture_studio:'🚀 Venture Studio' + (pendingVenture > 0 ? ' (' + pendingVenture + ')' : ''), eco_claims:'🏗️ Ecosystems' + (ecoClaimsBadge > 0 ? ' (' + ecoClaimsBadge + ')' : ''), roadmap:'🗺️ Product Roadmap', investor:'💼 Investor Opportunity'};
       const isActive = active === t;
       return `<button onclick="adminTab='${t}';render('admin')" style="padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:${isActive?'var(--green)':'var(--text-muted)'};border-bottom:2px solid ${isActive?'var(--green)':'transparent'};margin-bottom:-2px">${labels[t]}</button>`;
     }).join('')}
@@ -9453,9 +9621,9 @@ function pgAdmin(){
     }
     claimsHtml += `</div>`;
 
-    // Reviewed history
+    // Reviewed history (claims)
     if (reviewed.length > 0) {
-      claimsHtml += `<div class="card"><h3 style="margin-top:0">📋 Review History</h3>`;
+      claimsHtml += `<div class="card"><h3 style="margin-top:0">📋 Claim Review History</h3>`;
       reviewed.forEach(req => {
         const statusColor = req.status === 'approved' ? '#22c55e' : '#ef4444';
         const statusIcon = req.status === 'approved' ? '✅' : '❌';
@@ -9468,6 +9636,115 @@ function pgAdmin(){
           <div style="text-align:right">
             <span style="padding:3px 10px;background:${statusColor}15;color:${statusColor};border-radius:6px;font-size:11px;font-weight:700">${req.status.toUpperCase()}</span>
             ${req.reviewed_at ? '<div style="font-size:10px;color:var(--text-faint);margin-top:4px">' + new Date(req.reviewed_at).toLocaleDateString() + '</div>' : ''}
+          </div>
+        </div>`;
+      });
+      claimsHtml += `</div>`;
+    }
+
+    // ── NEW ECOSYSTEM LISTING APPLICATIONS ──
+    const pendingListingsArr = _ecoListings.filter(l => l.status === 'pending');
+    const reviewedListings = _ecoListings.filter(l => l.status !== 'pending');
+
+    claimsHtml += `<div class="card" style="margin-bottom:20px;border:2px solid #6366f1;border-radius:14px"><h3 style="margin-top:0">📋 New Ecosystem Listing Applications ${pendingListingsArr.length > 0 ? '<span style="background:#6366f1;color:white;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:8px">' + pendingListingsArr.length + '</span>' : ''}</h3>`;
+    claimsHtml += `<p style="font-size:12px;color:var(--text-muted);margin-top:-8px;margin-bottom:16px">Programs applying to be listed on the Partner Ecosystems directory</p>`;
+
+    if (pendingListingsArr.length === 0) {
+      claimsHtml += `<div style="text-align:center;padding:30px;color:var(--text-faint)">No pending listing applications. When someone applies via "List Your Ecosystem", it will appear here.</div>`;
+    } else {
+      pendingListingsArr.forEach(listing => {
+        const submitted = new Date(listing.submitted_at);
+        const daysAgo = Math.floor((Date.now() - submitted.getTime()) / (1000*60*60*24));
+        claimsHtml += `<div style="padding:18px;border:2px solid #6366f1;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#f5f3ff);margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-size:17px;font-weight:800;color:var(--text)">${listing.programName || 'Unnamed Program'}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${listing.orgName ? listing.orgName + ' · ' : ''}${listing.type || 'Program'} · ${listing.location || 'Location TBD'}</div>
+            </div>
+            <span style="padding:4px 12px;background:#e0e7ff;color:#4338ca;border-radius:6px;font-size:11px;font-weight:700">📋 NEW APPLICATION</span>
+          </div>
+
+          <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px">Program Description</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.6">${listing.description || 'No description provided.'}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div style="padding:10px;background:white;border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Manager</div>
+              <div style="font-size:13px;color:var(--text);font-weight:600">${listing.managerName || '—'}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${listing.managerTitle || ''}</div>
+            </div>
+            <div style="padding:10px;background:white;border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Contact</div>
+              <div style="font-size:13px;color:var(--text)">${listing.managerEmail || '—'}</div>
+              ${listing.linkedinUrl ? '<a href="' + listing.linkedinUrl + '" target="_blank" style="font-size:11px;color:#2563eb">LinkedIn</a>' : ''}
+            </div>
+            <div style="padding:10px;background:white;border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Stats</div>
+              <div style="font-size:12px;color:var(--text)">${listing.startupCount ? listing.startupCount + ' startups' : 'New'} · Est. ${listing.founded || 'N/A'}</div>
+              ${listing.website ? '<a href="' + listing.website + '" target="_blank" style="font-size:11px;color:#2563eb">Website</a>' : ''}
+            </div>
+            <div style="padding:10px;background:white;border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Focus Areas</div>
+              <div style="font-size:11px;color:var(--text)">${(listing.focus || []).join(', ') || 'General AgTech'}</div>
+            </div>
+          </div>
+
+          ${listing.whyJoin ? '<div style="background:white;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Why They Want to Join</div><div style="font-size:13px;color:var(--text);line-height:1.5">' + listing.whyJoin + '</div></div>' : ''}
+          ${listing.currentTools ? '<div style="background:white;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px">Current Tools</div><div style="font-size:12px;color:var(--text)">' + listing.currentTools + '</div></div>' : ''}
+
+          <div style="font-size:11px;color:var(--text-faint);margin-bottom:12px">Submitted ${daysAgo === 0 ? 'today' : daysAgo + ' day' + (daysAgo !== 1 ? 's' : '') + ' ago'} · ${submitted.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}${listing.status !== 'pending' ? ' · Status: <strong>' + listing.status + '</strong>' : ''}</div>
+
+          <!-- Status selector -->
+          <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+            ${['pending','reviewing','info_requested','call_scheduled','approved','denied'].map(s => {
+              const sLabels = {pending:'📨 New',reviewing:'👁️ Reviewing',info_requested:'📋 Info Requested',call_scheduled:'📞 Call Scheduled',approved:'✅ Approved',denied:'❌ Denied'};
+              const sColors = {pending:'#6366f1',reviewing:'#f59e0b',info_requested:'#0ea5e9',call_scheduled:'#8b5cf6',approved:'#22c55e',denied:'#ef4444'};
+              const isActive = listing.status === s;
+              return '<button onclick="ecoListingUpdateStatus(\'' + listing.id + '\',\'' + s + '\')" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ' + (isActive ? sColors[s] : 'var(--border)') + ';background:' + (isActive ? sColors[s] + '15' : 'white') + ';color:' + (isActive ? sColors[s] : 'var(--text-muted)') + '">' + sLabels[s] + '</button>';
+            }).join('')}
+          </div>
+
+          <!-- Action buttons row -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <button onclick="ecoListingEmailAction('confirm','${listing.managerEmail}','${(listing.managerName||'').replace(/'/g,"\\'")}','${(listing.programName||'').replace(/'/g,"\\'")}');ecoListingUpdateStatus('${listing.id}','reviewing')" style="padding:8px 16px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" title="Send a confirmation that you received their application">📧 Send Confirmation</button>
+            <button onclick="ecoListingEmailAction('info','${listing.managerEmail}','${(listing.managerName||'').replace(/'/g,"\\'")}','${(listing.programName||'').replace(/'/g,"\\'")}');ecoListingUpdateStatus('${listing.id}','info_requested')" style="padding:8px 16px;background:#0ea5e9;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" title="Ask for more information about their program">📋 Request More Info</button>
+            <button onclick="ecoListingEmailAction('call','${listing.managerEmail}','${(listing.managerName||'').replace(/'/g,"\\'")}','${(listing.programName||'').replace(/'/g,"\\'")}');ecoListingUpdateStatus('${listing.id}','call_scheduled')" style="padding:8px 16px;background:#8b5cf6;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" title="Schedule a call with this program manager">📞 Schedule Call</button>
+          </div>
+
+          <!-- Internal notes -->
+          <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+            <div style="font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px">Internal Notes</div>
+            <textarea id="ecol-notes-${listing.id}" style="width:100%;min-height:50px;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;resize:vertical;font-family:inherit;box-sizing:border-box">${listing.admin_notes || ''}</textarea>
+            <button onclick="ecoListingSaveNotes('${listing.id}')" style="margin-top:6px;padding:6px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text)">💾 Save Notes</button>
+          </div>
+
+          <!-- Final decision -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:2px solid var(--border)">
+            <button onclick="ecoAdminApproveListing('${listing.id}')" style="padding:10px 24px;background:#22c55e;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">✅ Approve & Add to Directory</button>
+            <button onclick="ecoAdminDenyListing('${listing.id}')" style="padding:10px 24px;background:#ef4444;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">❌ Decline & Notify</button>
+          </div>
+        </div>`;
+      });
+    }
+    claimsHtml += `</div>`;
+
+    // Reviewed listing history
+    if (reviewedListings.length > 0) {
+      claimsHtml += `<div class="card"><h3 style="margin-top:0">📋 Listing Review History</h3>`;
+      reviewedListings.forEach(listing => {
+        const statusColor = listing.status === 'approved' ? '#22c55e' : '#ef4444';
+        const statusIcon = listing.status === 'approved' ? '✅' : '❌';
+        claimsHtml += `<div style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:14px">${statusIcon}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${listing.programName} — ${listing.managerName}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${listing.managerEmail} · ${listing.type || 'Program'} · ${listing.location || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <span style="padding:3px 10px;background:${statusColor}15;color:${statusColor};border-radius:6px;font-size:11px;font-weight:700">${listing.status.toUpperCase()}</span>
+            ${listing.reviewed_at ? '<div style="font-size:10px;color:var(--text-faint);margin-top:4px">' + new Date(listing.reviewed_at).toLocaleDateString() + '</div>' : ''}
           </div>
         </div>`;
       });
@@ -9534,6 +9811,9 @@ function pgAdmin(){
       loadVentureSubmissions().then(() => render('admin'));
       return `<div class="page-hdr"><h1>🔐 Admin Dashboard</h1><p>Loading venture submissions...</p></div>${adminTabBar('venture_studio')}<div style="text-align:center;padding:40px;color:var(--text-muted)">Loading...</div>`;
     }
+    // Mark all current submissions as seen — clears the bell badge
+    localStorage.setItem('foc_vs_last_seen', Date.now().toString());
+    setTimeout(() => updateNotifBell(), 100);
     const subs = _ventureSubmissions;
     const newCount = subs.filter(s => s.status === 'New').length;
     const reviewCount = subs.filter(s => s.status === 'Under Review').length;
@@ -9894,7 +10174,7 @@ function pgRoadmap() {
       <h4 style="font-size:13px;margin:0 0 8px;color:var(--text)">Why This Matters</h4>
       <div style="font-size:12px;line-height:1.8;color:var(--text-muted)">
         <strong>The data moat:</strong> Every milestone claimed with evidence creates proprietary intelligence no other platform has. Every introduction tracked with outcome reports adds connection intelligence. After 100 founders progress through milestones and 50 introductions are completed, the platform knows which stages are hardest, which matches actually convert, and where capital is needed most.<br>
-        <strong>Self-maintaining quality:</strong> Quarterly check-ins + tier gating + intro accountability means the ecosystem stays fresh without manual curation. Stale profiles fade, active participants rise. Users who don't report outcomes lose intro access. Investors see only verified, engaged founders.<br>
+        <strong>Self-maintaining quality:</strong> Monthly check-ins + tier gating + intro accountability means the ecosystem stays fresh without manual curation. Stale profiles fade, active participants rise. Users who don't report outcomes lose intro access. Investors see only verified, engaged founders. Ecosystem managers share enrollment data, upcoming events, and program health — keeping the entire directory current.<br>
         <strong>Network effects:</strong> Each new participant increases the value for everyone else. A founder's milestone evidence helps investors assess deal quality. An investor's portfolio data helps founders target the right capital. Every completed introduction makes the matching algorithm smarter. The system compounds with every interaction.
       </div>
     </div>
@@ -12928,6 +13208,290 @@ function ecoAdminDenyClaim(requestId) {
   saveClaimRequests();
   toast('❌ Denied claim request from ' + req.name);
   render(currentPage);
+}
+
+// ══════════════════════════════════════════════════════════════
+// "LIST YOUR ECOSYSTEM" — Application flow for new programs
+// ══════════════════════════════════════════════════════════════
+let _ecoListings = JSON.parse(localStorage.getItem('foc_eco_listings') || '[]');
+let _ecoListingStep = 0;
+let _ecoListingForm = {};
+
+function saveEcoListings() {
+  localStorage.setItem('foc_eco_listings', JSON.stringify(_ecoListings));
+}
+
+function openListEcosystemForm() {
+  if (!currentUser) { toast('🔐 Please sign in first'); return; }
+  _ecoListingStep = 0;
+  _ecoListingForm = {
+    programName: '', orgName: '', managerName: _userProfile?.full_name || '',
+    managerTitle: _userProfile?.job_title || '', managerEmail: currentUser?.email || '',
+    linkedinUrl: _userProfile?.linkedin_url || '', location: _userProfile?.location || '',
+    country: '', type: '', focus: [], description: '', website: '',
+    startupCount: '', founded: '', highlights: '',
+    whyJoin: '', currentTools: ''
+  };
+  openModal('eco-listing-modal');
+  setTimeout(() => renderEcoListingModal(), 50);
+}
+
+function ecoListingNext() {
+  // Per-step validation
+  if (_ecoListingStep === 0) {
+    _ecoListingForm.programName = document.getElementById('ecol-program-name')?.value?.trim() || _ecoListingForm.programName;
+    _ecoListingForm.orgName = document.getElementById('ecol-org-name')?.value?.trim() || _ecoListingForm.orgName;
+    _ecoListingForm.managerName = document.getElementById('ecol-manager-name')?.value?.trim() || _ecoListingForm.managerName;
+    _ecoListingForm.managerTitle = document.getElementById('ecol-manager-title')?.value?.trim() || _ecoListingForm.managerTitle;
+    _ecoListingForm.managerEmail = document.getElementById('ecol-manager-email')?.value?.trim() || _ecoListingForm.managerEmail;
+    _ecoListingForm.linkedinUrl = document.getElementById('ecol-linkedin')?.value?.trim() || _ecoListingForm.linkedinUrl;
+    if (!_ecoListingForm.programName) { toast('Please enter your program name.'); return; }
+    if (!_ecoListingForm.managerName) { toast('Please enter your name.'); return; }
+    if (!_ecoListingForm.managerEmail) { toast('Please enter your email.'); return; }
+  } else if (_ecoListingStep === 1) {
+    _ecoListingForm.location = document.getElementById('ecol-location')?.value?.trim() || _ecoListingForm.location;
+    _ecoListingForm.country = document.getElementById('ecol-country')?.value?.trim() || _ecoListingForm.country;
+    _ecoListingForm.description = document.getElementById('ecol-description')?.value?.trim() || _ecoListingForm.description;
+    _ecoListingForm.website = document.getElementById('ecol-website')?.value?.trim() || _ecoListingForm.website;
+    _ecoListingForm.startupCount = document.getElementById('ecol-startup-count')?.value?.trim() || _ecoListingForm.startupCount;
+    _ecoListingForm.founded = document.getElementById('ecol-founded')?.value?.trim() || _ecoListingForm.founded;
+    _ecoListingForm.highlights = document.getElementById('ecol-highlights')?.value?.trim() || _ecoListingForm.highlights;
+    if (!_ecoListingForm.location) { toast('Please enter your location.'); return; }
+    if (!_ecoListingForm.type) { toast('Please select a program type.'); return; }
+    if (!_ecoListingForm.description) { toast('Please describe your program.'); return; }
+  }
+  _ecoListingStep++;
+  renderEcoListingModal();
+}
+
+function ecoListingBack() {
+  if (_ecoListingStep > 0) _ecoListingStep--;
+  renderEcoListingModal();
+}
+
+function ecoListingToggleFocus(f) {
+  const idx = _ecoListingForm.focus.indexOf(f);
+  if (idx >= 0) _ecoListingForm.focus.splice(idx, 1);
+  else _ecoListingForm.focus.push(f);
+  renderEcoListingModal();
+}
+
+function ecoListingSetType(t) {
+  _ecoListingForm.type = t;
+  renderEcoListingModal();
+}
+
+async function ecoListingSubmit() {
+  _ecoListingForm.whyJoin = document.getElementById('ecol-why-join')?.value?.trim() || _ecoListingForm.whyJoin;
+  _ecoListingForm.currentTools = document.getElementById('ecol-current-tools')?.value?.trim() || _ecoListingForm.currentTools;
+  if (!_ecoListingForm.whyJoin) { toast('Please tell us why you want to join.'); return; }
+
+  const listing = {
+    id: 'listing-' + Date.now(),
+    ...JSON.parse(JSON.stringify(_ecoListingForm)),
+    userId: currentUser?.id || null,
+    status: 'pending',
+    submitted_at: new Date().toISOString(),
+    admin_notes: ''
+  };
+
+  _ecoListings.push(listing);
+  saveEcoListings();
+
+  // Also try Supabase
+  if (_supabase && currentUser) {
+    try {
+      await _supabase.from('eco_activity_log').insert({
+        manager_id: currentUser.id,
+        action: 'ECO_LISTING_APP:' + JSON.stringify(listing)
+      });
+    } catch(e) { console.log('Listing save to Supabase note:', e); }
+  }
+
+  closeModal('eco-listing-modal');
+  toast('🎉 Application submitted! Our team will review your program and get back to you within 30 days.');
+  _ecoListingStep = 0;
+  _ecoListingForm = {};
+  updateNotifBell();
+  render(currentPage);
+}
+
+function renderEcoListingModal() {
+  const modal = document.getElementById('eco-listing-modal-content');
+  if (!modal) return;
+  const PROGRAM_TYPES = ['Accelerator','Incubator','Innovation Hub','University Program','Government Program','Corporate Venture','Tech Validator','Regional Hub','Industry Association'];
+  const FOCUS_AREAS = ['Precision Agriculture','AI/ML in Agriculture','Robotics & Automation','Supply Chain','Food Safety','Sustainability / Climate','Livestock Tech','Indoor / Vertical Farming','Soil & Water Tech','AgBiotech','Labor & Automation','Drone Technology','Farm Finance','Post-Harvest','Aquaculture'];
+  const f = _ecoListingForm;
+
+  let html = '';
+  const stepLabels = ['Your Info','Program Details','Why FounderOps'];
+  html += '<div style="display:flex;gap:4px;margin-bottom:20px">';
+  stepLabels.forEach((label, i) => {
+    html += '<div style="flex:1;text-align:center"><div style="height:4px;border-radius:2px;background:' + (i <= _ecoListingStep ? 'var(--green)' : 'var(--border)') + ';margin-bottom:6px"></div><div style="font-size:10px;color:' + (i === _ecoListingStep ? 'var(--green)' : 'var(--text-faint)') + ';font-weight:' + (i === _ecoListingStep ? '700' : '400') + '">' + label + '</div></div>';
+  });
+  html += '</div>';
+
+  if (_ecoListingStep === 0) {
+    html += '<div style="display:grid;gap:12px">';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Program / Organization Name *</label><input id="ecol-program-name" type="text" value="' + (f.programName||'').replace(/"/g,'&quot;') + '" placeholder="e.g. Grand Farm, WET Center" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Parent Organization</label><input id="ecol-org-name" type="text" value="' + (f.orgName||'').replace(/"/g,'&quot;') + '" placeholder="e.g. UC Merced, Western Growers" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Your Name *</label><input id="ecol-manager-name" type="text" value="' + (f.managerName||'').replace(/"/g,'&quot;') + '" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Your Title</label><input id="ecol-manager-title" type="text" value="' + (f.managerTitle||'').replace(/"/g,'&quot;') + '" placeholder="Program Director" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Work Email *</label><input id="ecol-manager-email" type="email" value="' + (f.managerEmail||'').replace(/"/g,'&quot;') + '" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">LinkedIn Profile</label><input id="ecol-linkedin" type="url" value="' + (f.linkedinUrl||'').replace(/"/g,'&quot;') + '" placeholder="https://linkedin.com/in/..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '</div>';
+  } else if (_ecoListingStep === 1) {
+    html += '<div style="display:grid;gap:12px">';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Program Type *</label><div style="display:flex;flex-wrap:wrap;gap:6px">';
+    PROGRAM_TYPES.forEach(t => {
+      html += '<div onclick="ecoListingSetType(\'' + t + '\')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid ' + (f.type === t ? 'var(--green)' : 'var(--border)') + ';background:' + (f.type === t ? 'var(--accent-bg)' : 'var(--surface)') + ';color:' + (f.type === t ? 'var(--green)' : 'var(--text-muted)') + '">' + t + '</div>';
+    });
+    html += '</div></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Location *</label><input id="ecol-location" type="text" value="' + (f.location||'').replace(/"/g,'&quot;') + '" placeholder="City, State/Province" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Country</label><input id="ecol-country" type="text" value="' + (f.country||'').replace(/"/g,'&quot;') + '" placeholder="US, CA, etc." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Focus Areas</label><div style="display:flex;flex-wrap:wrap;gap:5px">';
+    FOCUS_AREAS.forEach(fa => {
+      html += '<div onclick="ecoListingToggleFocus(\'' + fa.replace(/'/g,"\\'") + '\')" style="padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid ' + (f.focus.includes(fa) ? 'var(--green)' : 'var(--border)') + ';background:' + (f.focus.includes(fa) ? 'var(--accent-bg)' : 'var(--surface)') + ';color:' + (f.focus.includes(fa) ? 'var(--green)' : 'var(--text-muted)') + '">' + fa + '</div>';
+    });
+    html += '</div></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Program Description *</label><textarea id="ecol-description" placeholder="What does your program do? Who do you support? What makes it unique?" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;min-height:80px;resize:vertical;box-sizing:border-box">' + (f.description||'') + '</textarea></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Website</label><input id="ecol-website" type="url" value="' + (f.website||'').replace(/"/g,'&quot;') + '" placeholder="https://..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Startups Supported</label><input id="ecol-startup-count" type="text" value="' + (f.startupCount||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 25+" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Year Founded</label><input id="ecol-founded" type="text" value="' + (f.founded||'').replace(/"/g,'&quot;') + '" placeholder="2020" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Program Highlights</label><textarea id="ecol-highlights" placeholder="Key highlights, one per line (e.g. \'120-acre testbed facility\', \'Direct grower access\')" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;min-height:60px;resize:vertical;box-sizing:border-box">' + (f.highlights||'') + '</textarea></div>';
+    html += '</div>';
+  } else if (_ecoListingStep === 2) {
+    html += '<div style="display:grid;gap:14px">';
+    html += '<div style="background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px;padding:16px"><div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px">🌱 What You Get on FounderOps Center</div><div style="font-size:12px;color:var(--text-muted);line-height:1.7">Your program gets a verified listing on our Partner Ecosystems directory, a private Ecosystem Workspace to manage your pipeline, access to cross-ecosystem intelligence, and founder/investor introductions powered by our matching engine.</div></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Why do you want to join the FounderOps Center network? *</label><textarea id="ecol-why-join" placeholder="What would being part of this platform mean for your program? What problems would it solve?" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;min-height:80px;resize:vertical;box-sizing:border-box">' + (f.whyJoin||'') + '</textarea></div>';
+    html += '<div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">What tools do you currently use to manage your program?</label><textarea id="ecol-current-tools" placeholder="e.g. Airtable, Google Sheets, Salesforce, spreadsheets, nothing yet..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;min-height:60px;resize:vertical;box-sizing:border-box">' + (f.currentTools||'') + '</textarea></div>';
+    html += '</div>';
+  }
+
+  // Navigation buttons
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">';
+  if (_ecoListingStep > 0) {
+    html += '<button onclick="ecoListingBack()" style="padding:10px 20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer">← Back</button>';
+  } else {
+    html += '<div></div>';
+  }
+  if (_ecoListingStep < 2) {
+    html += '<button onclick="ecoListingNext()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Next →</button>';
+  } else {
+    html += '<button onclick="ecoListingSubmit()" style="padding:10px 24px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Submit Application 🚀</button>';
+  }
+  html += '</div>';
+
+  modal.innerHTML = html;
+}
+
+// Admin: approve/deny ecosystem listing
+function ecoAdminApproveListing(listingId) {
+  const listing = _ecoListings.find(l => l.id === listingId);
+  if (!listing) return;
+  listing.status = 'approved';
+  listing.reviewed_at = new Date().toISOString();
+  listing.reviewed_by = currentUser?.email || 'admin';
+  saveEcoListings();
+
+  // Generate a slug and invite code
+  const slug = (listing.programName || 'program').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const initials = (listing.programName || 'XX').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0,4);
+  const inviteCode = initials + '-2026-' + (listing.managerName||'').split(' ').map(w=>w[0]).join('').toUpperCase();
+  const color = ['#0e7490','#7c3aed','#c2410c','#0369a1','#b91c1c','#4338ca','#0f766e','#a16207'][Math.floor(Math.random()*8)];
+
+  // Add to PARTNER_ECOSYSTEMS
+  const newEco = {
+    id: slug, slug: slug,
+    name: listing.programName,
+    shortName: listing.programName.length > 25 ? listing.programName.split(/[\s\-\/]+/).slice(0,3).join(' ') : listing.programName,
+    org: listing.orgName || listing.programName,
+    manager: listing.managerName,
+    managerTitle: listing.managerTitle || 'Program Manager',
+    location: listing.location,
+    country: listing.country || 'US',
+    type: listing.type || 'Innovation Hub',
+    focus: listing.focus.length > 0 ? listing.focus : ['General AgTech'],
+    description: listing.description,
+    highlights: listing.highlights ? listing.highlights.split('\n').filter(h => h.trim()).slice(0,4) : ['New to FounderOps Center'],
+    website: listing.website || '',
+    color: color,
+    startupCount: listing.startupCount || 'New',
+    founded: listing.founded || new Date().getFullYear().toString(),
+    claimed: false,
+    inviteCode: inviteCode
+  };
+  PARTNER_ECOSYSTEMS.push(newEco);
+
+  // Send acceptance email
+  ecoListingEmailAction('accept', listing.managerEmail, listing.managerName, listing.programName);
+
+  toast('✅ ' + listing.programName + ' approved and added to Partner Ecosystems! Invite code: ' + inviteCode);
+  render(currentPage);
+}
+
+function ecoAdminDenyListing(listingId) {
+  const listing = _ecoListings.find(l => l.id === listingId);
+  if (!listing) return;
+  listing.status = 'denied';
+  listing.reviewed_at = new Date().toISOString();
+  listing.reviewed_by = currentUser?.email || 'admin';
+  saveEcoListings();
+  ecoListingEmailAction('decline', listing.managerEmail, listing.managerName, listing.programName);
+  toast('❌ Listing application from ' + listing.managerName + ' denied');
+  render(currentPage);
+}
+
+// ── Ecosystem Listing Admin Email Actions ──
+function ecoListingEmailAction(type, email, name, programName) {
+  const firstName = (name || '').split(' ')[0] || 'there';
+  const emails = {
+    confirm: {
+      subject: 'We received your application — ' + (programName || 'Your Program') + ' | FounderOps Center',
+      body: 'Hi ' + firstName + ',\n\nThank you for applying to list ' + (programName || 'your program') + ' on the FounderOps Center partner ecosystem directory.\n\nHere\'s what happens next:\n\n- Our team will review your application within 30 days, or at our next monthly review — whichever comes first.\n- If we have questions, we\'ll reach out directly.\n- In the meantime, feel free to explore the platform — browse startups, market data, and the existing partner ecosystems at founderopscenter.com.\n\nWe\'re building something special here and programs like yours are exactly what makes the AgTech ecosystem stronger.\n\nWe\'ll be in touch soon.\n\nBest,\nRussell Cole\nFounder, FounderOps Center\nfounderopscenter.com'
+    },
+    info: {
+      subject: 'Quick follow-up on ' + (programName || 'your listing application') + ' | FounderOps Center',
+      body: 'Hi ' + firstName + ',\n\nThanks again for applying to list ' + (programName || 'your program') + ' on FounderOps Center. We\'ve been reviewing your application and we\'re excited about the potential.\n\nBefore we move forward, could you help us with a few things?\n\n1. [Specific question about the program]\n2. [Question about current cohort or enrollments]\n3. [Any additional context]\n\nNo rush — just reply whenever you get a chance.\n\nBest,\nRussell Cole\nFounder, FounderOps Center'
+    },
+    call: {
+      subject: 'Let\'s talk about listing ' + (programName || 'your program') + ' — FounderOps Center',
+      body: 'Hi ' + firstName + ',\n\nThanks for your interest in listing ' + (programName || 'your program') + ' on FounderOps Center. I\'d love to connect and learn more about what you\'re doing.\n\nWould any of these times work for a 20-minute introductory call?\n\n- [Option 1]\n- [Option 2]\n- [Option 3]\n\nI want to understand your program better so we can figure out the best way to integrate you into our ecosystem network.\n\nBest,\nRussell Cole\nFounder, FounderOps Center'
+    },
+    accept: {
+      subject: 'Welcome to the network — ' + (programName || 'Your Program') + ' is now on FounderOps Center!',
+      body: 'Hi ' + firstName + ',\n\nGreat news — ' + (programName || 'your program') + ' has been approved and added to the FounderOps Center partner ecosystem directory!\n\nHere\'s what you get:\n\n- A verified listing on our Partner Ecosystems page visible to founders, investors, and advisors\n- An invite code to claim your program and unlock your Ecosystem Workspace\n- Pipeline management tools, application review, and cohort tracking\n- Cross-ecosystem intelligence and founder/investor matching\n\nYour invite code will be shared separately. Once you claim your program, you\'ll have full access to your Ecosystem Workspace.\n\nNext step: Log into founderopscenter.com, navigate to Partner Ecosystems, find your listing, and click "Claim as Manager." Enter your invite code and you\'re live.\n\nOne more thing — to keep the platform healthy, we ask all ecosystem managers to complete a brief monthly check-in sharing program updates, enrollment numbers, and upcoming events. This helps us surface the freshest opportunities to founders and investors.\n\nWelcome to the network. Let\'s build something great together.\n\nBest,\nRussell Cole\nFounder, FounderOps Center\nfounderopscenter.com'
+    },
+    decline: {
+      subject: 'Update on your listing application | FounderOps Center',
+      body: 'Hi ' + firstName + ',\n\nThank you for your interest in listing ' + (programName || 'your program') + ' on FounderOps Center. We appreciate you taking the time to apply.\n\nAfter review, we\'ve decided not to add this listing at this time. This could be due to focus area alignment, program stage, or simply capacity — it\'s not a reflection of your program\'s quality.\n\nHere\'s what you can do:\n\n- Stay active on the platform in your current role\n- Reapply in the future as your program evolves\n- Connect with our existing partner ecosystems for potential collaboration\n\nWe\'d love to stay in touch and revisit this down the road.\n\nBest,\nRussell Cole\nFounder, FounderOps Center'
+    }
+  };
+  const e = emails[type];
+  if (!e) return;
+  const mailto = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(e.subject) + '&body=' + encodeURIComponent(e.body);
+  window.open(mailto, '_blank');
+  toast('📧 Email draft opened for ' + (name || email));
+}
+
+function ecoListingUpdateStatus(listingId, newStatus) {
+  const listing = _ecoListings.find(l => l.id === listingId);
+  if (!listing) return;
+  listing.status = newStatus;
+  listing.status_updated_at = new Date().toISOString();
+  saveEcoListings();
+  toast('📋 ' + listing.programName + ' status → ' + newStatus);
+  render(currentPage);
+}
+
+function ecoListingSaveNotes(listingId) {
+  const listing = _ecoListings.find(l => l.id === listingId);
+  if (!listing) return;
+  const textarea = document.getElementById('ecol-notes-' + listingId);
+  if (!textarea) return;
+  listing.admin_notes = textarea.value;
+  saveEcoListings();
+  toast('💾 Notes saved for ' + listing.programName);
 }
 
 function pgEcosystemWorkspace() {
