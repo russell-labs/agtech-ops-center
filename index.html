@@ -2158,6 +2158,9 @@ function personLink(name, platform){
 // ── NAVIGATION ────────────────────────────────────────────────────
 let currentPage = 'overview';
 function go(page, btn){
+  // Handle compound navigation (e.g. 'admin_deals' → admin page + deals tab)
+  if (page === 'admin_deals') { adminTab = 'deals'; page = 'admin'; }
+  if (page === 'admin_claims') { adminTab = 'eco_claims'; page = 'admin'; }
   if (page !== 'crops') _selectedCrop = null; // reset crop detail when leaving crops
   if (page !== 'mentors') _selectedMentor = null; // reset mentor detail when leaving mentors
   if (page !== 'accelerators') _selectedAccelerator = null; // reset accelerator detail when leaving accelerators
@@ -6526,11 +6529,12 @@ function pgVenture(){
       <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px">You & Your Team</h2>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your Name *</label>
-        <input type="text" style="${inputStyle()}" value="${_ventureForm.founderName || (currentUser?.name || '')}" onchange="_ventureForm.founderName=this.value" placeholder="Your full name">
+        <input type="text" style="${inputStyle()}" value="${_ventureForm.founderName || (currentUser?.name || '')}" oninput="_ventureForm.founderName=this.value" placeholder="Your full name">
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your Email *</label>
-        <input type="email" style="${inputStyle()}" value="${_ventureForm.founderEmail || (currentUser?.email || '')}" onchange="_ventureForm.founderEmail=this.value" placeholder="Your email">
+        <input type="email" style="${inputStyle()}" value="${_ventureForm.founderEmail || (currentUser?.email || '')}" oninput="_ventureForm.founderEmail=this.value" onblur="ventureValidateField(this,'email')" placeholder="Your email">
+        <div id="venture-email-err" style="font-size:11px;color:#dc2626;margin-top:4px;display:none">Please enter a valid email address</div>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your Background/Experience</label>
@@ -6549,7 +6553,8 @@ function pgVenture(){
       </div>` : ''}
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your LinkedIn URL</label>
-        <input type="url" style="${inputStyle()}" value="${_ventureForm.linkedinUrl||''}" onchange="_ventureForm.linkedinUrl=this.value" placeholder="https://linkedin.com/in/yourprofile">
+        <input type="url" style="${inputStyle()}" value="${_ventureForm.linkedinUrl||''}" oninput="_ventureForm.linkedinUrl=this.value" onblur="ventureValidateField(this,'url')" placeholder="https://linkedin.com/in/yourprofile">
+        <div id="venture-linkedin-err" style="font-size:11px;color:#dc2626;margin-top:4px;display:none">Please enter a valid URL starting with https://</div>
       </div>
       <div style="display:flex;gap:12px;margin-top:24px">
         <button onclick="_ventureStep=1;render('venture')" style="flex:1;padding:12px 18px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">← Back</button>
@@ -6741,11 +6746,62 @@ function pgVenture(){
   </div>`;
 }
 
+function ventureValidateField(el, type) {
+  const val = el.value.trim();
+  let valid = true;
+  let errEl = null;
+  if (type === 'email') {
+    errEl = document.getElementById('venture-email-err');
+    if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) valid = false;
+  } else if (type === 'url') {
+    errEl = document.getElementById('venture-linkedin-err');
+    if (val) {
+      try { new URL(val); if (!val.startsWith('http://') && !val.startsWith('https://')) valid = false; } catch(e) { valid = false; }
+    }
+  }
+  if (errEl) {
+    errEl.style.display = valid ? 'none' : 'block';
+    el.style.borderColor = valid ? 'var(--border)' : '#dc2626';
+  }
+}
+
 async function submitVentureApplication(){
+  // Auto-seed from currentUser if form fields weren't manually touched
+  if (!_ventureForm.founderName && currentUser?.name) _ventureForm.founderName = currentUser.name;
+  if (!_ventureForm.founderEmail && currentUser?.email) _ventureForm.founderEmail = currentUser.email;
+
+  // Also read directly from DOM inputs in case oninput didn't fire (autopopulated values)
+  const nameInput = document.querySelector('input[placeholder="Your full name"]');
+  const emailInput = document.querySelector('input[placeholder="Your email"]');
+  const linkedinInput = document.querySelector('input[placeholder="https://linkedin.com/in/yourprofile"]');
+  if (nameInput && nameInput.value && !_ventureForm.founderName) _ventureForm.founderName = nameInput.value;
+  if (emailInput && emailInput.value && !_ventureForm.founderEmail) _ventureForm.founderEmail = emailInput.value;
+  if (linkedinInput && linkedinInput.value) _ventureForm.linkedinUrl = linkedinInput.value;
+
   // Validate required fields
   if(!_ventureForm.name || !_ventureForm.pitch || !_ventureForm.sector || !_ventureForm.founderName || !_ventureForm.founderEmail){
-    alert('Please fill in all required fields');
+    alert('Please fill in all required fields: Startup Name, One-Line Pitch, Sector, Your Name, and Your Email.');
     return;
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(_ventureForm.founderEmail)) {
+    alert('Please enter a valid email address (e.g. you@example.com).');
+    return;
+  }
+
+  // Validate LinkedIn URL if provided
+  if (_ventureForm.linkedinUrl && _ventureForm.linkedinUrl.trim()) {
+    const url = _ventureForm.linkedinUrl.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      alert('LinkedIn URL must start with https:// (e.g. https://linkedin.com/in/yourprofile).');
+      return;
+    }
+    try { new URL(url); } catch(e) {
+      alert('Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/yourprofile).');
+      return;
+    }
   }
 
   const submission = {
@@ -7815,15 +7871,15 @@ function getNotifications() {
     }
   }
 
-  // 8. Admin: New venture studio submissions
+  // 8. Admin: New venture studio submissions — route to admin deals tab
   if (isAdmin && _ventureSubmissions.length) {
     const newSubs = _ventureSubmissions.filter(s => s.status === 'New');
     if (newSubs.length) {
-      notifs.push({ icon:'🚀', title:newSubs.length + ' new Venture Studio submission' + (newSubs.length > 1 ? 's' : ''), desc:'Review ' + (newSubs.length > 1 ? 'these ideas' : 'this idea') + ' in the Venture Studio review queue.', action:'venture', priority:1 });
+      notifs.push({ icon:'🚀', title:newSubs.length + ' new Venture Studio submission' + (newSubs.length > 1 ? 's' : ''), desc:'Review ' + (newSubs.length > 1 ? 'these ideas' : 'this idea') + ' in the admin Deal Manager.', action:'admin_deals', priority:1 });
     }
     const reviewSubs = _ventureSubmissions.filter(s => s.status === 'Under Review');
     if (reviewSubs.length) {
-      notifs.push({ icon:'📋', title:reviewSubs.length + ' submission' + (reviewSubs.length > 1 ? 's' : '') + ' under review', desc:'Continue reviewing Venture Studio submissions.', action:'venture', priority:2 });
+      notifs.push({ icon:'📋', title:reviewSubs.length + ' submission' + (reviewSubs.length > 1 ? 's' : '') + ' under review', desc:'Continue reviewing in the admin Deal Manager.', action:'admin_deals', priority:2 });
     }
   }
 
