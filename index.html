@@ -7200,7 +7200,7 @@ function pgAccelerators(){
       const eco = PARTNER_ECOSYSTEMS.find(e => e.id === _selectedPartnerEco);
       if (!eco) { _selectedPartnerEco = null; return renderPartnerEcosystems(); }
       const isCurrentUser = currentUser && currentUser.email && eco.manager === 'Russell Cole';
-      const persona = getProfile()?.persona;
+      const persona = _userProfile?.persona;
       const isFounder = persona === 'founder';
       const isEcoMgr = persona === 'ecosystem_manager';
 
@@ -7247,6 +7247,9 @@ function pgAccelerators(){
       }
       if (!eco.claimed && (isEcoMgr || isAdmin)) {
         detailHtml += '<button onclick="ecoClaimPartner(\'' + eco.id + '\')" style="padding:12px 20px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer">🔑 Claim as Manager</button>';
+      }
+      if (eco.claimed && isCurrentUser) {
+        detailHtml += '<button onclick="go(\'ecosystem_workspace\')" style="padding:12px 20px;background:var(--green);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer">📊 Open Your Workspace</button>';
       }
       detailHtml += '</div></div></div>';
       return detailHtml;
