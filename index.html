@@ -5951,6 +5951,48 @@ function pgCropDetail(cropName){
 `;
 }
 
+function filterMentorGrid(){
+  const s = (document.getElementById('mentor-search').value||'').toLowerCase();
+  const c = document.getElementById('mentor-country-filter').value;
+  const a = document.getElementById('mentor-avail-filter').value;
+  const co = document.getElementById('mentor-comp-filter').value;
+  const filtered = MENTORS.filter(m=>{
+    const ms = !s || m.name.toLowerCase().includes(s) || m.firm.toLowerCase().includes(s) || m.expertise.toLowerCase().includes(s) || m.focusAreas.toLowerCase().includes(s);
+    const mc = c==='All' || m.country===c;
+    const ma = a==='All' || (a==='Available' && m.available==='Yes') || (a==='Limited' && m.available==='Limited');
+    const mco = co==='All' || m.comp===co || (co==='Open' && (m.comp==='Open' || m.comp==='Pro Bono'));
+    return ms && mc && ma && mco;
+  });
+  const grid = document.getElementById('mentor-grid');
+  if(!grid) return;
+  const cf={'US':'🇺🇸','CA':'🇨🇦','IN':'🇮🇳','AU':'🇦🇺','UK':'🇬🇧','CH':'🇨🇭','EU':'🇪🇺','SG':'🇸🇬','BR':'🇧🇷','NZ':'🇳🇿'};
+  const colors=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2','#F8B88B','#82E0AA'];
+  if(filtered.length===0){
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-muted)">No mentors match your filters</div>';
+  } else {
+    grid.innerHTML = filtered.map(m => {
+      const flag=cf[m.country]||'';
+      const ini=m.name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+      let h=0;for(let i=0;i<m.name.length;i++){h=((h<<5)-h)+m.name.charCodeAt(i);h=h&h;}
+      const ac=colors[Math.abs(h)%colors.length];
+      let avl='#ef4444';if(m.available==='Yes'){avl='#22c55e';}else if(m.available==='Limited'){avl='#eab308';}
+      const exp=m.expertise.substring(0,100)+(m.expertise.length>100?'...':'');
+      return '<div onclick="_selectedMentor='+m.id+';render(\'mentors\')" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s">'
+        +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+        +'<div style="width:48px;height:48px;border-radius:50%;background:'+ac+';display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;flex-shrink:0">'+ini+'</div>'
+        +'<div style="flex:1"><div style="font-weight:600;color:var(--text);font-size:14px">'+m.name+'</div>'
+        +'<div style="color:var(--text-muted);font-size:12px">'+m.firm+'</div></div></div>'
+        +'<p style="margin:0 0 12px 0;color:var(--text);font-size:13px;line-height:1.5">'+exp+'</p>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)">'
+        +'<span style="font-size:12px;color:var(--text-muted)">'+flag+' '+m.country+'</span>'
+        +'<div style="display:flex;gap:6px;align-items:center">'
+        +'<span style="display:inline-flex;align-items:center;gap:4px;color:'+avl+';font-size:12px;font-weight:600"><span style="width:6px;height:6px;background:'+avl+';border-radius:50%"></span>'+(m.available==='Yes'?'Available':'Limited')+'</span>'
+        +'<span style="display:inline-block;background:var(--hover);color:var(--text);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">'+m.comp+'</span>'
+        +'</div></div></div>';
+    }).join('');
+  }
+}
+
 function pgMentors(){
   const countryFlags = {US:'🇺🇸',CA:'🇨🇦',IN:'🇮🇳',AU:'🇦🇺',UK:'🇬🇧',CH:'🇨🇭',EU:'🇪🇺',SG:'🇸🇬',BR:'🇧🇷',NZ:'🇳🇿'};
   const avatarColors = ['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2','#F8B88B','#82E0AA'];
@@ -6097,41 +6139,23 @@ function pgMentors(){
     <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px">
       <input type="text" id="mentor-search" placeholder="Search by name, firm, expertise..."
         style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:14px"
-        onkeyup="
-          const s = document.getElementById('mentor-search').value;
-          const c = document.getElementById('mentor-country-filter').value;
-          const a = document.getElementById('mentor-avail-filter').value;
-          const co = document.getElementById('mentor-comp-filter').value;
-          const filtered = MENTORS.filter(m=>{
-            const ms = !s || m.name.toLowerCase().includes(s.toLowerCase()) || m.firm.toLowerCase().includes(s.toLowerCase()) || m.expertise.toLowerCase().includes(s.toLowerCase()) || m.focusAreas.toLowerCase().includes(s.toLowerCase());
-            const mc = c==='All' || m.country===c;
-            const ma = a==='All' || (a==='Available' && m.available==='Yes') || (a==='Limited' && m.available==='Limited');
-            const mco = co==='All' || m.comp===co || (co==='Open' && (m.comp==='Open' || m.comp==='Pro Bono'));
-            return ms && mc && ma && mco;
-          });
-          const grid = document.getElementById('mentor-grid');
-          if(filtered.length===0){
-            grid.innerHTML = '<div style=&quot;grid-column:1/-1;padding:40px;text-align:center;color:var(--text-muted)&quot;>No mentors match your filters</div>';
-          } else {
-            grid.innerHTML = filtered.map(m => {const cf={'US':'🇺🇸','CA':'🇨🇦','IN':'🇮🇳','AU':'🇦🇺','UK':'🇬🇧','CH':'🇨🇭','EU':'🇪🇺','SG':'🇸🇬','BR':'🇧🇷','NZ':'🇳🇿'};const flag=cf[m.country]||'';const ini=m.name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();let h=0;for(let i=0;i<m.name.length;i++){h=((h<<5)-h)+m.name.charCodeAt(i);h=h&h;}const colors=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2','#F8B88B','#82E0AA'];const ac=colors[Math.abs(h)%colors.length];let avl='#ef4444';if(m.available==='Yes'){avl='#22c55e';}else if(m.available==='Limited'){avl='#eab308';}const exp=m.expertise.substring(0,100)+(m.expertise.length>100?'...':'');return `<div onclick=&quot;_selectedMentor=${m.id};render('mentors')&quot; style=&quot;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s&quot;><div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:12px&quot;><div style=&quot;width:48px;height:48px;border-radius:50%;background:${ac};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;flex-shrink:0&quot;>${ini}</div><div style=&quot;flex:1&quot;><div style=&quot;font-weight:600;color:var(--text);font-size:14px&quot;>${m.name}</div><div style=&quot;color:var(--text-muted);font-size:12px&quot;>${m.firm}</div></div></div><p style=&quot;margin:0 0 12px 0;color:var(--text);font-size:13px;line-height:1.5&quot;>${exp}</p><div style=&quot;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)&quot;><span style=&quot;font-size:12px;color:var(--text-muted)&quot;>${flag} ${m.country}</span><div style=&quot;display:flex;gap:6px;align-items:center&quot;><span style=&quot;display:inline-flex;align-items:center;gap:4px;color:${avl};font-size:12px;font-weight:600&quot;><span style=&quot;width:6px;height:6px;background:${avl};border-radius:50%&quot;></span>${m.available==='Yes'?'Available':'Limited'}</span><span style=&quot;display:inline-block;background:var(--hover);color:var(--text);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600&quot;>${m.comp}</span></div></div></div>`}).join('');
-          }
-        "/>
+        onkeyup="filterMentorGrid()"/>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" class="mentor-filters">
       <select id="mentor-country-filter" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:13px"
-        onchange="document.getElementById('mentor-search').dispatchEvent(new Event('keyup'))">
+        onchange="filterMentorGrid()">
         <option value="All">Country: All</option>
         ${uniqueCountries.map(c=>`<option value="${c}">${c}</option>`).join('')}
       </select>
       <select id="mentor-avail-filter" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:13px"
-        onchange="document.getElementById('mentor-search').dispatchEvent(new Event('keyup'))">
+        onchange="filterMentorGrid()">
         <option value="All">Availability: All</option>
         <option value="Available">Available</option>
         <option value="Limited">Limited</option>
       </select>
       <select id="mentor-comp-filter" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:13px"
-        onchange="document.getElementById('mentor-search').dispatchEvent(new Event('keyup'))">
+        onchange="filterMentorGrid()">
         <option value="All">Compensation: All</option>
         <option value="Cash">Cash</option>
         <option value="Equity">Equity</option>
