@@ -1538,6 +1538,20 @@ function applyUser(user, isNew) {
       if (suspended) { showBlockedScreen(); return; }
       // Apply persona-tailored UI (branding, nav visibility)
       applyPersonaUI(_userProfile);
+      // Auto-register ecosystem managers who have access tags or persona
+      if (_userProfile && currentUser && !isClaimedEcoManager(currentUser.id)) {
+        const hasEcoTag = (_userProfile.admin_tags || []).includes('ecosystem_access');
+        const isEcoPers = _userProfile.persona === 'ecosystem_manager';
+        if (hasEcoTag || isEcoPers) {
+          // Check if they're listed as manager on any pre-claimed partner ecosystem
+          const managedEco = PARTNER_ECOSYSTEMS.find(e => e.claimed && e.manager === _userProfile.full_name);
+          const partnerEcoId = _ecoSettings?.partner_ecosystem_id || (managedEco ? managedEco.id : 'custom');
+          const partnerEcoName = managedEco ? managedEco.shortName : (_ecoSettings?.program_name || 'My Ecosystem');
+          registerEcoManager(currentUser.id, currentUser.email, partnerEcoId, partnerEcoName);
+          // Re-apply so nav button shows
+          applyPersonaUI(_userProfile);
+        }
+      }
       // Check if user came from "Share Your Idea" on landing page
       if (_ventureStudioAfterSignIn) {
         _ventureStudioAfterSignIn = false;
@@ -1648,7 +1662,8 @@ function applyPersonaUI(profile) {
   if (ecoBtn) {
     const hasEcoTag = (profile.admin_tags || []).includes('ecosystem_access');
     const hasEcoSecondary = profile.secondary_role === 'ecosystem_manager';
-    const showEco = key === 'ecosystem_mgr' || hasEcoTag || hasEcoSecondary || isAdmin;
+    const hasClaimedEco = currentUser && isClaimedEcoManager(currentUser.id);
+    const showEco = key === 'ecosystem_mgr' || hasEcoTag || hasEcoSecondary || isAdmin || hasClaimedEco;
     ecoBtn.style.display = showEco ? 'block' : 'none';
   }
 
@@ -8938,10 +8953,12 @@ function pgAccelerators(){
       const eco = PARTNER_ECOSYSTEMS.find(e => e.id === _selectedPartnerEco);
       if (!eco) { _selectedPartnerEco = null; return renderPartnerEcosystems(); }
       const persona = _userProfile?.persona;
-      // Check if signed-in user is this ecosystem's manager (by matching name or AIVA special case)
+      // Check if signed-in user is this ecosystem's manager (by matching claimed ecosystems)
+      const userEcos = currentUser ? getUserEcosystems(currentUser.id) : [];
       const isThisEcoManager = currentUser && _userProfile && (
         (_userProfile.full_name && _userProfile.full_name === eco.manager) ||
-        (eco.id === 'aiva' && currentUser.email === 'rcole@emilicanada.com')
+        userEcos.some(ue => ue.ecoId === eco.id) ||
+        isUserAdmin(currentUser.email)
       );
       const isCurrentUser = isThisEcoManager;
       const isFounder = persona === 'founder';
@@ -8996,7 +9013,7 @@ function pgAccelerators(){
         detailHtml += '<button onclick="ecoClaimPartner(\'' + eco.id + '\')" style="padding:12px 20px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer">🔑 Claim as Manager</button>';
       }
       if (eco.claimed && isCurrentUser) {
-        detailHtml += '<button onclick="go(\'ecosystem_workspace\')" style="padding:12px 20px;background:var(--green);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer">📊 Open Your Workspace</button>';
+        detailHtml += '<button onclick="go(\'ecosystem_ws\')" style="padding:12px 20px;background:var(--green);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer">📊 Open Your Workspace</button>';
       }
       detailHtml += '</div></div></div>';
       return detailHtml;
@@ -9100,14 +9117,38 @@ function toggleSeg(id){
 
 // ── USER TRACKING (localStorage — swaps to Supabase on launch) ────
 const RUSSELL_EMAIL = 'russellcolevop@gmail.com';
+const ADMIN_EMAILS = ['russellcolevop@gmail.com'];
 let currentUser = null;
 let isAdmin = false;
 let sessionPageViews = [];
+let _assumedUser = null; // admin impersonation state
 
 function getLogins(){ return JSON.parse(localStorage.getItem('agtech_logins')||'[]'); }
 function saveLogins(l){ localStorage.setItem('agtech_logins', JSON.stringify(l)); }
-function getApprovedAdmins(){ return [RUSSELL_EMAIL, ...JSON.parse(localStorage.getItem('agtech_admin_list')||'[]')]; }
+function getApprovedAdmins(){ return [...ADMIN_EMAILS, ...JSON.parse(localStorage.getItem('agtech_admin_list')||'[]')]; }
 function isUserAdmin(email){ return getApprovedAdmins().includes(email); }
+
+// ── DYNAMIC ECOSYSTEM MANAGER ACCESS ─────────────────────────
+// Tracks which users have claimed/been approved as ecosystem managers
+// Stored per-user: { userId, email, ecoId, ecoName, claimedAt }
+function getEcoManagers(){ return JSON.parse(localStorage.getItem('foc_eco_managers') || '[]'); }
+function saveEcoManagers(list){ localStorage.setItem('foc_eco_managers', JSON.stringify(list)); }
+function registerEcoManager(userId, email, ecoId, ecoName){
+  const list = getEcoManagers();
+  if (list.find(m => m.userId === userId && m.ecoId === ecoId)) return; // already registered
+  list.push({ userId, email, ecoId, ecoName, claimedAt: new Date().toISOString() });
+  saveEcoManagers(list);
+}
+function isClaimedEcoManager(userIdOrEmail){
+  if (!userIdOrEmail) return false;
+  const list = getEcoManagers();
+  return list.some(m => m.userId === userIdOrEmail || m.email === userIdOrEmail);
+}
+function getUserEcosystems(userIdOrEmail){
+  if (!userIdOrEmail) return [];
+  const list = getEcoManagers();
+  return list.filter(m => m.userId === userIdOrEmail || m.email === userIdOrEmail);
+}
 
 function avatarHtml(email, method){
   const initials = method==='google' ? 'G' : email.slice(0,2).toUpperCase();
@@ -9178,6 +9219,49 @@ function revokeAdmin(email){
   localStorage.setItem('agtech_admin_list', JSON.stringify(admins.filter(e=>e!==email)));
   toast('🔒 Admin access revoked for ' + email);
   go('admin', null);
+}
+
+// ── ADMIN IMPERSONATION (Assume User) ───────────────────────────
+function assumeUser(userId) {
+  if (!isAdmin) { toast('Admin access required'); return; }
+  const target = _allProfiles.find(p => p.id === userId);
+  if (!target) { toast('User not found'); return; }
+  // Store real admin state
+  _assumedUser = {
+    id: target.id,
+    email: target.email,
+    name: target.full_name || target.email,
+    profile: { ...target },
+    _realProfile: _userProfile,
+    _realAdminState: true
+  };
+  // Swap the active profile to the assumed user's profile
+  _userProfile = { ...target };
+  // Apply their persona UI
+  applyPersonaUI(_userProfile);
+  toast('👁️ Now viewing as: ' + (target.full_name || target.email) + ' — click the purple banner to exit');
+  // Navigate to overview (their default landing)
+  go('overview', null);
+}
+
+function exitAssumeUser() {
+  if (!_assumedUser) return;
+  // Restore real admin profile
+  _userProfile = _assumedUser._realProfile;
+  _assumedUser = null;
+  // Re-apply admin persona
+  applyPersonaUI(_userProfile);
+  toast('✅ Returned to admin view');
+  go('admin', null);
+}
+
+function getAssumeUserBanner() {
+  if (!_assumedUser) return '';
+  return `<div id="assume-user-banner" onclick="exitAssumeUser()" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:8px 20px;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(99,102,241,.4)">
+    <span>👁️ Viewing as: <strong>${_assumedUser.name}</strong> (${_assumedUser.email})</span>
+    <span style="padding:3px 12px;background:rgba(255,255,255,.2);border-radius:4px;font-size:11px;font-weight:700">CLICK TO EXIT</span>
+    <span style="font-size:10px;opacity:.7">Read-only impersonation — changes still save to your admin account</span>
+  </div>`;
 }
 
 function submitFeedback(){
@@ -9544,8 +9628,8 @@ async function nukeTestUser() {
   const email = prompt('Enter the email of the test user to completely remove from the platform:\n\n(This deletes their profile row so they can sign up fresh)');
   if (!email || !email.trim()) return;
   const cleanEmail = email.trim().toLowerCase();
-  if (cleanEmail === 'russellcolevop@gmail.com' || cleanEmail === 'rcole@emilicanada.com') {
-    toast('❌ Cannot nuke admin accounts.');
+  if (ADMIN_EMAILS.includes(cleanEmail) || isClaimedEcoManager(cleanEmail)) {
+    toast('❌ Cannot nuke protected accounts (admin or active ecosystem manager).');
     return;
   }
   if (!confirm('⚠️ Delete the profile for ' + cleanEmail + '?\n\nThis removes their profile data from the platform. Their auth account remains (Supabase Auth) so they can sign in again and go through onboarding fresh.\n\nProceed?')) return;
@@ -10892,7 +10976,7 @@ let adminExpandedUser = null;
 
 function pgAdmin(){
   if(!isAdmin) return `<div class="admin-lock"><h2>🔐 Admin Access Required</h2>
-    <p>Sign in as <strong>russellcolevop@gmail.com</strong> to access the admin dashboard.</p>
+    <p>Sign in with an authorized admin account to access the admin dashboard.</p>
     <button onclick="${currentUser?'goAdmin()':'openModal(\'signin-modal\')'}" style="padding:11px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">${currentUser?'Check Admin Access':'Sign In First'}</button></div>`;
 
   // Trigger async load of profiles
@@ -11005,6 +11089,7 @@ function pgAdmin(){
         </div>
         <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <div style="font-size:10px;color:var(--text-faint)">Joined: ${new Date(p.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · Last updated: ${new Date(p.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})} ${p.last_checkin ? '· Check-in: '+new Date(p.last_checkin).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '· ⚠️ No check-in'}</div>
+          <button onclick="event.stopPropagation();assumeUser('${p.id}')" style="padding:5px 14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap" title="View platform as this user">👁️ Assume User</button>
           ${p.email !== RUSSELL_EMAIL ? (p.blocked
             ? `<div style="display:flex;align-items:center;gap:8px">
                 <span style="font-size:11px;color:#dc2626;font-weight:700">🚫 Blocked${p.blocked_reason ? ' — '+p.blocked_reason : ''}</span>
@@ -11024,7 +11109,7 @@ function pgAdmin(){
       <div class="admin-user-top">
         ${p.avatar_url ? `<img src="${p.avatar_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0">` : `<div class="admin-user-avatar">${initials}</div>`}
         <div style="flex:1;min-width:0">
-          <div class="admin-user-name">${p.full_name||'Anonymous'} ${p.email===RUSSELL_EMAIL?'<span style="font-size:10px;color:var(--green)">(You)</span>':''}</div>
+          <div class="admin-user-name">${p.full_name||'Anonymous'} ${p.email===RUSSELL_EMAIL?'<span style="font-size:10px;color:var(--green)">(You)</span>':''} ${AIVA_ECO_EMAILS.includes(p.email)?'<span style="font-size:10px;color:#6366f1">(AIVA Mgr)</span>':''} ${_assumedUser && _assumedUser.id === p.id ? '<span style="font-size:10px;color:#8b5cf6;font-weight:700">(Viewing As)</span>' : ''}</div>
           <div class="admin-user-email">${p.email} ${p.organization ? '· '+p.organization : ''}</div>
         </div>
         <div style="font-size:16px;color:var(--text-faint)">${expanded?'▲':'▼'}</div>
@@ -15137,7 +15222,35 @@ function finalizeClaim(ecoId) {
   }
   saveEcoData();
   eco.claimed = true;
-  toast('🎉 ' + eco.shortName + ' linked to your Ecosystem Workspace!');
+
+  // Register this user as an ecosystem manager (dynamic access)
+  if (currentUser) {
+    registerEcoManager(currentUser.id, currentUser.email, eco.id, eco.shortName);
+    // Also grant ecosystem_access tag on their profile so it persists through persona changes
+    if (_userProfile) {
+      const tags = _userProfile.admin_tags || [];
+      if (!tags.includes('ecosystem_access')) {
+        tags.push('ecosystem_access');
+        _userProfile.admin_tags = tags;
+        _supabase.from('profiles').update({ admin_tags: tags }).eq('id', currentUser.id).then(() => {});
+      }
+    }
+    // Re-apply persona UI so the nav button shows immediately
+    if (_userProfile) applyPersonaUI(_userProfile);
+  }
+
+  toast('🎉 ' + eco.shortName + ' linked! Let\'s set up your workspace.');
+  // Start the setup wizard
+  _ecoSetupStep = 0;
+  _ecoSetupForm = {
+    programName: eco.shortName || '',
+    programType: eco.type || '',
+    location: _userProfile?.location || eco.location || '',
+    teamSize: '1-3',
+    template: null,
+    features: [],
+    roles: []
+  };
   go('ecosystem_ws');
 }
 
@@ -15149,11 +15262,23 @@ function ecoAdminApproveClaim(requestId) {
   req.reviewed_at = new Date().toISOString();
   req.reviewed_by = currentUser?.email || 'admin';
   saveClaimRequests();
-  // Note: The claimant will see "approved" next time they visit and can finalize.
-  // For now, we directly finalize since admin is approving
+  // Register the claimant as an ecosystem manager
+  registerEcoManager(req.userId, req.userAuthEmail || req.email, req.ecoId, req.ecoName);
+  // Grant ecosystem_access tag on their profile
+  if (req.userId) {
+    const p = _allProfiles.find(x => x.id === req.userId);
+    if (p) {
+      const tags = p.admin_tags || [];
+      if (!tags.includes('ecosystem_access')) {
+        tags.push('ecosystem_access');
+        p.admin_tags = tags;
+        _supabase.from('profiles').update({ admin_tags: tags }).eq('id', req.userId).then(() => {});
+      }
+    }
+  }
   const eco = PARTNER_ECOSYSTEMS.find(e => e.id === req.ecoId);
   if (eco) eco.claimed = true;
-  toast('✅ Approved ' + req.name + ' as manager of ' + req.ecoName);
+  toast('✅ Approved ' + req.name + ' as manager of ' + req.ecoName + ' — they now have Ecosystem Workspace access');
   render(currentPage);
 }
 
@@ -16294,10 +16419,526 @@ function renderAivaSettings() {
 }
 
 
+// ══════════════════════════════════════════════════════════════
+// ECOSYSTEM SETUP WIZARD — configures workspace for new managers
+// ══════════════════════════════════════════════════════════════
+
+// Feature registry — all possible workspace modules
+const ECO_FEATURES = [
+  { id:'pipeline',       label:'Startup Pipeline',         icon:'🚀', desc:'Kanban board to track startups through your pipeline stages', default:true },
+  { id:'scoring',        label:'Scoring & Evaluation',     icon:'📊', desc:'Rubric-based scoring system to evaluate and rank startups', default:false },
+  { id:'meetings',       label:'Meeting Log',              icon:'📝', desc:'Track meetings, notes, follow-ups, and action items', default:true },
+  { id:'projects',       label:'Projects & SOWs',          icon:'📋', desc:'Manage active projects, deliverables, and scope-of-work documents', default:false },
+  { id:'charters',       label:'Project Charters',         icon:'📄', desc:'One-click charter generation from pipeline data for handoff', default:false },
+  { id:'applications',   label:'Application Intake',       icon:'📩', desc:'Receive and review applications from founders on the platform', default:true },
+  { id:'metrics',        label:'Metrics Dashboard',        icon:'📈', desc:'Track cohort performance, readiness scores, and program KPIs', default:false },
+  { id:'activity',       label:'Activity Feed',            icon:'📋', desc:'Chronological log of all workspace actions and updates', default:true },
+  { id:'mentors',        label:'Mentor Management',        icon:'🧑‍🏫', desc:'Assign mentors to startups, track capacity and matchmaking', default:false },
+  { id:'airtable',       label:'Airtable Integration',     icon:'☁️', desc:'Two-way sync with an Airtable base for external data management', default:false },
+];
+
+// Workspace templates — pre-built configs
+const ECO_TEMPLATES = {
+  lean:       { label:'Lean Tracker',       icon:'🏃', desc:'Pipeline + meetings + applications. Simple and fast.', features:['pipeline','meetings','applications','activity'] },
+  accelerator:{ label:'Accelerator',        icon:'🚀', desc:'Full cohort management with mentors, metrics, and applications.', features:['pipeline','meetings','applications','metrics','activity','mentors'] },
+  validator:  { label:'Tech Validator',      icon:'🔬', desc:'Deep evaluation with scoring rubric, charters, and SOWs.', features:['pipeline','scoring','meetings','projects','charters','applications','metrics','activity','airtable'] },
+  custom:     { label:'Custom Setup',        icon:'⚙️', desc:'Pick exactly what you need. Turn features on/off anytime.', features:[] },
+};
+
+// Per-user ecosystem config (persisted in localStorage)
+function getEcoConfig() {
+  const raw = localStorage.getItem('foc_eco_config_' + (currentUser?.id || 'anon'));
+  if (raw) return JSON.parse(raw);
+  // AIVA bootstrap: if this is the AIVA ecosystem, return full validator preset
+  const userEcos = currentUser ? getUserEcosystems(currentUser.id) : [];
+  if (userEcos.some(e => e.ecoId === 'aiva') || isUserAdmin(currentUser?.email)) {
+    return { setupComplete: true, template: 'validator', features: ECO_TEMPLATES.validator.features, programName: '', programType: '', teamSize: '', roles: [] };
+  }
+  return null;
+}
+function saveEcoConfig(config) {
+  localStorage.setItem('foc_eco_config_' + (currentUser?.id || 'anon'), JSON.stringify(config));
+}
+
+let _ecoSetupStep = 0;
+let _ecoSetupForm = {};
+
+function ecoToggleConfigFeature(fid) {
+  const config = getEcoConfig();
+  if (!config) return;
+  const idx = config.features.indexOf(fid);
+  if (idx > -1) config.features.splice(idx, 1);
+  else config.features.push(fid);
+  config.template = 'custom';
+  saveEcoConfig(config);
+  render('ecosystem_ws');
+}
+
+// ── TEAM INVITE SYSTEM ──
+function getEcoTeam() { return JSON.parse(localStorage.getItem('foc_eco_team_' + (currentUser?.id || 'anon')) || '[]'); }
+function saveEcoTeam(list) { localStorage.setItem('foc_eco_team_' + (currentUser?.id || 'anon'), JSON.stringify(list)); }
+
+function ecoInviteMember() {
+  const email = (document.getElementById('eco-invite-email') || {}).value?.trim();
+  const role = (document.getElementById('eco-invite-role') || {}).value || 'viewer';
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { toast('Enter a valid email address'); return; }
+  const team = getEcoTeam();
+  if (team.find(m => m.email === email.toLowerCase())) { toast('This person is already on your team'); return; }
+  team.push({ email: email.toLowerCase(), role, invitedAt: new Date().toISOString(), status: 'invited', name: '' });
+  saveEcoTeam(team);
+  toast('📨 Invite sent to ' + email + ' as ' + (role === 'editor' ? 'Editor (read + write)' : 'Viewer (read only)'));
+  render('ecosystem_ws');
+}
+
+function ecoRemoveMember(email) {
+  if (!confirm('Remove ' + email + ' from your team?')) return;
+  const team = getEcoTeam().filter(m => m.email !== email);
+  saveEcoTeam(team);
+  toast('Removed ' + email);
+  render('ecosystem_ws');
+}
+
+function ecoChangeMemberRole(email, newRole) {
+  const team = getEcoTeam();
+  const member = team.find(m => m.email === email);
+  if (member) { member.role = newRole; saveEcoTeam(team); }
+  render('ecosystem_ws');
+}
+
+// ── SAVE PROGRAM SETTINGS (unified) ──
+function ecoSaveUnifiedSettings() {
+  const config = getEcoConfig() || { setupComplete: true, template: 'custom', features: ['pipeline','applications','activity'] };
+  const newName = (document.getElementById('eco-set-name') || {}).value?.trim();
+  const newType = (document.getElementById('eco-set-type') || {}).value;
+  const newDesc = (document.getElementById('eco-set-desc') || {}).value?.trim();
+  const newWeb = (document.getElementById('eco-set-web') || {}).value?.trim();
+  const newCohort = (document.getElementById('eco-set-cohort') || {}).value?.trim();
+  const accepting = (document.getElementById('eco-set-accepting') || {}).checked;
+  const deadline = (document.getElementById('eco-set-deadline') || {}).value?.trim();
+
+  // Update eco config
+  if (newName) config.programName = newName;
+  if (newType) config.programType = newType;
+  saveEcoConfig(config);
+
+  // Update eco settings (Supabase-backed)
+  if (!_ecoSettings) _ecoSettings = {};
+  if (newName) _ecoSettings.program_name = newName;
+  if (newType) _ecoSettings.program_type = newType;
+  if (newDesc !== undefined) _ecoSettings.description = newDesc;
+  if (newWeb !== undefined) _ecoSettings.website = newWeb;
+  if (newCohort !== undefined) _ecoSettings.cohort_name = newCohort;
+  _ecoSettings.accepting_applications = accepting;
+  if (deadline !== undefined) _ecoSettings.application_deadline = deadline;
+  saveEcoData();
+
+  toast('✅ Settings saved');
+  render('ecosystem_ws');
+}
+
+// ── UNIFIED SETTINGS RENDERER ──
+function renderEcoUnifiedSettings(ecoConfig, programName, profile, modeBadge) {
+  const s = _ecoSettings || {};
+  const inputStyle = 'width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box';
+  const sectionStyle = 'padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px';
+  const team = getEcoTeam();
+  const hasAT = ecoConfig.features.includes('airtable');
+  let _settingsTab = window._ecoSettingsTab || 'general';
+
+  const settingsTabs = [
+    {id:'general', label:'General', icon:'⚙️'},
+    {id:'features', label:'Features', icon:'🧩'},
+    {id:'integrations', label:'Integrations', icon:'🔌'},
+    {id:'team', label:'Team', icon:'👥'},
+  ];
+  const sTabBar = settingsTabs.map(t => '<button onclick="window._ecoSettingsTab=\'' + t.id + '\';render(\'ecosystem_ws\')" style="padding:8px 16px;border:none;background:' + (_settingsTab===t.id?'var(--green)':'var(--hover)') + ';color:' + (_settingsTab===t.id?'#fff':'var(--text-muted)') + ';border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">' + t.icon + ' ' + t.label + '</button>').join('');
+
+  let inner = '';
+
+  if (_settingsTab === 'general') {
+    inner = `
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 16px">Program Information</h3>
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">PROGRAM NAME</label>
+      <input id="eco-set-name" style="${inputStyle};margin-bottom:14px" value="${ecoConfig.programName || s.program_name || profile.company_name || profile.organization || ''}" placeholder="e.g. Grand Farm, WET Center, AIVA">
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">PROGRAM TYPE</label>
+      <select id="eco-set-type" style="${inputStyle};margin-bottom:14px;cursor:pointer">
+        ${['Accelerator','Incubator','Innovation Hub','University Program','Government Program','Corporate Venture','Tech Validator','Regional Hub','Research Lab','Other'].map(t=>'<option value="'+t+'" '+ ((ecoConfig.programType||s.program_type||'')=== t?'selected':'')+'>'+t+'</option>').join('')}
+      </select>
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">DESCRIPTION</label>
+      <textarea id="eco-set-desc" style="${inputStyle};margin-bottom:14px;min-height:80px;resize:vertical" placeholder="Describe your program, focus areas, and what makes it unique...">${s.description||''}</textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">WEBSITE</label>
+          <input id="eco-set-web" style="${inputStyle}" value="${s.website||''}" placeholder="https://yourprogram.com">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">CURRENT COHORT</label>
+          <input id="eco-set-cohort" style="${inputStyle}" value="${s.cohort_name||'Spring 2026'}" placeholder="e.g. Spring 2026, Cohort 5">
+        </div>
+      </div>
+    </div>
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 16px">Application Settings</h3>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <input type="checkbox" id="eco-set-accepting" ${s.accepting_applications!==false?'checked':''} style="width:18px;height:18px;accent-color:var(--green);cursor:pointer">
+        <label for="eco-set-accepting" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer">Accepting applications from founders</label>
+      </div>
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">APPLICATION DEADLINE</label>
+      <input id="eco-set-deadline" style="${inputStyle}" value="${s.application_deadline||''}" placeholder="e.g. Rolling, June 30 2026, Open until filled">
+      <p style="font-size:11px;color:var(--text-faint);margin:8px 0 0;line-height:1.5">When enabled, founders can discover and apply to your program directly through the platform's Partner Ecosystems directory.</p>
+    </div>
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Data & Persistence</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.6">${_ecoUseSupabase ? 'Connected to cloud storage. All data persists across devices and sessions.' : 'Using browser storage. Data persists on this device. Cloud sync coming soon.'}</p>
+      <div style="display:flex;gap:8px;align-items:center">${modeBadge} <span style="font-size:11px;color:var(--text-faint)">· Template: ${ECO_TEMPLATES[ecoConfig.template]?.label || 'Custom'}</span></div>
+    </div>
+    <button onclick="ecoSaveUnifiedSettings()" style="padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%">Save Settings</button>`;
+
+  } else if (_settingsTab === 'features') {
+    const featureCards = ECO_FEATURES.map(feat => {
+      const on = ecoConfig.features.includes(feat.id);
+      return `<div onclick="ecoToggleConfigFeature('${feat.id}')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--accent-bg)':'var(--surface)'};border-radius:12px;cursor:pointer;transition:all .2s">
+        <div style="width:28px;height:28px;border-radius:8px;border:2px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0">${on?'✓':''}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;color:${on?'var(--green)':'var(--text)'}">${feat.icon} ${feat.label}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">${feat.desc}</div></div></div>`;
+    }).join('');
+    inner = `
+    <div style="${sectionStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div><h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0">Workspace Modules</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Toggle features on or off. Changes apply immediately. <strong>${ecoConfig.features.length}</strong> active.</p></div>
+        <button onclick="ecoSetupWizardStart()" style="padding:6px 14px;background:var(--hover);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;white-space:nowrap">🔄 Re-run Wizard</button>
+      </div>
+      <div style="display:grid;gap:8px">${featureCards}</div>
+    </div>`;
+
+  } else if (_settingsTab === 'integrations') {
+    inner = `
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Airtable</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;line-height:1.6">Connect your Airtable base for two-way sync. Your PAT is stored locally and never sent to our servers.</p>
+      ${ecoConfig.features.includes('airtable') ? `
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">PERSONAL ACCESS TOKEN</label>
+        <input id="eco-int-at-pat" type="password" style="${inputStyle};margin-bottom:8px" value="${_aivaPAT||''}" placeholder="pat...">
+        <div style="display:flex;gap:8px">
+          <button onclick="aivaSavePAT(document.getElementById('eco-int-at-pat').value)" style="padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">Save & Connect</button>
+          ${_aivaPAT ? `<button onclick="aivaSavePAT('')" style="padding:8px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);cursor:pointer">Disconnect</button>` : ''}
+        </div>
+        ${_aivaPAT && _aivaLastSync ? '<div style="margin-top:12px;padding:8px 12px;background:var(--accent-bg);border-radius:6px;font-size:11px;color:var(--green)">✅ Connected · '+_aivaOrgs.length+' orgs · '+_aivaMeetings.length+' meetings · '+_aivaProjects.length+' projects · Last sync: '+_aivaLastSync.toLocaleTimeString()+'</div>' : ''}
+        ${!_aivaPAT ? '<div style="margin-top:12px;padding:8px 12px;background:#fef3c7;border-radius:6px;font-size:11px;color:#92400e">📦 Not connected. Using cached data.</div>' : ''}
+      ` : '<div style="padding:12px;background:#fef3c7;border-radius:8px;font-size:12px;color:#92400e">Enable the <strong>Airtable Integration</strong> feature in the Features tab to configure this.</div>'}
+    </div>
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">HubSpot CRM</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;line-height:1.6">Sync your startup pipeline with HubSpot contacts and deals. Coming soon.</p>
+      <div style="padding:16px;background:var(--hover);border:1px solid var(--border);border-radius:10px;text-align:center">
+        <div style="font-size:20px;margin-bottom:6px">🔜</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-muted)">HubSpot integration is on the roadmap</div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:4px">We'll notify you when it's ready. In the meantime, Airtable is fully supported.</div>
+      </div>
+    </div>
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Salesforce</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;line-height:1.6">Enterprise CRM integration for larger programs. Coming soon.</p>
+      <div style="padding:16px;background:var(--hover);border:1px solid var(--border);border-radius:10px;text-align:center">
+        <div style="font-size:20px;margin-bottom:6px">🔜</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-muted)">Salesforce integration planned for Q4 2026</div>
+      </div>
+    </div>
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Google Calendar</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;line-height:1.6">Auto-sync meetings from your calendar into the meeting log. Coming soon.</p>
+      <div style="padding:16px;background:var(--hover);border:1px solid var(--border);border-radius:10px;text-align:center">
+        <div style="font-size:20px;margin-bottom:6px">🔜</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-muted)">Calendar sync planned for Q3 2026</div>
+      </div>
+    </div>`;
+
+  } else if (_settingsTab === 'team') {
+    const roleLabels = {viewer:'👁️ Viewer — read only', editor:'✏️ Editor — read + write', admin:'🔑 Admin — full access'};
+    const memberRows = team.length ? team.map(m => {
+      const initials = m.email.slice(0,2).toUpperCase();
+      const invDate = new Date(m.invitedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">${initials}</div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.email}</div>
+        <div style="font-size:11px;color:var(--text-muted)">Invited ${invDate}</div></div>
+        <select onchange="ecoChangeMemberRole('${m.email}',this.value)" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:11px;font-weight:600;cursor:pointer">
+          <option value="viewer" ${m.role==='viewer'?'selected':''}>Viewer</option>
+          <option value="editor" ${m.role==='editor'?'selected':''}>Editor</option>
+          <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
+        </select>
+        <button onclick="ecoRemoveMember('${m.email}')" style="padding:4px 10px;background:none;border:1px solid #fca5a5;border-radius:6px;font-size:11px;color:#dc2626;cursor:pointer" title="Remove">✕</button>
+      </div>`;
+    }).join('') : '<div style="text-align:center;padding:30px;color:var(--text-faint);font-size:13px">No team members yet. Invite someone below.</div>';
+
+    inner = `
+    <div style="${sectionStyle}">
+      <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 4px">Your Team</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:0 0 16px;line-height:1.6">Invite people to your ecosystem workspace. Viewers can observe your pipeline and data. Editors can make changes.</p>
+      <div style="display:flex;align-items:center;gap:8px;padding:14px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:800;flex-shrink:0">${(currentUser?.email||'?').slice(0,2).toUpperCase()}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--green)">${currentUser?.name || currentUser?.email || 'You'}</div><div style="font-size:11px;color:var(--text-muted)">${currentUser?.email || ''}</div></div>
+        <span style="padding:4px 10px;background:var(--green);color:#fff;border-radius:4px;font-size:10px;font-weight:700">OWNER</span>
+      </div>
+      <div style="display:grid;gap:8px;margin-bottom:16px">${memberRows}</div>
+      <div style="padding:16px;background:var(--hover);border:1px solid var(--border);border-radius:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">Invite a team member</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="eco-invite-email" style="${inputStyle};flex:1;min-width:200px" placeholder="colleague@organization.com">
+          <select id="eco-invite-role" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;font-weight:600;cursor:pointer">
+            <option value="viewer">Viewer</option>
+            <option value="editor">Editor</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button onclick="ecoInviteMember()" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Send Invite</button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-faint);line-height:1.5">
+          <strong>Viewer:</strong> See your pipeline, meetings, and data (read only) · <strong>Editor:</strong> Add/edit startups, log meetings, score (read + write) · <strong>Admin:</strong> Full access including settings and team management
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return '<div style="max-width:700px"><div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">'+sTabBar+'</div>'+inner+'</div>';
+}
+
+function ecoSetupSkip() {
+  // Save with smart defaults based on program type
+  const programType = _ecoSetupForm.programType || _ecoSettings?.program_type || '';
+  let defaultFeatures = ['pipeline','meetings','applications','activity']; // lean defaults
+  if (programType.includes('Accelerator') || programType.includes('Incubator')) {
+    defaultFeatures = ['pipeline','meetings','applications','metrics','activity','mentors'];
+  } else if (programType.includes('Validator') || programType.includes('Research')) {
+    defaultFeatures = ['pipeline','scoring','meetings','projects','applications','activity'];
+  }
+  const config = {
+    setupComplete: true,
+    template: 'lean',
+    features: defaultFeatures,
+    programName: _ecoSetupForm.programName || _ecoSettings?.program_name || '',
+    programType: programType,
+    teamSize: '1-3',
+    roles: []
+  };
+  saveEcoConfig(config);
+  _ecoSetupStep = -1;
+  toast('✅ Workspace ready with recommended defaults. Customize anytime in Settings.');
+  render('ecosystem_ws');
+}
+
+function ecoSetupWizardStart() {
+  _ecoSetupStep = 0;
+  _ecoSetupForm = {
+    programName: _ecoSettings?.program_name || '',
+    programType: _ecoSettings?.program_type || '',
+    location: _userProfile?.location || '',
+    teamSize: '1-3',
+    template: null,
+    features: [],
+    roles: []
+  };
+  render('ecosystem_ws');
+}
+
+function ecoSetupNext() { _ecoSetupStep++; render('ecosystem_ws'); }
+function ecoSetupBack() { if (_ecoSetupStep > 0) _ecoSetupStep--; render('ecosystem_ws'); }
+
+function ecoSetupSelectTemplate(tpl) {
+  _ecoSetupForm.template = tpl;
+  _ecoSetupForm.features = [...ECO_TEMPLATES[tpl].features];
+  render('ecosystem_ws');
+}
+
+function ecoSetupToggleFeature(fid) {
+  const idx = _ecoSetupForm.features.indexOf(fid);
+  if (idx > -1) _ecoSetupForm.features.splice(idx, 1);
+  else _ecoSetupForm.features.push(fid);
+  // If they modify features, switch to custom template
+  if (_ecoSetupForm.template !== 'custom') {
+    const tpl = ECO_TEMPLATES[_ecoSetupForm.template];
+    if (tpl && JSON.stringify([..._ecoSetupForm.features].sort()) !== JSON.stringify([...tpl.features].sort())) {
+      _ecoSetupForm.template = 'custom';
+    }
+  }
+  render('ecosystem_ws');
+}
+
+function ecoSetupField(field, value) { _ecoSetupForm[field] = value; }
+
+function ecoSetupFinalize() {
+  const config = {
+    setupComplete: true,
+    template: _ecoSetupForm.template || 'custom',
+    features: _ecoSetupForm.features.length > 0 ? _ecoSetupForm.features : ['pipeline','applications','activity'],
+    programName: _ecoSetupForm.programName,
+    programType: _ecoSetupForm.programType,
+    teamSize: _ecoSetupForm.teamSize,
+    roles: _ecoSetupForm.roles
+  };
+  saveEcoConfig(config);
+  // Update eco settings
+  if (_ecoSettings) {
+    _ecoSettings.program_name = config.programName || _ecoSettings.program_name;
+    _ecoSettings.program_type = config.programType || _ecoSettings.program_type;
+  }
+  saveEcoData();
+  _ecoSetupStep = -1;
+  toast('🎉 Workspace configured! You can change features anytime in Settings.');
+  render('ecosystem_ws');
+}
+
+function renderEcoSetupWizard() {
+  const step = _ecoSetupStep;
+  const f = _ecoSetupForm;
+  const inputStyle = 'width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box';
+  const btnPrimary = 'padding:12px 28px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer';
+  const btnSecondary = 'padding:12px 28px;background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer';
+
+  const progressDots = [0,1,2,3].map(i => `<div style="width:${i===step?'28px':'10px'};height:10px;border-radius:5px;background:${i===step?'var(--green)':i<step?'var(--green-mid)':'var(--border)'};transition:all .3s"></div>`).join('');
+
+  let stepContent = '';
+
+  if (step === 0) {
+    // Step 1: Program basics
+    stepContent = `
+      <h2 style="font-size:22px;font-weight:900;color:var(--text);margin:0 0 6px">Let's set up your Ecosystem Workspace</h2>
+      <p style="font-size:14px;color:var(--text-muted);margin:0 0 28px;line-height:1.7">Tell us about your program so we can configure the right tools for you.</p>
+      <div style="display:grid;gap:16px;max-width:480px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">PROGRAM NAME</label>
+          <input style="${inputStyle}" value="${f.programName}" onchange="ecoSetupField('programName',this.value)" placeholder="e.g. Grand Farm Innovation, VISTA Program">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">PROGRAM TYPE</label>
+          <select style="${inputStyle}" onchange="ecoSetupField('programType',this.value)">
+            <option value="">Select...</option>
+            ${['Accelerator','Incubator','Tech Validator','Innovation Hub','University Program','Government Program','Corporate Venture','Research Lab','Other'].map(t => `<option value="${t}" ${f.programType===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">LOCATION</label>
+          <input style="${inputStyle}" value="${f.location}" onchange="ecoSetupField('location',this.value)" placeholder="e.g. Winnipeg, MB / Global">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">TEAM SIZE</label>
+          <div style="display:flex;gap:8px">
+            ${['Solo','1-3','4-10','10+'].map(s => `<button onclick="ecoSetupField('teamSize','${s}');this.parentElement.querySelectorAll('button').forEach(b=>b.style.borderColor='var(--border)');this.style.borderColor='var(--green)'" style="flex:1;padding:10px;border:2px solid ${f.teamSize===s?'var(--green)':'var(--border)'};background:${f.teamSize===s?'var(--accent-bg)':'var(--surface)'};border-radius:8px;font-size:12px;font-weight:700;color:${f.teamSize===s?'var(--green)':'var(--text-muted)'};cursor:pointer">${s}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button onclick="ecoSetupNext()" style="${btnPrimary}">Next: Choose Your Template →</button>
+      </div>`;
+
+  } else if (step === 1) {
+    // Step 2: Template selection
+    const templateCards = Object.entries(ECO_TEMPLATES).map(([key, tpl]) => `
+      <div onclick="ecoSetupSelectTemplate('${key}')" style="padding:20px;border:2px solid ${f.template===key?'var(--green)':'var(--border)'};background:${f.template===key?'var(--accent-bg)':'var(--surface)'};border-radius:14px;cursor:pointer;transition:all .2s">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:24px">${tpl.icon}</div>
+          <div style="font-size:16px;font-weight:800;color:${f.template===key?'var(--green)':'var(--text)'}">${tpl.label}</div>
+          ${f.template===key?'<span style="margin-left:auto;font-size:18px;color:var(--green)">✓</span>':''}
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:10px">${tpl.desc}</div>
+        ${key !== 'custom' ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${tpl.features.map(fid => {
+          const feat = ECO_FEATURES.find(x=>x.id===fid);
+          return feat ? '<span style="padding:3px 8px;background:var(--hover);border-radius:4px;font-size:10px;font-weight:600;color:var(--text-muted)">' + feat.icon + ' ' + feat.label + '</span>' : '';
+        }).join('')}</div>` : '<div style="font-size:11px;color:var(--text-faint);font-style:italic">You\'ll pick features in the next step</div>'}
+      </div>
+    `).join('');
+
+    stepContent = `
+      <h2 style="font-size:22px;font-weight:900;color:var(--text);margin:0 0 6px">Choose a starting template</h2>
+      <p style="font-size:14px;color:var(--text-muted);margin:0 0 24px;line-height:1.7">Pick the closest match — you can customize everything in the next step.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px">${templateCards}</div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button onclick="ecoSetupBack()" style="${btnSecondary}">← Back</button>
+        <button onclick="ecoSetupNext()" style="${btnPrimary}" ${!f.template?'disabled':''}>${f.template ? 'Next: Customize Features →' : 'Select a template first'}</button>
+      </div>`;
+
+  } else if (step === 2) {
+    // Step 3: Feature picker
+    const featureCards = ECO_FEATURES.map(feat => {
+      const on = f.features.includes(feat.id);
+      return `<div onclick="ecoSetupToggleFeature('${feat.id}')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--accent-bg)':'var(--surface)'};border-radius:12px;cursor:pointer;transition:all .2s">
+        <div style="width:28px;height:28px;border-radius:8px;border:2px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0">${on?'✓':''}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:${on?'var(--green)':'var(--text)'}">${feat.icon} ${feat.label}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${feat.desc}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    stepContent = `
+      <h2 style="font-size:22px;font-weight:900;color:var(--text);margin:0 0 6px">Customize your workspace features</h2>
+      <p style="font-size:14px;color:var(--text-muted);margin:0 0 24px;line-height:1.7">Toggle features on or off. <strong>${f.features.length}</strong> features selected. You can always change this later in Settings.</p>
+      <div style="display:grid;gap:10px;max-width:560px">${featureCards}</div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button onclick="ecoSetupBack()" style="${btnSecondary}">← Back</button>
+        <button onclick="ecoSetupNext()" style="${btnPrimary}">Next: Review & Launch →</button>
+      </div>`;
+
+  } else if (step === 3) {
+    // Step 4: Review & launch
+    const selectedFeatures = f.features.map(fid => ECO_FEATURES.find(x=>x.id===fid)).filter(Boolean);
+    const tplLabel = ECO_TEMPLATES[f.template]?.label || 'Custom';
+    stepContent = `
+      <h2 style="font-size:22px;font-weight:900;color:var(--text);margin:0 0 6px">Ready to launch your workspace</h2>
+      <p style="font-size:14px;color:var(--text-muted);margin:0 0 28px;line-height:1.7">Review your setup below. You can change anything later in Settings.</p>
+      <div style="max-width:520px">
+        <div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:2px">PROGRAM</div><div style="font-size:14px;font-weight:700;color:var(--text)">${f.programName || 'My Ecosystem'}</div></div>
+            <div><div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:2px">TYPE</div><div style="font-size:14px;font-weight:700;color:var(--text)">${f.programType || 'Not set'}</div></div>
+            <div><div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:2px">TEMPLATE</div><div style="font-size:14px;font-weight:700;color:var(--text)">${tplLabel}</div></div>
+            <div><div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:2px">TEAM SIZE</div><div style="font-size:14px;font-weight:700;color:var(--text)">${f.teamSize}</div></div>
+          </div>
+        </div>
+        <div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:10px">ENABLED FEATURES (${selectedFeatures.length})</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${selectedFeatures.map(feat => '<span style="padding:6px 12px;background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:6px;font-size:12px;font-weight:600;color:var(--green)">' + feat.icon + ' ' + feat.label + '</span>').join('')}</div>
+          ${f.features.includes('airtable') ? '<div style="margin-top:10px;padding:8px 12px;background:#fef3c7;border-radius:6px;font-size:11px;color:#92400e">☁️ Airtable integration selected — you\'ll configure your PAT in Settings after launch.</div>' : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button onclick="ecoSetupBack()" style="${btnSecondary}">← Back</button>
+        <button onclick="ecoSetupFinalize()" style="padding:14px 36px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,.3)">🚀 Launch Workspace</button>
+      </div>`;
+  }
+
+  return `<div style="max-width:720px;margin:0 auto;padding:48px 24px;position:relative">
+    <button onclick="ecoSetupSkip()" style="position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Skip setup — use recommended defaults">✕</button>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:32px">${progressDots}</div>
+    ${stepContent}
+    <div style="margin-top:24px;text-align:center">
+      <button onclick="ecoSetupSkip()" style="padding:8px 16px;background:none;border:none;color:var(--text-faint);font-size:12px;cursor:pointer;text-decoration:underline">Skip setup — use recommended defaults</button>
+    </div>
+  </div>`;
+}
+
 function pgEcosystemWorkspace() {
-  // Load both eco data and AIVA pipeline data
-  if (!_ecoLoaded) { loadEcoData().then(() => { loadAivaData().then(() => render('ecosystem_ws')); }); return '<div style="text-align:center;padding:60px"><div style="font-size:24px;margin-bottom:12px">🏗️</div><div style="color:var(--text-muted)">Loading workspace...</div></div>'; }
-  if (!_aivaLoaded && !_aivaLoading) { loadAivaData().then(() => render('ecosystem_ws')); }
+  // Check if setup wizard needs to run
+  const ecoConfig = getEcoConfig();
+  if (!ecoConfig || !ecoConfig.setupComplete) {
+    if (_ecoSetupStep >= 0) return renderEcoSetupWizard();
+    // First visit — auto-start the wizard
+    _ecoSetupStep = 0;
+    _ecoSetupForm = {
+      programName: _ecoSettings?.program_name || '',
+      programType: _ecoSettings?.program_type || '',
+      location: _userProfile?.location || '',
+      teamSize: '1-3',
+      template: null,
+      features: [],
+      roles: []
+    };
+    return renderEcoSetupWizard();
+  }
+
+  // Load both eco data and AIVA pipeline data (only if airtable feature enabled)
+  if (!_ecoLoaded) { loadEcoData().then(() => { if (ecoConfig.features.includes('airtable')) { loadAivaData().then(() => render('ecosystem_ws')); } else { render('ecosystem_ws'); } }); return '<div style="text-align:center;padding:60px"><div style="font-size:24px;margin-bottom:12px">🏗️</div><div style="color:var(--text-muted)">Loading workspace...</div></div>'; }
+  if (ecoConfig.features.includes('airtable') && !_aivaLoaded && !_aivaLoading) { loadAivaData().then(() => render('ecosystem_ws')); }
   const profile = _userProfile || {};
   const programName = _ecoSettings?.program_name || profile.company_name || profile.organization || 'AIVA Network';
 
@@ -16312,9 +16953,12 @@ function pgEcosystemWorkspace() {
   const pendingApps = _ecoApplications.filter(a=>a.status==='pending').length;
 
   // Connection badge
-  const modeBadge = _aivaPAT
-    ? '<span style="padding:3px 8px;background:#dcfce7;color:#166534;border-radius:4px;font-size:10px;font-weight:700">☁️ Live — Airtable</span>'
-    : '<span style="padding:3px 8px;background:#fef3c7;color:#92400e;border-radius:4px;font-size:10px;font-weight:700">📦 Cached Mode</span>';
+  const hasAirtableFeature = ecoConfig.features.includes('airtable');
+  const modeBadge = hasAirtableFeature
+    ? (_aivaPAT
+      ? '<span style="padding:3px 8px;background:#dcfce7;color:#166534;border-radius:4px;font-size:10px;font-weight:700">☁️ Live — Airtable</span>'
+      : '<span style="padding:3px 8px;background:#fef3c7;color:#92400e;border-radius:4px;font-size:10px;font-weight:700">📦 Cached Mode</span>')
+    : '<span style="padding:3px 8px;background:#dbeafe;color:#1e40af;border-radius:4px;font-size:10px;font-weight:700">💾 Local</span>';
 
   // AIVA pipeline detail view
   if (_aivaDetailId) {
@@ -16322,26 +16966,46 @@ function pgEcosystemWorkspace() {
     if (detailHtml) return `<div style="max-width:1100px;margin:0 auto;padding:24px">${detailHtml}</div>`;
   }
 
-  // Build tabs based on role
-  const managerTabs = [
-    {id:'aiva_pipeline',label:'Pipeline',icon:'🚀',badge:null},
-    {id:'aiva_meetings',label:'Meeting Log',icon:'📝',badge:_aivaMeetings.filter(m=>m.followUp && m.followUp <= new Date().toISOString().split('T')[0]).length||null},
-    {id:'aiva_projects',label:'Projects & SOWs',icon:'📋',badge:null},
-    {id:'pipeline',label:'Program Pipeline',icon:'📊',badge:null},
-    {id:'applications',label:'Applications',icon:'📩',badge:pendingApps||null},
-    {id:'metrics',label:'Metrics',icon:'📈',badge:null},
-    {id:'activity',label:'Activity',icon:'📋',badge:null},
-    {id:'aiva_settings',label:'Settings',icon:'⚙️',badge:null}
-  ];
-  const adminTabs = [
-    {id:'aiva_projects',label:'Projects & SOWs',icon:'📋',badge:null},
-    {id:'aiva_pipeline',label:'Pipeline',icon:'🚀',badge:null},
-    {id:'aiva_meetings',label:'Meeting Log',icon:'📝',badge:null},
-    {id:'applications',label:'Applications',icon:'📩',badge:pendingApps||null},
-    {id:'activity',label:'Activity',icon:'📋',badge:null},
-    {id:'aiva_settings',label:'Settings',icon:'⚙️',badge:null}
-  ];
-  const tabs = _aivaRole === 'admin' ? adminTabs : managerTabs;
+  // Build tabs based on config and role
+  const hasAirtable = ecoConfig.features.includes('airtable');
+  const allAvailableTabs = [];
+
+  // Pipeline tab — uses Airtable Kanban if connected, else generic
+  if (ecoConfig.features.includes('pipeline')) {
+    allAvailableTabs.push({id: hasAirtable ? 'aiva_pipeline' : 'pipeline', label:'Pipeline', icon:'🚀', badge:null});
+  }
+  if (ecoConfig.features.includes('meetings')) {
+    allAvailableTabs.push({id: hasAirtable ? 'aiva_meetings' : 'activity', label:'Meeting Log', icon:'📝', badge: hasAirtable ? (_aivaMeetings.filter(m=>m.followUp && m.followUp <= new Date().toISOString().split('T')[0]).length||null) : null});
+  }
+  if (ecoConfig.features.includes('projects') || ecoConfig.features.includes('charters')) {
+    allAvailableTabs.push({id: hasAirtable ? 'aiva_projects' : 'pipeline', label:'Projects & SOWs', icon:'📋', badge:null});
+  }
+  if (ecoConfig.features.includes('applications')) {
+    allAvailableTabs.push({id:'applications', label:'Applications', icon:'📩', badge:pendingApps||null});
+  }
+  if (ecoConfig.features.includes('scoring') && hasAirtable) {
+    // Scoring is accessed via pipeline detail view, no separate tab needed
+  }
+  if (ecoConfig.features.includes('metrics')) {
+    allAvailableTabs.push({id:'metrics', label:'Metrics', icon:'📈', badge:null});
+  }
+  if (ecoConfig.features.includes('mentors')) {
+    allAvailableTabs.push({id:'mentors', label:'Mentors', icon:'🧑‍🏫', badge:null});
+  }
+  if (ecoConfig.features.includes('activity')) {
+    allAvailableTabs.push({id:'activity', label:'Activity', icon:'📋', badge:null});
+  }
+  // Settings tab always shows
+  allAvailableTabs.push({id: hasAirtable ? 'aiva_settings' : 'settings', label:'Settings', icon:'⚙️', badge:null});
+
+  // Role-based reordering for admin view (projects first)
+  let tabs = allAvailableTabs;
+  if (_aivaRole === 'admin' && hasAirtable) {
+    const projIdx = tabs.findIndex(t => t.id === 'aiva_projects');
+    if (projIdx > 0) { const proj = tabs.splice(projIdx, 1)[0]; tabs.unshift(proj); }
+  }
+  // Ensure current tab is valid for this config
+  if (!tabs.find(t => t.id === _ecoTab) && tabs.length) { _ecoTab = tabs[0].id; }
   const tabBar = tabs.map(t => `<button onclick="ecoSwitchTab('${t.id}')" style="padding:10px 18px;border:none;background:${_ecoTab===t.id?'var(--green)':'var(--hover)'};color:${_ecoTab===t.id?'#fff':'var(--text-muted)'};border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;position:relative">${t.icon} ${t.label}${t.badge?`<span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px">${t.badge}</span>`:''}</button>`).join('');
 
   // Detail view
@@ -16691,45 +17355,8 @@ function pgEcosystemWorkspace() {
       ${logItems || '<div style="text-align:center;padding:40px;color:var(--text-faint)">No activity yet. Start managing your startups to see activity here.</div>'}
     </div>`;
 
-  } else if (_ecoTab === 'settings') {
-    const s = _ecoSettings || {};
-    const inputStyle = 'width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit';
-    content = `<div style="max-width:680px">
-      <div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 16px">Program Information</h3>
-        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Program Name</label>
-        <input id="eco-set-name" style="${inputStyle};margin-bottom:12px" value="${s.program_name||profile.company_name||profile.organization||''}" placeholder="e.g. Grand Farm, WET Center, AIVA">
-        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Program Type</label>
-        <select id="eco-set-type" style="${inputStyle};margin-bottom:12px;cursor:pointer">
-          ${['Accelerator','Incubator','Innovation Hub','University Program','Government Program','Corporate Venture','Tech Validator','Regional Hub'].map(t=>`<option value="${t}" ${(s.program_type||'')=== t?'selected':''}>${t}</option>`).join('')}
-        </select>
-        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Description</label>
-        <textarea id="eco-set-desc" style="${inputStyle};margin-bottom:12px;min-height:80px;resize:vertical" placeholder="Describe your program, focus areas, and what makes it unique...">${s.description||''}</textarea>
-        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Website</label>
-        <input id="eco-set-web" style="${inputStyle};margin-bottom:12px" value="${s.website||''}" placeholder="https://yourprogram.com">
-        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Current Cohort Name</label>
-        <input id="eco-set-cohort" style="${inputStyle}" value="${s.cohort_name||'Spring 2026'}" placeholder="e.g. Spring 2026, Cohort 5">
-      </div>
-
-      <div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 16px">Application Settings</h3>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <input type="checkbox" id="eco-set-accepting" ${s.accepting_applications!==false?'checked':''} style="width:18px;height:18px;accent-color:var(--green);cursor:pointer">
-          <label for="eco-set-accepting" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer">Accepting applications</label>
-        </div>
-        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Application Deadline</label>
-        <input id="eco-set-deadline" style="${inputStyle}" value="${s.application_deadline||''}" placeholder="e.g. Rolling, June 30 2026, Open until filled">
-        <p style="font-size:11px;color:var(--text-faint);margin:8px 0 0">When accepting applications is enabled, founders can apply to your program directly through the platform.</p>
-      </div>
-
-      <div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Data Persistence</h3>
-        <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.6">${_ecoUseSupabase ? 'Your workspace is connected to Supabase. All data persists across devices and sessions. Enterprise-grade.' : 'Currently in demo mode using browser storage. To enable persistent cloud storage, ask Russell to run the Supabase migration script.'}</p>
-        ${modeBadge}
-      </div>
-
-      <button onclick="ecoSaveSettings()" style="padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%">Save Settings</button>
-    </div>`;
+  } else if (_ecoTab === 'settings' || _ecoTab === 'eco_settings') {
+    content = renderEcoUnifiedSettings(ecoConfig, programName, profile, modeBadge);
 
   // ── AIVA Pipeline Tabs ──
   } else if (_ecoTab === 'aiva_pipeline') {
@@ -16739,7 +17366,7 @@ function pgEcosystemWorkspace() {
   } else if (_ecoTab === 'aiva_projects') {
     content = _aivaLoaded ? renderAivaProjects() : '<div style="text-align:center;padding:40px;color:var(--text-muted)">Loading projects...</div>';
   } else if (_ecoTab === 'aiva_settings') {
-    content = renderAivaSettings();
+    content = renderEcoUnifiedSettings(ecoConfig, programName, profile, modeBadge);
   }
 
   // Stat cards
@@ -16762,9 +17389,9 @@ function pgEcosystemWorkspace() {
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:900">🏗️</div>
         <div>
-          <h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0">AIVA Ecosystem Workspace ${modeBadge}</h1>
-          <div style="font-size:13px;color:var(--text-muted)">${programName} · ${_aivaRole === 'admin' ? 'Admin: Projects, SOWs, contracts & farm feedback' : 'Pipeline management, scoring, and project charters'}
-            <span onclick="aivaSetRole(_aivaRole==='manager'?'admin':'manager')" style="margin-left:8px;padding:2px 8px;background:var(--hover);border-radius:4px;font-size:10px;font-weight:700;color:var(--green);cursor:pointer;border:1px solid var(--border)">Switch to ${_aivaRole==='manager'?'Admin':'Manager'} View</span>
+          <h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0">${programName} Workspace ${modeBadge}</h1>
+          <div style="font-size:13px;color:var(--text-muted)">${ecoConfig.programType || 'Ecosystem'} · ${ecoConfig.features.length} features active
+            ${hasAirtable ? `<span onclick="aivaSetRole(_aivaRole==='manager'?'admin':'manager')" style="margin-left:8px;padding:2px 8px;background:var(--hover);border-radius:4px;font-size:10px;font-weight:700;color:var(--green);cursor:pointer;border:1px solid var(--border)">Switch to ${_aivaRole==='manager'?'Admin':'Manager'} View</span>` : ''}
           </div>
         </div>
       </div>
@@ -16798,8 +17425,11 @@ function render(page){
 
   // Signed-in users see everything
   if (currentUser) {
+    const assumeBanner = getAssumeUserBanner();
     const banner = _userProfile ? profileVerificationBanner(_userProfile) : '';
-    el.innerHTML = banner + (pages[page]||pgOverview)();
+    el.innerHTML = assumeBanner + banner + (pages[page]||pgOverview)();
+    // Offset content if assume banner is showing
+    if (_assumedUser) { el.style.paddingTop = '40px'; } else { el.style.paddingTop = ''; }
     return;
   }
 
