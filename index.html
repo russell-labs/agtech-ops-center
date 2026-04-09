@@ -794,7 +794,7 @@
     </div>
     <button class="nav-item" onclick="go('ecosystem',this)"><span class="nav-icon">📍</span> Ecosystem Overview</button>
     <button class="nav-item" onclick="go('crops',this)"><span class="nav-icon">🌱</span> Crops</button>
-    <button class="nav-item" onclick="go('mentors',this)"><span class="nav-icon">🧑‍🏫</span> Mentor Directory</button>
+    <button class="nav-item" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
     <button class="nav-item" onclick="go('venture',this)"><span class="nav-icon">🚀</span> Venture Studio</button>
     <button class="nav-item" onclick="go('accelerators',this)"><span class="nav-icon">⚡</span> Accelerator Hub</button>
     <button class="nav-item" onclick="go('resources',this)"><span class="nav-icon">📚</span> Resources &amp; Support</button>
@@ -806,7 +806,7 @@
     <div class="section-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none" onclick="toggleAccordion('mytools')"><span>My Tools</span><span id="accordion-mytools-arrow" style="font-size:10px;transition:transform .2s;transform:rotate(-90deg)">▼</span></div>
     <div id="accordion-mytools-items" style="display:none">
     <button id="nav-action-btn" class="nav-item" style="display:none" onclick="go('action',this)"><span class="nav-icon">🎯</span> Action Center <span id="nav-action-badge" style="display:none;font-size:11px;margin-left:auto;flex-shrink:0;line-height:1;align-items:center;gap:2px">🔔<span id="nav-action-count" style="background:#ef4444;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;vertical-align:middle;line-height:1"></span></span></button>
-    <button id="nav-hub-btn" class="nav-item" style="display:none" onclick="go('hub',this)"><span class="nav-icon">🌐</span> Community Hub</button>
+    <!-- Community Hub moved to main nav -->
     <button id="nav-connections-btn" class="nav-item" style="display:none" onclick="go('connections',this)"><span class="nav-icon">🤝</span> My Connections</button>
     <button id="nav-roadmap-btn" class="nav-item" style="display:none" onclick="go('roadmap',this)"><span class="nav-icon">🗺️</span> Product Roadmap</button>
     <button id="nav-admin-btn" class="nav-item" style="display:none" onclick="goAdmin()"><span class="nav-icon">🔐</span> Admin Panel</button>
@@ -1566,12 +1566,12 @@ function notifyNewUser(name, email) {
 // PERSONA-TAILORED UI
 // ══════════════════════════════════════════════════════════════
 const PERSONA_UI = {
-  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','market_intel','crops','resources','mentors','accelerators'] },
-  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','market_intel','crops','resources','mentors','accelerators'] },
-  'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','market_intel','crops','resources','mentors'], extraNav:['investor'] },
-  'ecosystem_mgr': { brand:'Ecosystem Ops Center', icon:'🏗️', tagline:'Your command center for managing AgTech programs and cohorts.', nav:['overview','ecosystem','market_intel','mentors','accelerators','crops','resources','glossary'], extraNav:['ecosystem_ws'] },
-  'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','market_intel','mentors','resources'] },
-  'farmer':        { brand:'Farmer Ops Center',   icon:'🌾', tagline:'Discover AgTech innovations built for your operation.', nav:['overview','glossary','ecosystem','market_intel','crops','resources'] }
+  'early-stage':   { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','market_intel','crops','resources','hub','accelerators'] },
+  'growth-stage':  { brand:'Founder Ops Center', icon:'F', tagline:'AgTech startup intelligence, from idea to scale.', nav:['overview','journey','glossary','documents','ecosystem','market_intel','crops','resources','hub','accelerators'] },
+  'investor':      { brand:'Investor Ops Center', icon:'I', tagline:'AgTech deal flow, market data, and ecosystem intelligence.', nav:['overview','glossary','ecosystem','market_intel','crops','resources','hub'], extraNav:['investor'] },
+  'ecosystem_mgr': { brand:'Ecosystem Ops Center', icon:'🏗️', tagline:'Your command center for managing AgTech programs and cohorts.', nav:['overview','ecosystem','market_intel','hub','accelerators','crops','resources','glossary'], extraNav:['ecosystem_ws'] },
+  'advisor':       { brand:'Advisor Ops Center',   icon:'A', tagline:'Tools and connections to mentor the next generation of AgTech.', nav:['overview','glossary','ecosystem','market_intel','hub','resources'] },
+  'farmer':        { brand:'Farmer Ops Center',   icon:'🌾', tagline:'Discover AgTech innovations built for your operation.', nav:['overview','glossary','ecosystem','market_intel','crops','resources','hub'] }
 };
 
 function getActivePersona() {
@@ -1622,7 +1622,7 @@ function applyPersonaUI(profile) {
   }
 
   // Show/hide nav items based on persona (skip My Tools items — they have their own visibility logic)
-  const myToolsIds = ['nav-action-btn','nav-hub-btn','nav-connections-btn','nav-roadmap-btn','nav-admin-btn'];
+  const myToolsIds = ['nav-action-btn','nav-connections-btn','nav-roadmap-btn','nav-admin-btn'];
   const allNavBtns = document.querySelectorAll('.sidebar-section .nav-item');
   allNavBtns.forEach(btn => {
     if (btn.id && myToolsIds.includes(btn.id)) return; // skip My Tools items
@@ -2777,7 +2777,7 @@ function go(page, btn){
   if (page === 'admin_eco') { adminTab = 'eco_claims'; page = 'admin'; }
   if (page === 'admin_claims') { adminTab = 'eco_claims'; page = 'admin'; }
   if (page !== 'crops') _selectedCrop = null; // reset crop detail when leaving crops
-  _selectedMentor = null; // always reset mentor detail when navigating (allows back button to work)
+  if (page !== 'hub') _selectedMentor = null; // reset mentor detail when leaving hub
   if (page !== 'accelerators') _selectedAccelerator = null; // reset accelerator detail when leaving accelerators
   if (page !== 'venture') _ventureStep = 0;
   currentPage = page;
@@ -3546,7 +3546,7 @@ ca: {
   desc:'A comprehensive view of Canada\'s agricultural technology landscape, innovations, and market dynamics.',
   overview:[
     {title:'National Agriculture Context', stats:[{v:'~65-70M acres',l:'Field crop acres (StatsCan, 2024-25)'},{v:'~190,000 farms',l:'Active commercial farming operations'},{v:'$100B+ CAD',l:'Agri-food exports (2024-25, record year)'},{v:'107M tonnes',l:'Record grain & oilseed production (2024-25)'}],
-     sources:'<a href="https://agriculture.canada.ca/en/sector/overview" target="_blank">AAFC Sector Overview</a> · <a href="https://www150.statcan.gc.ca/n1/pub/95-640-x/2016001/p1/p1-01-eng.htm" target="_blank">Statistics Canada</a>'},
+     sources:'<a href="https://agriculture.canada.ca/en/sector" target="_blank">AAFC Sector Overview</a> · <a href="https://agriculture.canada.ca/en/sector/data-reports/farm-income-forecast-2025-2026" target="_blank">AAFC Farm Income Forecast 2025-26</a> · <a href="https://www150.statcan.gc.ca/n1/pub/95-640-x/2016001/p1/p1-01-eng.htm" target="_blank">Statistics Canada</a>'},
     {title:'Public Support Ecosystem', stats:[{v:'~30% public funding share',l:'Higher than US or UK markets'}], tags:['Sustainable CAP','PIC Supercluster','CFIN Network','AgriInnovate']},
     {title:'AgTech Strengths', stats:[{v:'Grain & Oilseeds',l:'World-class precision ag adoption'},{v:'Canola',l:'Global biotech & crop science leader'},{v:'Smart Farms',l:'EMILI, Olds College, Glacier Farm'}]}
   ],
@@ -4331,6 +4331,95 @@ const MI_CROSSWALK = [
   { layer:'Software/data solution', desc:'SaaS platforms, data marketplaces, analytics tools, traceability systems, and financial infrastructure enabling the broader ecosystem', sectors:['Supply Chain Transparency','Agri-Fintech','Carbon & Regen Ag','Biological Inputs'], color:'#ea580c' }
 ];
 
+function exportMIReport(abridged) {
+  trackEvent('mi_pdf_export', { abridged });
+  const tier1 = MI_MATRIX.filter(r => r.tier === 'Tier 1');
+  const signalsTop = MI_SIGNALS.slice(0, 5);
+  const now = new Date().toLocaleDateString('en-US', { month:'long', year:'numeric' });
+
+  let sectorsHtml = MI_SECTORS.map(s => `
+    <div style="page-break-inside:avoid;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:12px">
+      <h3 style="margin:0 0 6px;font-size:15px;color:#111">${s.title} <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${s.badgeClass};color:white">${s.badge}</span></h3>
+      <p style="font-size:12px;color:#555;line-height:1.6;margin:0 0 8px">${s.summary}</p>
+      ${s.whyPerforming ? `<div style="border-left:3px solid ${s.badgeClass};padding-left:12px;margin-top:8px;font-size:11px;color:#333;line-height:1.6"><strong>Why It's Performing:</strong> ${s.whyPerforming}</div>` : ''}
+    </div>`).join('');
+
+  let matrixHtml = `<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">
+    <thead><tr style="background:#f3f4f6"><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Sector</th><th style="padding:8px;border:1px solid #e5e7eb">Priority</th><th style="padding:8px;border:1px solid #e5e7eb">Momentum</th><th style="text-align:left;padding:8px;border:1px solid #e5e7eb">Rationale</th></tr></thead>
+    <tbody>${MI_MATRIX.map(r => `<tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:600">${r.sector}</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:center;background:${r.tier==='Tier 1'?'#dcfce7':r.tier==='Tier 2'?'#fef3c7':'#f3f4f6'};font-weight:600">${r.tier}</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:center">${r.momentum}</td><td style="padding:8px;border:1px solid #e5e7eb">${r.rationale}</td></tr>`).join('')}</tbody></table>`;
+
+  const abridgedNotice = abridged ? `<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:20px;margin:24px 0;text-align:center">
+    <h3 style="margin:0 0 8px;font-size:16px;color:#92400e">🔒 Full Report — Company Intel, Directory & Analytics</h3>
+    <p style="font-size:13px;color:#78350f;margin:0 0 16px;line-height:1.6">This is a preview. The full report includes ${AGTECH_COMPANIES.length}+ company profiles with funding data, sector analytics, Canadian spotlight, and searchable directory.</p>
+    <a href="https://founderopscenter.com" style="display:inline-block;padding:12px 28px;background:#16a34a;color:white;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px">Sign Up Free at FounderOpsCenter.com →</a>
+  </div>` : '';
+
+  const companySection = abridged ? '' : `<div style="page-break-before:always">
+    <h2 style="font-size:18px;color:#111;border-bottom:2px solid #16a34a;padding-bottom:6px;margin:24px 0 16px">🏢 Company Intelligence (${AGTECH_COMPANIES.length} companies)</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:#f0fdf4;padding:14px;border-radius:8px;text-align:center"><div style="font-size:22px;font-weight:800;color:#16a34a">${AGTECH_COMPANIES.length}</div><div style="font-size:10px;color:#555">Companies Tracked</div></div>
+      <div style="background:#eff6ff;padding:14px;border-radius:8px;text-align:center"><div style="font-size:22px;font-weight:800;color:#2563eb">$${(analyzeCompanies(AGTECH_COMPANIES).totalFunding/1000).toFixed(1)}B+</div><div style="font-size:10px;color:#555">Combined Funding</div></div>
+      <div style="background:#fefce8;padding:14px;border-radius:8px;text-align:center"><div style="font-size:22px;font-weight:800;color:#ca8a04">${analyzeCompanies(AGTECH_COMPANIES).geoDist.length}</div><div style="font-size:10px;color:#555">Countries</div></div>
+    </div>
+    <h3 style="font-size:14px;margin:16px 0 8px">Top 10 Most Funded</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="background:#f3f4f6"><th style="text-align:left;padding:6px;border:1px solid #e5e7eb">#</th><th style="text-align:left;padding:6px;border:1px solid #e5e7eb">Company</th><th style="text-align:left;padding:6px;border:1px solid #e5e7eb">Sector</th><th style="text-align:left;padding:6px;border:1px solid #e5e7eb">HQ</th><th style="text-align:right;padding:6px;border:1px solid #e5e7eb">Funding</th></tr></thead>
+      <tbody>${analyzeCompanies(AGTECH_COMPANIES).topFunded.map((c,i) => `<tr><td style="padding:6px;border:1px solid #e5e7eb">${i+1}</td><td style="padding:6px;border:1px solid #e5e7eb;font-weight:600">${c.name}</td><td style="padding:6px;border:1px solid #e5e7eb">${MI_SECTOR_MAP[c.sector]||c.sector}</td><td style="padding:6px;border:1px solid #e5e7eb">${c.hq}</td><td style="padding:6px;border:1px solid #e5e7eb;text-align:right;color:#16a34a;font-weight:600">${c.funding}</td></tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>AgTech Market Intelligence Report — FounderOpsCenter</title>
+    <style>
+      @media print { body{margin:0;padding:20px} @page{margin:1cm} .no-print{display:none!important} }
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;max-width:800px;margin:0 auto;padding:30px;line-height:1.5}
+      .cover{text-align:center;padding:60px 20px;margin-bottom:30px;border-bottom:3px solid #16a34a}
+      .cover h1{font-size:28px;color:#111;margin:0 0 8px} .cover .subtitle{font-size:16px;color:#16a34a;font-weight:600;margin:0 0 20px}
+      .cover .date{font-size:13px;color:#888}
+    </style></head><body>
+    <div class="cover">
+      <div style="font-size:40px;margin-bottom:12px">🌾</div>
+      <h1>AgTech Emerging Sectors &<br>Growth Trends 2026</h1>
+      <div class="subtitle">Market Intelligence Report</div>
+      <div style="display:inline-block;padding:6px 20px;background:#16a34a;color:white;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:16px">FounderOpsCenter.com</div>
+      <div class="date">${now} · Global Scope · ${MI_SECTORS.length} Sectors Analyzed</div>
+    </div>
+
+    <div class="no-print" style="text-align:center;margin-bottom:24px">
+      <button onclick="window.print()" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">📄 Save as PDF (Ctrl/Cmd+P)</button>
+    </div>
+
+    <h2 style="font-size:18px;color:#111;border-bottom:2px solid #16a34a;padding-bottom:6px;margin-bottom:16px">📡 Key Market Signals</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">
+      ${signalsTop.map(s => `<div style="background:#f0fdf4;padding:12px;border-radius:8px;text-align:center"><div style="font-size:18px;font-weight:800;color:#16a34a">${s.num}</div><div style="font-size:10px;color:#555">${s.label}</div></div>`).join('')}
+    </div>
+
+    <h2 style="font-size:18px;color:#111;border-bottom:2px solid #16a34a;padding-bottom:6px;margin-bottom:16px">📊 Emerging Sectors</h2>
+    ${sectorsHtml}
+
+    <div style="page-break-before:always">
+    <h2 style="font-size:18px;color:#111;border-bottom:2px solid #16a34a;padding-bottom:6px;margin:24px 0 16px">🎯 Opportunity Matrix</h2>
+    ${matrixHtml}
+    </div>
+
+    ${abridgedNotice}
+    ${companySection}
+
+    <div style="margin-top:40px;padding-top:16px;border-top:2px solid #e5e7eb;font-size:10px;color:#888;text-align:center;line-height:1.8">
+      <strong>FounderOpsCenter.com</strong> — AgTech Ecosystem Intelligence<br>
+      Sources: iGrow News, PitchBook, THRIVE AgTech, AgTechNavigator, World Agri-Tech Summit, Animal AgTech Investment Outlook<br>
+      ${abridged ? 'Abridged preview — full report available to platform members' : 'Confidential — for platform members only'}
+    </div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  } else {
+    alert('Please allow pop-ups to generate the PDF report.');
+  }
+}
+
 function pgMarketIntel() {
   trackEvent('market_intel_view', { tab: _miTab });
 
@@ -4525,6 +4614,42 @@ function pgMarketIntel() {
 
   // ── COMPANY INTEL TAB ──
   if (_miTab === 'companies') {
+    // Profile completeness gate — require 80%+ to access Company Intel
+    const CI_MIN_COMPLETENESS = 80;
+    const userCompleteness = _userProfile ? (_userProfile.profile_completeness || calcCompleteness(_userProfile)) : 0;
+    const ciGated = !currentUser || userCompleteness < CI_MIN_COMPLETENESS;
+
+    if (ciGated) {
+      const pct = currentUser ? userCompleteness : 0;
+      const missing = currentUser ? getMissingFields(_userProfile) : [];
+      content = `<div class="card" style="padding:32px;text-align:center;max-width:520px;margin:40px auto">
+        <div style="font-size:48px;margin-bottom:12px">🔒</div>
+        <h3 style="font-size:18px;font-weight:700;color:var(--text);margin:0 0 8px">Company Intelligence — Unlock with Your Profile</h3>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin:0 0 20px">
+          ${currentUser
+            ? 'Complete your profile to <strong>' + CI_MIN_COMPLETENESS + '%</strong> to access the full Company Intel database — funding data, sector analytics, Canadian spotlight, and more.'
+            : 'Sign in and complete your profile to access the Company Intel database with funding data, sector analytics, and searchable directory.'}
+        </p>
+        ${currentUser ? `
+          <div style="margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:600;color:var(--text)">Profile Completeness</span>
+              <span style="font-size:12px;font-weight:700;color:${pct >= CI_MIN_COMPLETENESS ? 'var(--green)' : '#f59e0b'}">${pct}% of ${CI_MIN_COMPLETENESS}% required</span>
+            </div>
+            <div style="height:10px;background:var(--hover);border-radius:5px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(pct/CI_MIN_COMPLETENESS*100,100)}%;background:${pct >= CI_MIN_COMPLETENESS ? 'var(--green)' : '#f59e0b'};border-radius:5px;transition:width .4s"></div>
+            </div>
+          </div>
+          ${missing.length ? `<div style="text-align:left;margin-bottom:18px;padding:12px 16px;background:var(--hover);border-radius:8px">
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:6px">Missing fields:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">${missing.map(f => `<span style="font-size:10px;padding:3px 10px;border-radius:12px;background:#fef3c7;color:#92400e;font-weight:600">${f}</span>`).join('')}</div>
+          </div>` : ''}
+          <button onclick="go('profile')" style="padding:12px 28px;background:var(--green);color:white;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Complete Your Profile →</button>
+        ` : `<button onclick="openModal('signin-modal')" style="padding:12px 28px;background:var(--green);color:white;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Sign In to Get Started →</button>`}
+        <div style="margin-top:16px;font-size:11px;color:var(--text-faint);line-height:1.6">This keeps our intel community active and profiles current.<br>Founding members with 80%+ profiles get permanent access.</div>
+      </div>`;
+    } else {
+    // ── Unlocked Company Intel content ──
     const stats = analyzeCompanies(AGTECH_COMPANIES);
 
     // Filter & search logic
@@ -4815,11 +4940,18 @@ function pgMarketIntel() {
     }
 
     content = ciTabBar + ciContent;
+    } // end else (unlocked)
   }
 
-  return `<div class="page-hdr">
-    <h1>📊 Market Intelligence</h1>
-    <p>AgTech emerging sectors, growth trends, and opportunity analysis — grounded in 2025–2026 global data.</p>
+  return `<div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1>📊 Market Intelligence</h1>
+      <p>AgTech emerging sectors, growth trends, and opportunity analysis — grounded in 2025–2026 global data.</p>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0;margin-top:4px">
+      <button onclick="exportMIReport(false)" title="Export full report as PDF" style="padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text-muted);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px">📄 Export PDF</button>
+      <button onclick="exportMIReport(true)" title="Share preview report (no company data)" style="padding:6px 14px;border:1px solid var(--green-mid);border-radius:8px;background:var(--accent-bg);color:var(--green);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px">📤 Share Preview</button>
+    </div>
   </div>
   <div style="background:var(--accent-bg);border:1px solid var(--green-mid);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
     <span style="font-size:20px">💡</span>
@@ -8354,14 +8486,23 @@ async function submitVentureApplication(){
   // Show success modal
   const modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999';
+  const isGuest = !currentUser;
   modal.innerHTML = `<div style="background:var(--surface);border-radius:12px;padding:40px;max-width:500px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
     <div style="font-size:48px;margin-bottom:16px">🎉</div>
     <h2 style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:var(--text)">Your idea has been submitted!</h2>
     <p style="margin:0 0 24px 0;color:var(--text-muted);line-height:1.6;font-size:14px">The FounderOps Venture Studio team will review your submission and get back to you within 48 hours.</p>
+    ${isGuest ? `<div style="background:var(--accent-bg,rgba(22,163,74,.05));border:1px solid rgba(22,163,74,.2);border-radius:10px;padding:16px;margin-bottom:20px;text-align:left">
+      <p style="margin:0 0 10px;font-size:13px;font-weight:600;color:var(--text)">🔗 Want to track your submission?</p>
+      <p style="margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6">Create a free account to link this submission to your profile, get status updates, access market intelligence, and connect with mentors and investors.</p>
+      <button onclick="this.closest('[style*=fixed]').remove();_ventureForm={};_ventureStep=0;openModal('signin-modal')" style="width:100%;padding:10px;background:#16a34a;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Create Free Account →</button>
+    </div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button onclick="this.closest('[style*=fixed]').remove();_ventureForm={};_ventureStep=0;render('venture')" style="padding:10px 20px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Submit Another Idea</button>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="padding:10px 20px;background:none;color:var(--text-muted);border:none;font-size:13px;cursor:pointer">No thanks, I'm done</button>
+    </div>` : `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <button onclick="this.closest('[style*=fixed]').remove();_ventureForm={};_ventureStep=0;go('overview')" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Explore the Platform →</button>
       <button onclick="this.closest('[style*=fixed]').remove();_ventureForm={};_ventureStep=0;render('venture')" style="padding:12px 28px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Submit Another Idea</button>
-    </div>
+    </div>`}
   </div>`;
   document.body.appendChild(modal);
 }
@@ -13539,8 +13680,8 @@ function pgCommunityHub() {
   }).join('')}</div>`;
 
   return `<div class="page-hdr"><h1>🌐 Community Hub</h1>
-    <p>Your front door to the entire AgTech ecosystem. Expand any section to explore.</p></div>
-    ${hubAccordion('mentors', '🧑‍🏫', 'Find a Mentor', HUB_MENTORS.length, mentorContent)}
+    <p>Your front door to the entire AgTech ecosystem — people, communities, events, and resources.</p></div>
+    ${hubAccordion('mentors', '🤝', 'People Directory — Mentors & Advisors', MENTORS.length, mentorContent)}
     ${hubAccordion('communities', '🌐', 'Communities & Working Groups', HUB_COMMUNITIES.length, commContent)}
     ${hubAccordion('events', '📅', 'Events & Conferences', HUB_EVENTS.length, evContent)}
     ${hubAccordion('newsletters', '📰', 'Newsletters & Media', HUB_NEWSLETTERS.length, nlContent)}
@@ -13549,57 +13690,146 @@ function pgCommunityHub() {
 }
 
 function hubMentorContent() {
-  const agAreas = [...new Set(HUB_MENTORS.map(m=>m.ag).filter(Boolean))].sort();
-  const countries = [...new Set(HUB_MENTORS.map(m=>m.co).filter(Boolean))].sort();
+  const countryFlags = {US:'🇺🇸',CA:'🇨🇦',IN:'🇮🇳',AU:'🇦🇺',UK:'🇬🇧',CH:'🇨🇭',EU:'🇪🇺',SG:'🇸🇬',BR:'🇧🇷',NZ:'🇳🇿',USA:'🇺🇸',Canada:'🇨🇦',India:'🇮🇳',Australia:'🇦🇺'};
+  const avatarColors = ['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2','#F8B88B','#82E0AA'];
+  function getInitials(name){ return name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase(); }
+  function getAvatarColor(name){ let h=0;for(let i=0;i<name.length;i++){h=((h<<5)-h)+name.charCodeAt(i);h=h&h;} return avatarColors[Math.abs(h)%avatarColors.length]; }
+
+  const agAreas = [...new Set(MENTORS.map(m=>m.agExpertise).filter(Boolean))].sort();
+  const countries = [...new Set(MENTORS.map(m=>m.country).filter(Boolean))].sort();
+  const availOpts = ['Yes','Limited'];
+  const compOpts = [...new Set(MENTORS.map(m=>m.comp).filter(Boolean))].sort();
 
   const searchLower = mentorSearch.toLowerCase();
-  const filtered = HUB_MENTORS.filter(m => {
-    if (mentorFilter && m.ag !== mentorFilter) return false;
-    if (mentorCountry && m.co !== mentorCountry) return false;
+  const filtered = MENTORS.filter(m => {
+    if (mentorFilter && m.agExpertise !== mentorFilter) return false;
+    if (mentorCountry && m.country !== mentorCountry) return false;
+    if (window._hubCompFilter && m.comp !== window._hubCompFilter) return false;
+    if (window._hubAvailFilter && m.available !== window._hubAvailFilter) return false;
     if (searchLower) {
-      const haystack = (m.n + ' ' + m.f + ' ' + m.e + ' ' + m.fo + ' ' + m.ag).toLowerCase();
+      const haystack = (m.name + ' ' + m.firm + ' ' + m.expertise + ' ' + (m.focusAreas||'') + ' ' + (m.agExpertise||'')).toLowerCase();
       return haystack.includes(searchLower);
     }
     return true;
   });
 
-  const availColor = { Yes:'#16a34a', Limited:'#d97706', Unknown:'#9ca3af' };
+  const availColor = { Yes:'#16a34a', Limited:'#d97706' };
+  const availCount = MENTORS.filter(m=>m.available==='Yes').length;
 
-  return `<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6">Curated from Walt Duflock's AgTech Startup Mentor List. Search by name, expertise, or focus area.</p>
-    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
-      <input type="text" placeholder="🔍 Search mentors..." value="${mentorSearch}" oninput="mentorSearch=this.value;clearTimeout(window._mentorDebounce);window._mentorDebounce=setTimeout(()=>{render('hub');setTimeout(()=>{const i=document.querySelector('input[placeholder*=Search\\ mentors]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},20)},300)" style="flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
-      <select onchange="mentorFilter=this.value;render('hub')" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
+  // Detail view if mentor selected
+  if (_selectedMentor) {
+    const m = MENTORS.find(x=>x.id===_selectedMentor);
+    if (!m) { _selectedMentor = null; }
+    else {
+      const flag = countryFlags[m.country]||'';
+      const initials = getInitials(m.name);
+      const avatarColor = getAvatarColor(m.name);
+      let aClr = '#ef4444'; let aTxt = 'Limited';
+      if(m.available==='Yes'){aClr='#22c55e';aTxt='Available Now';}
+      else if(m.available==='Limited'){aClr='#eab308';aTxt='Limited Availability';}
+      const focusTags = m.focusAreas ? m.focusAreas.split(',').map(fa => `<span style="display:inline-block;background:var(--hover);color:var(--text);padding:4px 10px;border-radius:6px;font-size:12px;margin:0 6px 6px 0">${fa.trim()}</span>`).join('') : '';
+      const linkedinBtn = m.linkedin ? `<a href="${m.linkedin}" target="_blank" rel="noopener" style="display:inline-block;background:#0a66c2;color:white;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;margin-right:10px">LinkedIn ↗</a>` : '';
+
+      return `<a href="#" onclick="_selectedMentor=null;render('hub');return false" style="color:var(--green);text-decoration:none;font-size:13px;margin-bottom:16px;display:inline-block">← Back to People Directory</a>
+        <div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:24px">
+          <div style="width:72px;height:72px;border-radius:50%;background:${avatarColor};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:24px;flex-shrink:0">${initials}</div>
+          <div style="flex:1">
+            <h2 style="margin:0 0 4px;font-size:22px;color:var(--text)">${m.name}</h2>
+            <p style="margin:0 0 10px;color:var(--text-muted);font-size:14px">${m.firm}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:4px;background:${aClr}20;color:${aClr};padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600"><span style="width:7px;height:7px;background:${aClr};border-radius:50%"></span>${aTxt}</span>
+              <span style="background:var(--hover);color:var(--text);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600">${m.comp}</span>
+              <span style="background:var(--hover);color:var(--text);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600">${flag} ${m.country}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:18px;margin-bottom:14px">
+          <h3 style="margin:0 0 10px;font-size:14px;font-weight:600;color:var(--text)">About & Experience</h3>
+          <p style="margin:0;color:var(--text);line-height:1.6;font-size:13px">${m.experience}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div class="card" style="padding:18px">
+            <h3 style="margin:0 0 10px;font-size:14px;font-weight:600;color:var(--text)">Areas of Expertise</h3>
+            <p style="margin:0 0 10px;color:var(--text);line-height:1.6;font-size:12px">${m.expertise}</p>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${focusTags}</div>
+            ${m.agExpertise ? `<div style="margin-top:10px;padding:6px 12px;background:var(--hover);border-radius:8px;font-size:11px;color:var(--text);font-weight:600">🌾 ${m.agExpertise}</div>` : ''}
+          </div>
+          <div class="card" style="padding:18px">
+            <h3 style="margin:0 0 10px;font-size:14px;font-weight:600;color:var(--text)">Startups Worked With</h3>
+            <p style="margin:0;color:var(--text);line-height:1.6;font-size:12px">${m.startups}</p>
+          </div>
+        </div>
+        <div class="card" style="padding:18px;margin-bottom:14px">
+          <h3 style="margin:0 0 12px;font-size:14px;font-weight:600;color:var(--text)">Connect</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${linkedinBtn}
+            ${currentUser ? `<button onclick="requestMentorIntro(${m.id})" style="background:var(--green);color:white;padding:10px 16px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer">🤝 Request Introduction</button>` : `<button onclick="openModal('signin-modal')" style="background:var(--green);color:white;padding:10px 16px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer">Sign in to Request Intro</button>`}
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:rgba(100,116,139,.05);border-radius:8px;border-left:3px solid var(--text-muted);font-size:10px;color:var(--text-muted)">
+          <strong>Source:</strong> Western Growers Center for Innovation & Technology — AgTech Startup Mentor List (CC BY 4.0)
+        </div>`;
+    }
+  }
+
+  return `
+    <!-- Stats bar -->
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)"><span style="font-size:16px;font-weight:800;color:var(--green)">${MENTORS.length}</span> people</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a"></span> ${availCount} available now</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)">📍 ${countries.length} countries</div>
+    </div>
+    <!-- Filters -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <input type="text" placeholder="🔍 Search by name, expertise, focus..." value="${mentorSearch}" oninput="mentorSearch=this.value;clearTimeout(window._mentorDebounce);window._mentorDebounce=setTimeout(()=>{render('hub');setTimeout(()=>{const i=document.querySelector('input[placeholder*=Search\\ by\\ name]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},20)},300)" style="flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
+      <select onchange="mentorFilter=this.value;render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
         <option value="">All Ag Areas</option>
         ${agAreas.map(a => '<option value="'+a+'"'+(mentorFilter===a?' selected':'')+'>'+a+'</option>').join('')}
       </select>
-      <select onchange="mentorCountry=this.value;render('hub')" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
+      <select onchange="mentorCountry=this.value;render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
         <option value="">All Countries</option>
         ${countries.map(c => '<option value="'+c+'"'+(mentorCountry===c?' selected':'')+'>'+c+'</option>').join('')}
       </select>
-      <span style="font-size:11px;color:var(--text-faint)">${filtered.length} of ${HUB_MENTORS.length}</span>
+      <select onchange="window._hubAvailFilter=this.value;render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
+        <option value="" ${!window._hubAvailFilter?'selected':''}>Availability: All</option>
+        <option value="Yes" ${window._hubAvailFilter==='Yes'?'selected':''}>Available Now</option>
+        <option value="Limited" ${window._hubAvailFilter==='Limited'?'selected':''}>Limited</option>
+      </select>
+      <select onchange="window._hubCompFilter=this.value;render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
+        <option value="" ${!window._hubCompFilter?'selected':''}>Compensation: All</option>
+        ${compOpts.map(c => '<option value="'+c+'"'+(window._hubCompFilter===c?' selected':'')+'>'+c+'</option>').join('')}
+      </select>
+      <span style="font-size:11px;color:var(--text-faint)">${filtered.length} of ${MENTORS.length}</span>
     </div>
-    ${filtered.length === 0 ? '<div class="conn-empty"><div class="ce-icon">🔍</div><p>No mentors match your filters. Try broadening your search.</p></div>' :
-    `<div class="ac-grid">${filtered.slice(0,50).map(m => {
-      const initials = m.n.split(' ').map(w=>w[0]).join('').slice(0,2);
-      return `<div class="ac-card" style="display:flex;flex-direction:column">
+    ${filtered.length === 0 ? '<div class="conn-empty"><div class="ce-icon">🔍</div><p>No people match your filters. Try broadening your search.</p></div>' :
+    `<div class="ac-grid">${filtered.slice(0,60).map(m => {
+      const initials = getInitials(m.name);
+      const avatarColor = getAvatarColor(m.name);
+      const aClr = availColor[m.available] || '#9ca3af';
+      const flag = countryFlags[m.country]||'';
+      const expertise = m.expertise.substring(0,90)+(m.expertise.length>90?'...':'');
+      return `<div class="ac-card" style="display:flex;flex-direction:column;cursor:pointer" onclick="_selectedMentor=${m.id};_hubOpen.mentors=true;render('hub')">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${initials}</div>
-          <div style="min-width:0">
-            <div class="ac-title" style="margin-bottom:0">${m.n}</div>
-            <div class="ac-org">${m.f || 'Independent'}</div>
+          <div style="width:42px;height:42px;border-radius:50%;background:${avatarColor};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${initials}</div>
+          <div style="min-width:0;flex:1">
+            <div class="ac-title" style="margin-bottom:0">${m.name}</div>
+            <div class="ac-org">${m.firm}</div>
           </div>
-          <div style="margin-left:auto;flex-shrink:0"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${availColor[m.av]||'#9ca3af'}"></span> <span style="font-size:10px;color:var(--text-faint)">${m.av}</span></div>
+          <div style="flex-shrink:0"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${aClr}"></span></div>
         </div>
         <div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px">
-          ${m.ag ? '<span class="ac-tag type">'+m.ag+'</span>' : ''}
-          ${m.co ? '<span class="ac-tag persona">'+m.co+'</span>' : ''}
-          ${m.c ? '<span class="ac-tag" style="background:var(--hover);color:var(--text-muted)">'+m.c+'</span>' : ''}
+          ${m.agExpertise ? '<span class="ac-tag type">'+m.agExpertise+'</span>' : ''}
+          ${m.country ? '<span class="ac-tag persona">'+flag+' '+m.country+'</span>' : ''}
+          ${m.comp ? '<span class="ac-tag" style="background:var(--hover);color:var(--text-muted)">'+m.comp+'</span>' : ''}
         </div>
-        <div class="ac-desc" style="flex:1">${m.e || m.fo || 'AgTech mentor and advisor.'}</div>
-        ${m.li ? '<a href="'+m.li+'" target="_blank" rel="noopener" class="ac-btn primary" style="margin-top:auto">Connect on LinkedIn →</a>' : '<div style="font-size:11px;color:var(--text-faint);margin-top:auto">No LinkedIn listed</div>'}
+        <div class="ac-desc" style="flex:1;font-size:11px">${expertise}</div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          ${currentUser ? `<button onclick="event.stopPropagation();requestMentorIntro(${m.id})" style="flex:1;padding:7px 10px;background:var(--green);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🤝 Request Intro</button>` : `<button onclick="event.stopPropagation();openModal('signin-modal')" style="flex:1;padding:7px 10px;background:var(--green);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Sign in for Intro</button>`}
+          ${m.linkedin ? `<a href="${m.linkedin}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="padding:7px 10px;background:#0a66c215;color:#0a66c2;border:none;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none;display:flex;align-items:center">in</a>` : ''}
+        </div>
       </div>`;
     }).join('')}</div>
-    ${filtered.length > 50 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:16px">Showing first 50 of '+filtered.length+' results. Use search or filters to narrow down.</p>' : ''}`}`;
+    ${filtered.length > 60 ? '<p style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:16px">Showing first 60 of '+filtered.length+'. Use search or filters to narrow down.</p>' : ''}`}`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -14285,7 +14515,7 @@ function investorToggle(section) { _investorOpen[section] = !_investorOpen[secti
 // ECOSYSTEM MANAGER WORKSPACE — Enterprise Grade
 // Supabase-backed with localStorage fallback for demo mode
 // ══════════════════════════════════════════════════════════════
-let _ecoTab = 'pipeline';
+let _ecoTab = 'aiva_pipeline';
 let _ecoPipelineFilter = 'all';
 let _ecoStartups = [];
 let _ecoApplications = [];
@@ -15232,10 +15462,844 @@ function ecoListingSaveNotes(listingId) {
   toast('💾 Notes saved for ' + listing.programName);
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// ── AIVA PIPELINE MANAGEMENT — Airtable-Connected ─────────
+// ═══════════════════════════════════════════════════════════
+
+const AIVA_BASE_ID = 'appaz6m2ulaHTytRg';
+const AIVA_TABLES = {
+  orgs: 'tblS288ag95p58ul3',
+  meetings: 'tblLaCMxX87EvvZU2',
+  projects: 'tblG8SvGzu3A4iN6M',
+  contacts: 'tblCycBFq3ndaUn7P'
+};
+
+const AT = {
+  orgName:'fld1JH4QucXQL2AyI', stage:'fldgu3up2Ey9VNMl2', classification:'fldMpgQcRyHlRvbVM',
+  techScore:'fldRoFeTOdHZXUeFU', teamScore:'fld0h05L8xBB235v3', marketScore:'fldsUCCosl6nJa9nB',
+  totalScore:'fldosdM76JnVtv5kx', trl:'fld9kAx2bWi6Nwlk9', fundingStage:'fldXfgtVdKulnzcA8',
+  techTheme:'fld1iLl3aPlQ9rB1u', nextSteps:'fldpCXEneQTtXYyEb', charterStatus:'fldhAD87TDWprwOiF',
+  website:'fldBFEhTFYfMVRHcA', techProblem:'fldIdf51VxKt2d1N2', owner:'fldWstgKmzZiqCRgB',
+  country:'fldudZ1cBDcd5ICCd', province:'fldrWkFS1dngolDbh', coachability:'fldWw9mH2T3imlQRk',
+  runway:'fldlIw9VorLzpw5TX', teamSize:'fldxGjxSGJFCCl7Aq', teamBg:'fldGADNhtxmfBFlMf',
+  ip:'fldmwEtU87NcOOxnl', needs:'fldncsJoeFJQnT951', advisors:'fldHE2g9ecGJ2dGmi',
+  farmSupport:'fldS5dmsyEwunGgm1', outreachMethod:'fldhmsuDSVvlcXmxV',
+  firstOutreach:'fld8Ozg1ZllDQoS6q', introCallDate:'fldOEbOdMx2H44c8e',
+  referralReason:'fldiTpQnRjVHIAcns', referralDest:'fldDz63TeuwuqiXf7',
+  pitchToFarms:'fldMcMaDg5bjjJjqh', cropsSupported:'fldBsh6fFL91oKbCR'
+};
+
+const AIVA_STAGES = [
+  {key:'Prospect',label:'🔍 Prospect',color:'#94a3b8',short:'Prospect'},
+  {key:'Outreach Initiated',label:'📧 Outreach',color:'#3b82f6',short:'Outreach'},
+  {key:'Intro Meeting Held',label:'🤝 Intro Meeting',color:'#06b6d4',short:'Intro'},
+  {key:'Shortlisted Internal',label:'⭐ Shortlisted',color:'#f59e0b',short:'Shortlist'},
+  {key:'Project Charter Drafted',label:'📋 Charter',color:'#8b5cf6',short:'Charter'},
+  {key:'Pitched to AIVA Farms',label:'🌾 Pitched',color:'#ec4899',short:'Pitched'},
+  {key:'Project Confirmed',label:'✅ Confirmed',color:'#22c55e',short:'Confirmed'},
+  {key:'No Fit',label:'❌ No Fit',color:'#ef4444',short:'No Fit'},
+  {key:'Referral',label:'🔗 Referral',color:'#a855f7',short:'Referral'},
+  {key:'Alumni',label:'🎓 Alumni',color:'#6b7280',short:'Alumni'}
+];
+
+const AIVA_STAGE_IDS = {
+  'Prospect':'seloIh4hiZWlRVaZX','Outreach Initiated':'sel8C8z02Gh4HgIM2',
+  'Intro Meeting Held':'sel7RknaRJ1YD7hGT','Shortlisted Internal':'selWKtwbjDscNcmtl',
+  'Project Charter Drafted':'selpoxH4uMdzsVsKj','Pitched to AIVA Farms':'sell5zYpNRQ7uMxaT',
+  'Project Confirmed':'selxUg5ytskkt9VQF','No Fit':'selFjylyjhZLWoxSu',
+  'Referral':'selBIsb2y4ElZDBcN','Alumni':'selVQswuoQGLurjpf'
+};
+
+// Scoring rubric labels
+const SCORE_LABELS = {
+  1: 'Not Ready', 2: 'Emergent', 3: 'High Potential', 4: 'Site-Ready'
+};
+const SCORE_COLORS = { 1:'#ef4444', 2:'#f59e0b', 3:'#3b82f6', 4:'#22c55e' };
+const TOTAL_TIERS = [
+  {min:10,max:12,label:'Validation Ready',color:'#22c55e',desc:'Ideal for large-scale deployment'},
+  {min:6,max:9,label:'Pilot Candidate',color:'#f59e0b',desc:'Potential for controlled pilots'},
+  {min:0,max:5,label:'Not Ready',color:'#ef4444',desc:'Refer to partners or nurture'}
+];
+
+// State
+let _aivaOrgs = [];
+let _aivaMeetings = [];
+let _aivaProjects = [];
+let _aivaLoaded = false;
+let _aivaLoading = false;
+let _aivaPAT = localStorage.getItem('aiva_at_pat') || '';
+let _aivaRole = localStorage.getItem('aiva_role') || 'manager';
+let _aivaKanbanView = 'active'; // 'active','all','prospects','exited'
+let _aivaDetailId = null;
+let _aivaDetailTab = 'overview';
+let _aivaScoringDraft = {};
+let _aivaPendingWrites = [];
+let _aivaSearchQ = '';
+let _aivaSyncing = false;
+let _aivaLastSync = null;
+let _aivaMeetingForm = null;
+let _aivaCharterDraft = {};
+
+// ── Airtable REST Client ──
+async function atFetch(tableId, opts = {}) {
+  if (!_aivaPAT) return null;
+  let url = 'https://api.airtable.com/v0/' + AIVA_BASE_ID + '/' + tableId + '?';
+  if (opts.fields) opts.fields.forEach(f => { url += 'fields[]=' + encodeURIComponent(f) + '&'; });
+  if (opts.formula) url += 'filterByFormula=' + encodeURIComponent(opts.formula) + '&';
+  if (opts.maxRecords) url += 'maxRecords=' + opts.maxRecords + '&';
+  if (opts.offset) url += 'offset=' + encodeURIComponent(opts.offset) + '&';
+  if (opts.sort) opts.sort.forEach((s,i) => { url += 'sort['+i+'][field]='+encodeURIComponent(s.field)+'&sort['+i+'][direction]='+(s.dir||'asc')+'&'; });
+  try {
+    const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + _aivaPAT } });
+    if (!r.ok) throw new Error('AT ' + r.status);
+    return await r.json();
+  } catch(e) { console.error('Airtable:', e); return null; }
+}
+
+async function atPatch(tableId, recId, fields) {
+  if (!_aivaPAT) { _aivaPendingWrites.push({tableId,recId,fields,ts:Date.now()}); return false; }
+  try {
+    const r = await fetch('https://api.airtable.com/v0/'+AIVA_BASE_ID+'/'+tableId+'/'+recId, {
+      method:'PATCH', headers:{'Authorization':'Bearer '+_aivaPAT,'Content-Type':'application/json'},
+      body: JSON.stringify({fields})
+    });
+    return r.ok;
+  } catch(e) { console.error('AT patch:', e); _aivaPendingWrites.push({tableId,recId,fields,ts:Date.now()}); return false; }
+}
+
+async function atPost(tableId, fields) {
+  if (!_aivaPAT) return null;
+  try {
+    const r = await fetch('https://api.airtable.com/v0/'+AIVA_BASE_ID+'/'+tableId, {
+      method:'POST', headers:{'Authorization':'Bearer '+_aivaPAT,'Content-Type':'application/json'},
+      body: JSON.stringify({fields})
+    });
+    return r.ok ? await r.json() : null;
+  } catch(e) { console.error('AT post:', e); return null; }
+}
+
+// ── Parse Airtable records ──
+function parseAtOrg(rec) {
+  const f = rec.cellValuesByFieldId || rec.fields || {};
+  const gs = k => { const v = f[AT[k]]; return v && typeof v === 'object' ? (v.name || null) : (v || null); };
+  const gv = k => f[AT[k]] || null;
+  return {
+    id:rec.id, name:gv('orgName')||'(Unnamed)', stage:gs('stage'), classification:gs('classification'),
+    tech:gv('techScore'), team:gv('teamScore'), market:gv('marketScore'), total:gv('totalScore')||0,
+    trl:gs('trl'), funding:gs('fundingStage'), website:gv('website'), techProblem:gv('techProblem'),
+    country:gv('country'), province:gv('province'), owner:gs('owner'), charter:gs('charterStatus'),
+    nextSteps:gv('nextSteps'), coachability:gv('coachability'), runway:gv('runway'),
+    teamSize:gv('teamSize'), teamBg:gv('teamBg'), ip:gv('ip'), needs:gv('needs'),
+    advisors:gv('advisors'), techTheme:gs('techTheme'), farmSupport:gs('farmSupport'),
+    firstOutreach:gv('firstOutreach'), introCallDate:gv('introCallDate'),
+    pitchToFarms:gs('pitchToFarms'), referralReason:gv('referralReason'),
+    referralDest:gv('referralDest'), cropsSupported:gv('cropsSupported')
+  };
+}
+
+function parseAtMeeting(rec) {
+  const f = rec.cellValuesByFieldId || rec.fields || {};
+  const orgs = f.fldwi7hw1GQi8MtcQ;
+  return {
+    id:rec.id, title:f.fld1Ld4MBl4Mz4TXs||'', date:f.fldqscAUAoy3htbox||'',
+    type: f.fldDVKkrJlk3wKZaK ? (f.fldDVKkrJlk3wKZaK.name||f.fldDVKkrJlk3wKZaK) : '',
+    orgNames: Array.isArray(orgs) ? orgs.map(o=>o.name||o.id) : [],
+    orgIds: Array.isArray(orgs) ? orgs.map(o=>o.id) : [],
+    notes:f.fld3t6OCDVZPxZjpU||'', nextSteps:f.fldXSHtpRsA7F2cBf||'',
+    actionItems:f.fldf30mSRGA4YFnqg||'', followUp:f.fldO6c4kj9SN8UMyQ||''
+  };
+}
+
+function parseAtProject(rec) {
+  const f = rec.cellValuesByFieldId || rec.fields || {};
+  return {
+    id:rec.id, name:f.fldTjkCCXZZuXJBlJ||'',
+    year: Array.isArray(f.fld2DFH69zs6JKAdR) ? f.fld2DFH69zs6JKAdR.map(y=>y.name||y).join(', ') : '',
+    hubs: Array.isArray(f.fldDbTZXBdlFn8Way) ? f.fldDbTZXBdlFn8Way.map(h=>h.name||h) : [],
+    sowLink:f.fld787Xw4wbxw1kn0||'', notes:f.fldU6v3IHY94RaHu5||'',
+    actionItems:f.fldn8lwsqwfQ1n8V5||'', checklist:f.fld2Srj44HxWbAC2Q||'',
+    contacts:f.fldhVveYfDwVMBIXn||'', orgIds: Array.isArray(f.fld0wrsGklq5Qy3tY) ? f.fld0wrsGklq5Qy3tY.map(o=>({id:o.id,name:o.name})) : [],
+    aivaDeliverables:f.fldYDTnSSBqyuZcO8||'', vhDeliverables:f.fldjpiVS7E7gKZAez||''
+  };
+}
+
+// ── Load AIVA data ──
+async function loadAivaData() {
+  if (_aivaLoaded || _aivaLoading) return;
+  _aivaLoading = true;
+  if (_aivaPAT) {
+    try {
+      let all = [], offset;
+      do {
+        const p = {}; if (offset) p.offset = offset;
+        const r = await atFetch(AIVA_TABLES.orgs, p);
+        if (!r) break;
+        all = all.concat((r.records||[]).map(parseAtOrg));
+        offset = r.offset;
+      } while (offset);
+      _aivaOrgs = all.filter(o => o.name !== '(Unnamed)');
+      const mr = await atFetch(AIVA_TABLES.meetings, {});
+      if (mr) _aivaMeetings = (mr.records||[]).map(parseAtMeeting);
+      let allP = [], pOff;
+      do {
+        const pp = {}; if (pOff) pp.offset = pOff;
+        const pr = await atFetch(AIVA_TABLES.projects, pp);
+        if (!pr) break;
+        allP = allP.concat((pr.records||[]).map(parseAtProject));
+        pOff = pr.offset;
+      } while (pOff);
+      _aivaProjects = allP;
+      _aivaLastSync = new Date();
+      console.log('✅ AIVA: ' + _aivaOrgs.length + ' orgs, ' + _aivaMeetings.length + ' meetings, ' + _aivaProjects.length + ' projects');
+    } catch(e) { console.error('AIVA load:', e); }
+  }
+  if (_aivaOrgs.length === 0) {
+    _aivaOrgs = AIVA_CACHED_ORGS || [];
+    console.log('📦 AIVA: cached ' + _aivaOrgs.length + ' orgs');
+  }
+  _aivaLoaded = true; _aivaLoading = false;
+}
+
+async function aivaRefresh() {
+  _aivaLoaded = false; _aivaLoading = false;
+  _aivaOrgs = []; _aivaMeetings = []; _aivaProjects = [];
+  await loadAivaData();
+  render('ecosystem_ws');
+}
+
+// ── Stage advancement ──
+async function aivaAdvanceStage(recId, newStage) {
+  const org = _aivaOrgs.find(o => o.id === recId);
+  if (!org) return;
+  const oldStage = org.stage;
+  org.stage = newStage;
+  render('ecosystem_ws');
+  const ok = await atPatch(AIVA_TABLES.orgs, recId, { [AT.stage]: newStage });
+  if (ok) {
+    ecoAddActivity('Pipeline: ' + org.name + ' moved from ' + (oldStage||'none') + ' → ' + newStage);
+  } else if (!_aivaPAT) {
+    showModal('Offline Change', '<p style="font-size:13px;color:var(--text-muted)">Stage change saved locally. Connect your Airtable PAT in Settings to sync.</p>');
+  }
+}
+
+// ── Score update ──
+async function aivaSaveScores(recId) {
+  const draft = _aivaScoringDraft[recId];
+  if (!draft) return;
+  const org = _aivaOrgs.find(o => o.id === recId);
+  if (!org) return;
+  const fields = {};
+  if (draft.tech !== undefined) { fields[AT.techScore] = parseInt(draft.tech); org.tech = parseInt(draft.tech); }
+  if (draft.team !== undefined) { fields[AT.teamScore] = parseInt(draft.team); org.team = parseInt(draft.team); }
+  if (draft.market !== undefined) { fields[AT.marketScore] = parseInt(draft.market); org.market = parseInt(draft.market); }
+  org.total = (org.tech||0) + (org.team||0) + (org.market||0);
+  if (draft.comments) { fields[AT.nextSteps] = draft.comments; org.nextSteps = draft.comments; }
+  _aivaScoringDraft[recId] = {};
+  render('ecosystem_ws');
+  await atPatch(AIVA_TABLES.orgs, recId, fields);
+  ecoAddActivity('Scored: ' + org.name + ' → Tech:' + (org.tech||0) + ' Team:' + (org.team||0) + ' Market:' + (org.market||0) + ' = ' + org.total);
+}
+
+// ── Meeting log ──
+async function aivaSaveMeeting() {
+  if (!_aivaMeetingForm) return;
+  const f = _aivaMeetingForm;
+  const fields = {
+    fld1Ld4MBl4Mz4TXs: f.title,
+    fldqscAUAoy3htbox: f.date,
+    fld3t6OCDVZPxZjpU: f.notes,
+    fldXSHtpRsA7F2cBf: f.nextSteps,
+    fldf30mSRGA4YFnqg: f.actionItems,
+    fldO6c4kj9SN8UMyQ: f.followUp
+  };
+  if (f.type) fields.fldDVKkrJlk3wKZaK = f.type;
+  if (f.orgId) fields.fldwi7hw1GQi8MtcQ = [{ id: f.orgId }];
+  const result = await atPost(AIVA_TABLES.meetings, fields);
+  if (result) {
+    _aivaMeetings.unshift(parseAtMeeting(result));
+    ecoAddActivity('Meeting logged: ' + f.title);
+  }
+  _aivaMeetingForm = null;
+  render('ecosystem_ws');
+}
+
+// ── Navigation helpers ──
+function aivaShowDetail(id) { _aivaDetailId = id; _aivaDetailTab = 'overview'; render('ecosystem_ws'); }
+function aivaCloseDetail() { _aivaDetailId = null; render('ecosystem_ws'); }
+function aivaDetailTabSwitch(tab) { _aivaDetailTab = tab; render('ecosystem_ws'); }
+function aivaSetRole(r) { _aivaRole = r; localStorage.setItem('aiva_role', r); render('ecosystem_ws'); }
+function aivaSetKanban(v) { _aivaKanbanView = v; render('ecosystem_ws'); }
+function aivaSearch(q) { _aivaSearchQ = q; render('ecosystem_ws'); }
+function aivaNewMeeting(orgId) {
+  const org = orgId ? _aivaOrgs.find(o=>o.id===orgId) : null;
+  _aivaMeetingForm = { title:'', date:new Date().toISOString().split('T')[0], type:'Intro Call', notes:'', nextSteps:'', actionItems:'', followUp:'', orgId: orgId||'', orgName: org?org.name:'' };
+  render('ecosystem_ws');
+}
+function aivaCancelMeeting() { _aivaMeetingForm = null; render('ecosystem_ws'); }
+function aivaMeetingField(field, val) { if (_aivaMeetingForm) _aivaMeetingForm[field] = val; }
+function aivaDraftScore(recId, field, val) {
+  if (!_aivaScoringDraft[recId]) _aivaScoringDraft[recId] = {};
+  _aivaScoringDraft[recId][field] = val;
+  render('ecosystem_ws');
+}
+function aivaSavePAT(val) {
+  _aivaPAT = val; localStorage.setItem('aiva_at_pat', val);
+  if (val) aivaRefresh();
+}
+
+// ── One-Click Project Charter Generator ──
+function aivaGenerateCharter(recId) {
+  const o = _aivaOrgs.find(x => x.id === recId);
+  if (!o) return;
+  const tier = TOTAL_TIERS.find(t => (o.total||0) >= t.min && (o.total||0) <= t.max) || TOTAL_TIERS[2];
+  const today = new Date().toISOString().split('T')[0];
+  const charterHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AIVA Project Charter — ${(o.name||'').replace(/"/g,'&quot;')}</title>
+<style>
+  @media print { body { margin: 0; } .no-print { display: none !important; } }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }
+  h1 { font-size: 22px; font-weight: 900; border-bottom: 3px solid #16a34a; padding-bottom: 8px; margin-bottom: 4px; }
+  h2 { font-size: 16px; font-weight: 800; color: #16a34a; margin: 24px 0 8px; }
+  .meta { font-size: 12px; color: #64748b; margin-bottom: 24px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-right: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
+  th { background: #f0fdf4; font-weight: 700; color: #166534; }
+  .score-box { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; margin: 4px; }
+  .section { padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin: 12px 0; }
+  .field-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+  .field-value { font-size: 13px; color: #0f172a; min-height: 20px; }
+  .empty { color: #94a3b8; font-style: italic; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 2px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-start">
+  <div><h1>AIVA Project Charter</h1><div class="meta">Generated ${today} · AIVA Validation Hub Network</div></div>
+  <div style="text-align:right" class="no-print"><button onclick="window.print()" style="padding:8px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🖨️ Print / Save PDF</button></div>
+</div>
+
+<h2>1. Company Overview</h2>
+<table>
+  <tr><th style="width:180px">Organization</th><td><strong>${o.name||''}</strong></td></tr>
+  <tr><th>Website</th><td>${o.website ? '<a href="'+(o.website.startsWith('http')?o.website:'https://'+o.website)+'" target="_blank">'+o.website+'</a>' : '<span class="empty">Not provided</span>'}</td></tr>
+  <tr><th>Country / Region</th><td>${o.country||''} ${o.province ? '· '+o.province : ''}</td></tr>
+  <tr><th>TRL Level</th><td>${o.trl||'<span class="empty">Not assessed</span>'}</td></tr>
+  <tr><th>Funding Stage</th><td>${o.funding||'<span class="empty">Not documented</span>'}</td></tr>
+  <tr><th>Team Size</th><td>${o.teamSize||'<span class="empty">Not documented</span>'}</td></tr>
+  <tr><th>Runway</th><td>${o.runway||'<span class="empty">Not documented</span>'}</td></tr>
+  <tr><th>IP Ownership</th><td>${o.ip||'<span class="empty">Not documented</span>'}</td></tr>
+  <tr><th>Pipeline Stage</th><td><span class="badge" style="background:${(AIVA_STAGES.find(s=>s.key===o.stage)||{color:'#94a3b8'}).color}22;color:${(AIVA_STAGES.find(s=>s.key===o.stage)||{color:'#94a3b8'}).color}">${o.stage||'Unknown'}</span></td></tr>
+  <tr><th>AIVA Owner</th><td>${o.owner||'Unassigned'}</td></tr>
+</table>
+
+<h2>2. Technology & Problem</h2>
+<div class="section">
+  <div class="field-label">What the Tech Does / Problem It Solves</div>
+  <div class="field-value">${o.techProblem||'<span class="empty">To be documented during qualification call</span>'}</div>
+</div>
+${o.techTheme ? '<div class="section"><div class="field-label">Tech Theme</div><div class="field-value">'+o.techTheme+'</div></div>' : ''}
+
+<h2>3. Scoring Assessment</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin:12px 0">
+  <div class="score-box" style="background:${o.tech ? SCORE_COLORS[o.tech]+'18' : '#f1f5f9'};border:1px solid ${o.tech ? SCORE_COLORS[o.tech]+'44' : '#e2e8f0'}">
+    <span style="font-size:11px;font-weight:700;color:#64748b">Tech:</span>
+    <span style="font-size:20px;font-weight:900;color:${o.tech ? SCORE_COLORS[o.tech] : '#94a3b8'}">${o.tech||'—'}</span>
+    <span style="font-size:11px;color:#64748b">${o.tech ? SCORE_LABELS[o.tech] : 'Not scored'}</span>
+  </div>
+  <div class="score-box" style="background:${o.team ? SCORE_COLORS[o.team]+'18' : '#f1f5f9'};border:1px solid ${o.team ? SCORE_COLORS[o.team]+'44' : '#e2e8f0'}">
+    <span style="font-size:11px;font-weight:700;color:#64748b">Team:</span>
+    <span style="font-size:20px;font-weight:900;color:${o.team ? SCORE_COLORS[o.team] : '#94a3b8'}">${o.team||'—'}</span>
+    <span style="font-size:11px;color:#64748b">${o.team ? SCORE_LABELS[o.team] : 'Not scored'}</span>
+  </div>
+  <div class="score-box" style="background:${o.market ? SCORE_COLORS[o.market]+'18' : '#f1f5f9'};border:1px solid ${o.market ? SCORE_COLORS[o.market]+'44' : '#e2e8f0'}">
+    <span style="font-size:11px;font-weight:700;color:#64748b">Market:</span>
+    <span style="font-size:20px;font-weight:900;color:${o.market ? SCORE_COLORS[o.market] : '#94a3b8'}">${o.market||'—'}</span>
+    <span style="font-size:11px;color:#64748b">${o.market ? SCORE_LABELS[o.market] : 'Not scored'}</span>
+  </div>
+  <div class="score-box" style="background:${tier.color}18;border:2px solid ${tier.color}44">
+    <span style="font-size:11px;font-weight:700;color:#64748b">Total:</span>
+    <span style="font-size:24px;font-weight:900;color:${tier.color}">${o.total||0}</span>
+    <span style="font-size:11px;color:${tier.color};font-weight:700">/12 · ${tier.label}</span>
+  </div>
+</div>
+${o.nextSteps ? '<div class="section"><div class="field-label">Score Comments / Notes</div><div class="field-value">'+o.nextSteps+'</div></div>' : ''}
+
+<h2>4. Team Assessment</h2>
+<div class="section">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div><div class="field-label">Team Background</div><div class="field-value">${o.teamBg||'<span class="empty">Not documented</span>'}</div></div>
+    <div><div class="field-label">Coachability</div><div class="field-value">${o.coachability||'<span class="empty">Not assessed</span>'}</div></div>
+    <div><div class="field-label">Advisory Team</div><div class="field-value">${o.advisors||'<span class="empty">Not documented</span>'}</div></div>
+    <div><div class="field-label">Customer Support Capacity</div><div class="field-value"><span class="empty">To be assessed</span></div></div>
+  </div>
+</div>
+
+<h2>5. Project Scope</h2>
+<div class="section">
+  <div class="field-label">What the Company Wants from This Project</div>
+  <div class="field-value">${o.needs||'<span class="empty">To be defined during charter process</span>'}</div>
+</div>
+<div class="section">
+  <div class="field-label">Farm Capabilities Required</div>
+  <div class="field-value">${o.farmSupport||'<span class="empty">Broad-acre crop focus · Product ready for large-scale testing</span>'}</div>
+  ${o.cropsSupported ? '<div style="margin-top:8px"><div class="field-label">Crops Supported</div><div class="field-value">'+o.cropsSupported+'</div></div>' : ''}
+</div>
+<div class="section">
+  <div class="field-label">Desired Outcomes & Deliverables</div>
+  <div class="field-value"><span class="empty">To be defined — what does success look like for this project?</span></div>
+</div>
+<div class="section">
+  <div class="field-label">Proposed Timeline & Season Fit</div>
+  <div class="field-value"><span class="empty">Growing season alignment, key milestones, data collection windows</span></div>
+</div>
+
+<h2>6. Validation Hub Fit</h2>
+<div class="section">
+  <div class="field-label">Hub Capabilities Match</div>
+  <div class="field-value"><span class="empty">Which Validation Hubs can support this technology? (Area X.O, EMILI, IFO, Olds College)</span></div>
+</div>
+<div class="section">
+  <div class="field-label">AIVA Resource Requirements</div>
+  <div class="field-value"><span class="empty">How much AIVA support will this project require? Heavy scoping / monitoring or light-touch?</span></div>
+</div>
+
+<h2>7. Decision & Next Steps</h2>
+<table>
+  <tr><th style="width:180px">Recommendation</th><td style="font-weight:700;color:${tier.color}">${o.total >= 10 ? 'Validation Ready — present to farms' : o.total >= 6 ? 'Pilot Candidate — requires scoping discussion' : 'Further nurturing needed or refer to partner'}</td></tr>
+  <tr><th>Referral Consideration</th><td>${o.referralReason||o.referralDest ? (o.referralReason||'')+' → '+(o.referralDest||'') : '<span class="empty">N/A or to be determined</span>'}</td></tr>
+  <tr><th>Pitch to Farms?</th><td>${o.pitchToFarms||'<span class="empty">Pending charter review</span>'}</td></tr>
+  <tr><th>Next Steps</th><td>${o.nextSteps||'<span class="empty">To be determined</span>'}</td></tr>
+</table>
+
+<h2>8. Internal Review</h2>
+<div class="section">
+  <div class="field-label">Ecosystem Manager Review (Russell)</div>
+  <div class="field-value"><span class="empty">Sign-off and comments</span></div>
+</div>
+<div class="section">
+  <div class="field-label">Project Manager Review (Dale)</div>
+  <div class="field-value"><span class="empty">Sign-off and comments</span></div>
+</div>
+<div class="section">
+  <div class="field-label">Leadership Review (Jacqueline)</div>
+  <div class="field-value"><span class="empty">Final approval</span></div>
+</div>
+
+<div class="footer">
+  AIVA Validation Hub Network · Project Charter · ${o.name} · Generated ${today}<br>
+  Confidential — For internal AIVA team use only
+</div>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(charterHtml); w.document.close(); }
+  // Also advance stage if not already at charter drafted or beyond
+  const charterAndBeyond = ['Project Charter Drafted','Pitched to AIVA Farms','Project Confirmed'];
+  if (o.stage && !charterAndBeyond.includes(o.stage) && o.stage !== 'No Fit' && o.stage !== 'Referral' && o.stage !== 'Alumni') {
+    aivaAdvanceStage(recId, 'Project Charter Drafted');
+  }
+}
+
+// ── Cached data (Agtech Innovators from Airtable) ──
+const AIVA_CACHED_ORGS = [{"id":"rec0CWmuzFfPU4FGg","name":"Eggoz","stage":"Prospect","total":0,"website":"https://www.eggoz.com","country":"India","province":"Karnataka","owner":"Russell Cole"},{"id":"rec0FjwOObGtaxx6y","name":"Instacrops","stage":"Prospect","total":0,"website":"https://www.instacrops.com","country":"Chile","province":"Santiago Metropolitan Region","owner":"Russell Cole"},{"id":"rec0cmZKbdvf1jIfT","name":"SugaROx","stage":"Prospect","total":0,"website":"https://sugarox.co.uk","country":"United Kingdom","province":"Unknown","owner":"Russell Cole"},{"id":"rec0yrQS9ELyGypNT","name":"RUNNR","total":0,"website":"runnr.ai"},{"id":"rec1PvmDtxgtQblp3","name":"Agtonomy","stage":"Prospect","total":0,"website":"https://www.agtonomy.com","country":"United States","province":"California","owner":"Russell Cole"},{"id":"rec1XukNg1WWySaS0","name":"iFoodDS","stage":"Prospect","total":0,"website":"https://www.ifoodds.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rec1iykQtD5CKx9Nk","name":"Aviwell","stage":"Prospect","total":0,"website":"https://aviwell.fr","country":"France","province":"\u00cele-de-France","owner":"Russell Cole"},{"id":"rec28HjgYYD0SV0Yo","name":"Agrotoken","stage":"Prospect","total":0,"website":"https://agrotoken.io","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rec36SndnqoWp2Pwq","name":"Advanced UAV","total":0},{"id":"rec3B8ktLLwQAdreT","name":"Cellar Insights","stage":"Prospect","total":0,"trl":"TRL 8:","funding":"Early Revenue","website":"https://cellarinsights.com/","country":"Canada","province":"Calgary","owner":"Russell Cole"},{"id":"rec4MrEMaBY1KjUQf","name":"Roslin Technologies","stage":"Prospect","total":0,"website":"https://roslintech.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rec4ikfriInGmZlbX","name":"Cordulus","stage":"Prospect","total":0,"website":"https://www.cordulus.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rec4rLMDY5aW6zwMB","name":"FarMart","stage":"Prospect","total":0,"website":"https://www.farmart.co","country":"Indonesia","province":"West Java","owner":"Russell Cole"},{"id":"rec526hEPKP4PFuJG","name":"X-Steam-inator Agricultural Products","total":0},{"id":"rec5Qf0iD9objhU8g","name":"GECO Weed Management","stage":"Project Confirmed","total":0},{"id":"rec5wkue1IwsY5hrb","name":"ChrysaLabs","total":0,"website":"www.chrysalabs.com"},{"id":"rec6ODy8Gejb16mKM","name":"Loads","stage":"Prospect","total":0,"website":"https://www.loads.cl","country":"Chile","province":"Santiago Metropolitan Region","owner":"Russell Cole"},{"id":"rec6frgUn9hef0n8r","name":"B-Nature","total":0,"website":"bio10.com.au","country":"Canada"},{"id":"rec6hxHGeIu78i6YK","name":"Trapview","stage":"Prospect","total":0,"website":"https://trapview.com","country":"Slovenia","province":"Ajdov\u0161\u010dina Municipality","owner":"Russell Cole"},{"id":"rec6mo7GBKWnrliiW","name":"Carbon Robotics","stage":"Prospect","total":0,"website":"https://carbonrobotics.com","country":"United States","province":"Washington","owner":"Russell Cole"},{"id":"rec7CKvTPe8qI0WKM","name":"Cromai","stage":"Prospect","total":0,"website":"https://www.cromai.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rec7Dn2SYxcPhm8YM","name":"Windfall Bio","stage":"Prospect","total":0,"website":"https://www.windfall.bio","country":"United States","province":"California","owner":"Russell Cole"},{"id":"rec7ZT1QDATzEAJQB","name":"Helios Artificial Intelligence","stage":"Prospect","total":0,"website":"https://www.helios.sc","country":"Israel","province":"Unknown","owner":"Russell Cole"},{"id":"rec8yNZtE533LZQz9","name":"Complete Farmer","stage":"Prospect","total":0,"website":"https://www.completefarmer.com","country":"Austria","province":"Vienna","owner":"Russell Cole"},{"id":"rec9I6Cncejtzdg9h","name":"Psyche Aerospace","stage":"Prospect","total":0,"website":"https://psycheaerospace.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rec9KRvfh4wb5fxvZ","name":"Calice","stage":"Prospect","total":0,"website":"https://calice.ai","country":"United States","province":"California","owner":"Russell Cole"},{"id":"rec9qansiJJyL9Q1u","name":"Artemis","stage":"Prospect","total":0,"website":"https://artemisag.com","country":"United States","province":"New York","owner":"Russell Cole"},{"id":"rec9rXAVMPqEnwxcC","name":"Symbrosia","stage":"Prospect","total":0,"website":"https://symbrosia.co","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recAEKQQQrxgcYuMb","name":"Marama Labs","stage":"Prospect","total":0,"website":"https://maramalabs.com","country":"New Zealand","province":"Wellington Region","owner":"Russell Cole"},{"id":"recAoF7lgRasYSXq6","name":"CarbonFarm Technology","stage":"Prospect","total":0,"website":"https://carbonfarm.tech","country":"United States","province":"Colorado","owner":"Russell Cole"},{"id":"recBLKJxFsWB1K79L","name":"Solinftec","stage":"Prospect","total":0,"website":"https://solinftec.com","country":"Argentina","province":"Santa Fe","owner":"Russell Cole"},{"id":"recBUT6UJ8UdigNHp","name":"MARUT Drones","stage":"Prospect","total":0,"website":"https://marutdrones.com","country":"India","province":"Telangana","owner":"Russell Cole"},{"id":"recD3MDlchws0JNSF","name":"Weenat","stage":"Prospect","total":0,"website":"https://weenat.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recEaEziKeOnxwsyf","name":"scoutlabs","stage":"Prospect","total":0,"website":"https://scoutlabs.ag","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recEugu62jCEz2r8A","name":"Bonsai Robotics","stage":"Prospect","total":0,"website":"https://www.bonsairobotics.ai","country":"United States","province":"California","owner":"Russell Cole"},{"id":"recFfN11MCBhulbqZ","name":"Rainstick","stage":"Prospect","total":0,"website":"https://www.rainstick.com.au","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recGJxZ44YkAaABaF","name":"MazaoHub","stage":"Prospect","total":0,"website":"https://www.mazaohub.com","country":"Tanzania","province":"Dar es Salaam","owner":"Russell Cole"},{"id":"recGkujXqTgGXpoMu","name":"RUNNR (Heavy Equipment Parts Delivery)","total":0,"country":"Canada"},{"id":"recHVWQUUM1IpByWT","name":"SwarmFarm Robotics","stage":"Prospect","total":0,"website":"https://www.swarmfarm.com","country":"Australia","province":"Queensland","owner":"Russell Cole"},{"id":"recIJFxbVjVEcX40R","name":"Techcoop","stage":"Prospect","total":0,"website":"https://techcoop.vn","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recIm7MLl7uJqmRcG","name":"Agreena","stage":"Prospect","total":0,"website":"https://agreena.com","country":"New Zealand","province":"Bay of Plenty","owner":"Russell Cole"},{"id":"recJ2nBerxUYHf3Yu","name":"DeHaat","stage":"Prospect","total":0,"website":"https://agrevolution.in","country":"India","province":"Bihar","owner":"Russell Cole"},{"id":"recJgDjJIccsUmpe1","name":"Farmers Business Network","stage":"Prospect","total":0,"website":"https://www.fbn.com","country":"United States","province":"South Dakota","owner":"Russell Cole"},{"id":"recKGY8VAly9Vg0oZ","name":"Puna Bio","stage":"Prospect","total":0,"website":"https://www.puna.bio","country":"Argentina","province":"Buenos Aires","owner":"Russell Cole"},{"id":"recKNWh1cAwVA8V10","name":"Picketa","stage":"Project Confirmed","total":0},{"id":"recLO9m7QWAtw8aic","name":"vGreens","stage":"Prospect","total":0,"website":"https://v-greens.com","country":"Greece","province":"Attica","owner":"Russell Cole"},{"id":"recLr5zha4PmgoOGO","name":"INTERSTELLAR LAB","stage":"Prospect","total":0,"website":"https://interstellarlab.com","country":"France","province":"\u00cele-de-France","owner":"Russell Cole"},{"id":"recLxB6TYYXnqYgxE","name":"TeaL Agro Technologies (Netherlands)","total":0,"website":"https://ad-terram.nl/teal-agro-technologies"},{"id":"recNBxJRaGdstvHbJ","name":"eAgronom","stage":"Prospect","total":0,"website":"https://www.eagronom.com","country":"Estonia","province":"Harju County","owner":"Russell Cole"},{"id":"recNMkqJ0FlodP4lY","name":"Plantible Foods","stage":"Prospect","total":0,"website":"https://www.plantiblefoods.com","country":"United States","province":"California","owner":"Russell Cole"},{"id":"recNObmOeu5uSwhsh","name":"feld.energy","stage":"Prospect","total":0,"website":"https://www.feld.energy","country":"Germany","province":"Unknown","owner":"Russell Cole"},{"id":"recNdehvEy5BIeX6R","name":"Bushel","stage":"Prospect","total":0,"website":"https://bushelpowered.com","country":"United States","province":"North Dakota","owner":"Russell Cole"},{"id":"recNrKr6cVHUlQm3U","name":"Bruna by Altum Lab","stage":"Prospect","total":0,"website":"https://bruna.ai","country":"Brazil","province":"S\u00e3o Paulo","owner":"Russell Cole"},{"id":"recNt1HvPFrBh0ew0","name":"Kinemek","total":0,"website":"www.kinemek.com","country":"Canada"},{"id":"recOpS0SDGpG7WfDL","name":"Aonic (Formerly Poladrone)","stage":"Prospect","total":0,"website":"https://www.aonic.com","country":"Malaysia","province":"Kuala Lumpur","owner":"Russell Cole"},{"id":"recOpvDR0KWgvucSL","name":"Culttivo","stage":"Prospect","total":0,"website":"https://culttivo.com","country":"Brazil","province":"S\u00e3o Paulo","owner":"Russell Cole"},{"id":"recOy7vLezSsgskab","name":"Vestaron","stage":"Prospect","total":0,"website":"https://www.vestaron.com","country":"United States","province":"Michigan","owner":"Russell Cole"},{"id":"recPhWbt1XhXLQzJJ","name":"AgroStar","stage":"Prospect","total":0,"website":"https://www.corporate.agrostar.in","country":"India","province":"Maharashtra","owner":"Russell Cole"},{"id":"recQdI5alWrqPUSFC","name":"BinSentry","stage":"Prospect","total":0,"website":"https://www.binsentry.com","country":"Canada","province":"Ontario","owner":"Russell Cole"},{"id":"recQyVkUAa34OrR20","name":"Nagro","stage":"Prospect","total":0,"website":"https://nagro.com.br","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recR9ow2AOlL2lFhx","name":"ToolSense","stage":"Prospect","total":0,"website":"https://www.toolsense.io","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recRgXfklZNBPjzWv","name":"GrainChain","stage":"Prospect","total":0,"website":"https://grainchain.io","country":"United States","province":"Texas","owner":"Russell Cole"},{"id":"recSCROZic83fuVVv","name":"Nofence","stage":"Prospect","total":0,"website":"https://www.nofence.no","country":"Norway","province":"M\u00f8re og Romsdal","owner":"Russell Cole"},{"id":"recSUf5NOcUPYyCCe","name":"Arya.ag","stage":"Prospect","total":0,"website":"https://www.arya.ag","country":"France","province":"Hauts-de-France","owner":"Russell Cole"},{"id":"recTFqrthwN9ASJiO","name":"Jungle France","stage":"Prospect","total":0,"website":"https://www.jungle.bio","country":"France","province":"\u00cele-de-France","owner":"Russell Cole"},{"id":"recTRHVSEdoFPmcle","name":"SimuGro","stage":"Prospect","total":0,"website":"https://www.simugro.com","country":"Taiwan","province":"Taipei City","owner":"Russell Cole"},{"id":"recUCVrLERMAtSUxw","name":"SENCROP","stage":"Prospect","total":0,"website":"https://www.sencrop.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recUEqrkdnHmRKCCG","name":"ucrop.it","stage":"Prospect","total":0,"website":"https://ucrop.it","country":"Argentina","province":"Buenos Aires","owner":"Russell Cole"},{"id":"recVUbbAdtgVNVrvf","name":"G\u00eanica","stage":"Prospect","total":0,"website":"https://www.genica.com.br","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recWNeI35Yw0KbnCs","name":"Monarch Tractor","stage":"Prospect","total":0,"website":"https://monarchtractor.com","country":"United States","province":"California","owner":"Russell Cole"},{"id":"recWgmrxkaRkFxs8k","name":"Cropin","stage":"Prospect","total":0,"website":"https://www.cropin.com","country":"Denmark","province":"Unknown","owner":"Russell Cole"},{"id":"recWhnfW3c1Xpx3vI","name":"Xact Ag","stage":"Intro Meeting Held","total":0},{"id":"recWqDh3Oz7xlFUlY","name":"BIOWEG","stage":"Prospect","total":0,"website":"https://bioweg.com","country":"Germany","province":"Lower Saxony","owner":"Russell Cole"},{"id":"recX7ROxVPkRO9jdC","name":"Agrosmart","stage":"Prospect","total":0,"website":"https://www.agrosmart.com.br","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recXDb4FKGZLy41Ve","name":"Indigo","stage":"Referral","total":0,"website":"https://www.indigoag.com","country":"United States","province":"Massachusetts","owner":"Russell Cole"},{"id":"recXsOHWDjzdoKepP","name":"Robovision","stage":"Prospect","total":0,"website":"https://robovision.ai","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recYdqNCp6oSpG1Ib","name":"BioLumic","stage":"Prospect","total":0,"website":"https://www.biolumic.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recZFGAT2XqVoGjjp","name":"KisanKonnect","stage":"Prospect","total":0,"website":"https://www.kisankonnect.in","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recavxheUshLM33zi","name":"Vegrow","stage":"Prospect","total":0,"website":"https://www.vegrow.in","country":"India","province":"Karnataka","owner":"Russell Cole"},{"id":"recbCJbOZWDdfBTy1","name":"Neuralzome Cybernetics","stage":"Prospect","total":0,"website":"https://neuralzome.com","country":"Israel","province":"Unknown","owner":"Russell Cole"},{"id":"recd6JZQiVGIO3sPV","name":"TEAL port (Croatia)","total":0,"website":"www.tealport.com"},{"id":"recdnoPH6zyTXHKjY","name":"NutraMate","total":0,"website":"nutramate.com"},{"id":"recdrfp43BOv4yGLi","name":"Numanac (Jose)","stage":"Outreach Initiated","total":0,"owner":"Russell Cole"},{"id":"receCThfqhDqXgRdL","name":"Leaft Foods","stage":"Prospect","total":0,"website":"https://www.leaftfoods.com","country":"Belgium","province":"East Flanders","owner":"Russell Cole"},{"id":"recenayamBZbfaOmw","name":"TealAgro (India)","total":0,"website":"https://tealagro.com","country":"India"},{"id":"recg0hak9ZvzDvp4P","name":"Fotenix","stage":"Prospect","total":0,"website":"https://fotenix.tech","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recgJCdy47Zpqv5qL","name":"Intelligent Growth Solutions","stage":"Prospect","total":0,"website":"https://www.intelligentgrowthsolutions.com","country":"United Kingdom","province":"Scotland","owner":"Russell Cole"},{"id":"recgZs6qNmPK6zf2i","name":"Grounded AgriTools","stage":"Intro Meeting Held","total":0,"owner":"Russell Cole"},{"id":"rech211dhDcoh7f2W","name":"Dimitra","stage":"Prospect","total":0,"website":"https://dimitra.io","country":"United States","province":"California","owner":"Russell Cole"},{"id":"rech8O8gTKBaDFg39","name":"Olho do Dono","stage":"Prospect","total":0,"website":"https://www.olhododono.agr.br","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"rechGTD408AaQincB","name":"Inari","stage":"Prospect","total":0,"website":"https://www.inari.com","country":"United States","province":"Massachusetts","owner":"Russell Cole"},{"id":"reci4ZwmtJTCZCUKb","name":"AgExpert Sustainability","stage":"Project Confirmed","total":0},{"id":"reci9LAQKoTQUaNEa","name":"Threshold UAV","stage":"Prospect","total":0,"owner":"Russell Cole"},{"id":"reckBkYvFvnvInBFo","name":"Fyllo","stage":"Prospect","total":0,"website":"https://www.fyllo.in","country":"India","province":"Karnataka","owner":"Russell Cole"},{"id":"recl2hsTOWEZ1vfGR","name":"Orchard Robotics","stage":"Prospect","total":0,"website":"https://www.orchard.ai","country":"United States","province":"Washington","owner":"Russell Cole"},{"id":"reclXBI1L9E5qulNv","name":"SERA Intelligence","stage":"Prospect","total":0,"country":"France","province":"Nouvelle-Aquitaine","owner":"Russell Cole"},{"id":"recmAA09CBI5ddrvr","name":"Pivot Bio","stage":"Prospect","total":0,"website":"https://www.pivotbio.com","country":"United States","province":"California","owner":"Russell Cole"},{"id":"recmM9SK0v864LdIu","name":"Xact Soil","stage":"Prospect","total":0,"trl":"TRL 7:","funding":"Early Revenue","website":"https://xactag.com/","country":"Canada","province":"Saskatchewan","owner":"Russell Cole"},{"id":"recn1fPbhk8yAN9LN","name":"Saga Robotics","stage":"Prospect","total":0,"website":"https://sagarobotics.com","country":"Norway","province":"Unknown","owner":"Russell Cole"},{"id":"recnA9XdRzTkBOPz9","name":"AgScouter Agronomy","total":0,"website":"www.agscouter.com","country":"Canada"},{"id":"recnUuP1U6bAtGT94","name":"eFishery","stage":"Prospect","total":0,"website":"https://efishery.com","country":"New Zealand","province":"Manawat\u016b-Whanganui","owner":"Russell Cole"},{"id":"recnz1aLpJpcvKxMB","name":"InSoil","stage":"Prospect","total":0,"website":"https://insoil.com","country":"Belgium","province":"Brussels-Capital Region","owner":"Russell Cole"},{"id":"recoFuT9pMjqIom1A","name":"Optic Ag","total":0},{"id":"recpHAC0iLtvh0hMo","name":"Farmer Titan","stage":"Project Confirmed","total":0},{"id":"recpRz6Rm52dlrtSO","name":"CropX","stage":"Prospect","total":0,"website":"https://cropx.com","country":"Israel","province":"Unknown","owner":"Russell Cole"},{"id":"recpUt84Yzs5yIHnI","name":"Aravita","stage":"Prospect","total":0,"website":"https://www.aravita.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recqWtLaRxndXMRcI","name":"AgriChain","stage":"Prospect","total":0,"website":"https://agrichain.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recrLH9uHbuwvZ3tj","name":"InnerPlant","stage":"Prospect","total":0,"website":"https://innerplant.com","country":"United States","province":"California","owner":"Russell Cole"},{"id":"recrQ1D2Fl4lFEc14","name":"Solynta","stage":"Prospect","total":0,"website":"https://www.solynta.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recrdkNvXa2kubFDy","name":"Regrow Ag","stage":"Prospect","total":0,"website":"https://regrow.ag","country":"United States","province":"Massachusetts","owner":"Russell Cole"},{"id":"recrqBUpQ99yPNbOG","name":"Tarfin","stage":"Prospect","total":0,"website":"https://tarfin.com","country":"Turkey","province":"Istanbul","owner":"Russell Cole"},{"id":"recstXxKtsundoeq5","name":"Auravant","stage":"Prospect","total":0,"website":"https://www.auravant.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"},{"id":"recswH98QBz7b3j8z","name":"EF Polymer","stage":"Prospect","total":0,"website":"https://www.efpolymer.com","country":"Japan","province":"Tokyo","owner":"Russell Cole"},{"id":"rect1y3by7aOhqodp","name":"Test top 100 startups","total":0},{"id":"recua351KoeepGlx7","name":"Agrim Wholesale","stage":"Prospect","total":0,"website":"https://www.agrim.app","country":"India","province":"Karnataka","owner":"Russell Cole"},{"id":"recv8KBLXrSm4qoAy","name":"AFRIKABAL","stage":"Prospect","total":0,"website":"https://www.afrikabal.org","country":"Brazil","province":"S\u00e3o Paulo","owner":"Russell Cole"},{"id":"recvc3IjNaFfAsYvq","name":"Rumin8","stage":"Prospect","total":0,"website":"https://rumin8.com","country":"Australia","province":"Western Australia","owner":"Russell Cole"},{"id":"recvhvDTZXysl5BTm","name":"Aydi","stage":"Prospect","total":0,"website":"https://aydi.com","country":"Egypt","province":"Al Qahirah","owner":"Russell Cole"},{"id":"recvt1UJdOAlxvDnS","name":"Miraterra","stage":"Project Confirmed","total":0},{"id":"recxRFnKTXFvPKjZP","name":"Tellia","stage":"Outreach Initiated","total":0,"country":"Europe","province":"Unknown","owner":"Russell Cole"},{"id":"recxtybVY4dDUkpwM","name":"Atlas AI","stage":"Prospect","total":0,"website":"https://www.atlasai.co","country":"United States","province":"New York","owner":"Russell Cole"},{"id":"recy80jSsHWCbH9EC","name":"Verdant Impact","stage":"Prospect","total":0,"website":"https://verdantimpact.com","country":"Brazil","province":"S\u00e3o Paulo","owner":"Russell Cole"},{"id":"recyI2lLxKX3QEZs3","name":"Corteva","stage":"Project Confirmed","total":0},{"id":"recyMrOUpGu6afzrF","name":"NRGene Canada","total":0,"website":"nrgenecanada.com","country":"Canada"},{"id":"recyaDDklHIeLmFts","name":"Doktar Technologies","stage":"Prospect","total":0,"website":"https://www.doktar.com","country":"Turkey","province":"Istanbul","owner":"Russell Cole"},{"id":"recybgY75mRwBYMsL","name":"Apollo Agriculture","stage":"Prospect","total":0,"website":"https://apolloagriculture.com","country":"France","province":"Pays de la Loire","owner":"Russell Cole"},{"id":"recyymRaXfmXe3Wrr","name":"American Robotics","stage":"Prospect","total":0,"website":"https://www.american-robotics.com","country":"United States","province":"Massachusetts","owner":"Russell Cole"},{"id":"reczAHei2Xw31chvt","name":"Amb.AI","total":0,"website":"amb-ai.com","country":"Canada"},{"id":"reczioJUYzvGRZSqQ","name":"Ubco","stage":"Prospect","total":0,"website":"https://www.ubcobikes.com","country":"Unknown","province":"Unknown","owner":"Russell Cole"}];
+
+// ── RENDER: Kanban Pipeline ──
+function renderAivaKanban() {
+  const q = _aivaSearchQ.toLowerCase();
+  let orgs = _aivaOrgs;
+  if (q) orgs = orgs.filter(o => (o.name||'').toLowerCase().includes(q) || (o.techProblem||'').toLowerCase().includes(q) || (o.country||'').toLowerCase().includes(q));
+
+  // Filter by view
+  const activeStages = ['Outreach Initiated','Intro Meeting Held','Shortlisted Internal','Project Charter Drafted','Pitched to AIVA Farms','Project Confirmed'];
+  const exitStages = ['No Fit','Referral','Alumni'];
+  let stages;
+  if (_aivaKanbanView === 'active') stages = AIVA_STAGES.filter(s => activeStages.includes(s.key));
+  else if (_aivaKanbanView === 'prospects') stages = AIVA_STAGES.filter(s => s.key === 'Prospect');
+  else if (_aivaKanbanView === 'exited') stages = AIVA_STAGES.filter(s => exitStages.includes(s.key));
+  else stages = AIVA_STAGES;
+
+  // Stats row
+  const counts = {};
+  AIVA_STAGES.forEach(s => { counts[s.key] = orgs.filter(o => o.stage === s.key).length; });
+  const noStage = orgs.filter(o => !o.stage).length;
+  const activePipeline = activeStages.reduce((a,s) => a + (counts[s]||0), 0);
+  const confirmed = counts['Project Confirmed'] || 0;
+  const totalScored = orgs.filter(o => o.total > 0).length;
+
+  const statRow = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px">
+    <div style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:var(--green)">${_aivaOrgs.length}</div>
+      <div style="font-size:10px;color:var(--text-muted)">Total Orgs</div>
+    </div>
+    <div style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:#3b82f6">${activePipeline}</div>
+      <div style="font-size:10px;color:var(--text-muted)">Active Pipeline</div>
+    </div>
+    <div style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:#22c55e">${confirmed}</div>
+      <div style="font-size:10px;color:var(--text-muted)">Confirmed</div>
+    </div>
+    <div style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:#f59e0b">${totalScored}</div>
+      <div style="font-size:10px;color:var(--text-muted)">Scored</div>
+    </div>
+    <div style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:#94a3b8">${counts['Prospect']||0}</div>
+      <div style="font-size:10px;color:var(--text-muted)">Prospects</div>
+    </div>
+  </div>`;
+
+  // View toggle + search
+  const viewBtns = [
+    {v:'active',l:'🚀 Active Pipeline ('+activePipeline+')'},
+    {v:'prospects',l:'🔍 Prospects ('+(counts['Prospect']||0)+')'},
+    {v:'exited',l:'📤 Exited ('+(exitStages.reduce((a,s)=>a+(counts[s]||0),0))+')'},
+    {v:'all',l:'📊 All ('+orgs.length+')'}
+  ].map(b => '<button onclick="aivaSetKanban(\'' + b.v + '\')" style="padding:6px 14px;border:1px solid ' + (_aivaKanbanView===b.v?'var(--green)':'var(--border)') + ';background:' + (_aivaKanbanView===b.v?'var(--accent-bg)':'var(--surface)') + ';color:' + (_aivaKanbanView===b.v?'var(--green)':'var(--text-muted)') + ';border-radius:8px;font-size:11px;font-weight:600;cursor:pointer">' + b.l + '</button>').join('');
+
+  const searchBar = '<input value="' + (_aivaSearchQ||'').replace(/"/g,'&quot;') + '" oninput="aivaSearch(this.value)" placeholder="Search startups..." style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;width:220px">';
+
+  // Kanban columns
+  const columns = stages.map(stg => {
+    const stageOrgs = orgs.filter(o => o.stage === stg.key).sort((a,b) => (b.total||0) - (a.total||0));
+    const cards = stageOrgs.slice(0, _aivaKanbanView === 'prospects' ? 50 : 30).map(o => {
+      const scoreBar = o.total > 0 ? '<div style="display:flex;gap:2px;margin-top:6px">' +
+        [['T',o.tech],['Tm',o.team],['M',o.market]].map(([l,v]) =>
+          '<span style="padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;background:' + (SCORE_COLORS[v]||'var(--hover)') + '22;color:' + (SCORE_COLORS[v]||'var(--text-faint)') + '">' + l + ':' + (v||'-') + '</span>'
+        ).join('') + '<span style="padding:1px 5px;border-radius:3px;font-size:9px;font-weight:800;background:var(--hover);color:var(--text)">=' + o.total + '</span></div>' : '';
+      const trlBadge = o.trl ? '<span style="font-size:9px;color:var(--text-faint)">' + o.trl.split(':')[0].split('–')[0].trim() + '</span>' : '';
+      const countryBadge = o.country ? '<span style="font-size:9px;color:var(--text-faint)">' + o.country + '</span>' : '';
+      return '<div onclick="aivaShowDetail(\'' + o.id + '\')" style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:6px;transition:all .15s;border-left:3px solid ' + stg.color + '">' +
+        '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (o.name||'—') + '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + trlBadge + countryBadge + '</div>' +
+        scoreBar + '</div>';
+    }).join('');
+    const overflow = stageOrgs.length > (_aivaKanbanView === 'prospects' ? 50 : 30) ? '<div style="font-size:10px;color:var(--text-faint);text-align:center;padding:6px">+' + (stageOrgs.length - 30) + ' more</div>' : '';
+    return '<div style="min-width:220px;max-width:280px;flex:1">' +
+      '<div style="padding:8px 12px;background:' + stg.color + '15;border:1px solid ' + stg.color + '44;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center">' +
+        '<span style="font-size:12px;font-weight:700;color:' + stg.color + '">' + stg.label + '</span>' +
+        '<span style="font-size:11px;font-weight:800;color:' + stg.color + ';background:' + stg.color + '22;padding:2px 8px;border-radius:10px">' + stageOrgs.length + '</span>' +
+      '</div>' +
+      '<div style="padding:8px;background:var(--hover);border:1px solid var(--border);border-top:0;border-radius:0 0 8px 8px;max-height:500px;overflow-y:auto">' +
+        (cards || '<div style="font-size:11px;color:var(--text-faint);text-align:center;padding:20px">Empty</div>') + overflow +
+      '</div></div>';
+  }).join('');
+
+  return statRow +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div style="display:flex;gap:6px;flex-wrap:wrap">' + viewBtns + '</div><div style="display:flex;gap:8px;align-items:center">' + searchBar + '<button onclick="aivaRefresh()" style="padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer" title="Refresh from Airtable">🔄 Sync</button></div></div>' +
+    '<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px">' + columns + '</div>' +
+    (_aivaLastSync ? '<div style="font-size:10px;color:var(--text-faint);margin-top:8px;text-align:right">Last sync: ' + _aivaLastSync.toLocaleTimeString() + '</div>' : '') +
+    (!_aivaPAT ? '<div style="margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;font-size:12px;color:#92400e">⚠️ Running in cached mode. Add your Airtable Personal Access Token in Settings for live two-way sync.</div>' : '');
+}
+
+// ── RENDER: Startup Detail View ──
+function renderAivaDetail() {
+  const o = _aivaOrgs.find(x => x.id === _aivaDetailId);
+  if (!o) { _aivaDetailId = null; return ''; }
+  const stg = AIVA_STAGES.find(s => s.key === o.stage) || AIVA_STAGES[0];
+  const orgMeetings = _aivaMeetings.filter(m => m.orgIds.includes(o.id));
+  const orgProject = _aivaProjects.find(p => p.orgIds.some(ol => ol.id === o.id));
+
+  // Tab bar
+  const tabs = [{id:'overview',l:'Overview'},{id:'scoring',l:'Scoring'},{id:'charter',l:'Charter'},{id:'meetings',l:'Meetings (' + orgMeetings.length + ')'}];
+  const tabBar = tabs.map(t => '<button onclick="aivaDetailTabSwitch(\'' + t.id + '\')" style="padding:8px 16px;border:none;background:' + (_aivaDetailTab===t.id?'var(--green)':'var(--hover)') + ';color:' + (_aivaDetailTab===t.id?'#fff':'var(--text-muted)') + ';border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">' + t.l + '</button>').join('');
+
+  // Stage advance buttons
+  const stageIdx = AIVA_STAGES.findIndex(s => s.key === o.stage);
+  const nextStages = AIVA_STAGES.filter((s,i) => s.key !== o.stage).map(s =>
+    '<button onclick="aivaAdvanceStage(\'' + o.id + '\',\'' + s.key + '\')" style="padding:4px 10px;background:' + s.color + '15;color:' + s.color + ';border:1px solid ' + s.color + '44;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">' + s.short + '</button>'
+  ).join('');
+
+  let content = '';
+  if (_aivaDetailTab === 'overview') {
+    content = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
+      '<div style="padding:16px;background:var(--hover);border-radius:10px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">TECH / PROBLEM</div>' +
+        '<div style="font-size:13px;color:var(--text);line-height:1.6">' + (o.techProblem || '<em style="color:var(--text-faint)">Not documented</em>') + '</div>' +
+        (o.trl ? '<div style="margin-top:8px;font-size:11px;color:var(--text-muted)"><strong>TRL:</strong> ' + o.trl + '</div>' : '') +
+        (o.ip ? '<div style="font-size:11px;color:var(--text-muted)"><strong>IP:</strong> ' + o.ip + '</div>' : '') +
+      '</div>' +
+      '<div style="padding:16px;background:var(--hover);border-radius:10px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">TEAM & COMPANY</div>' +
+        (o.teamSize ? '<div style="font-size:12px;color:var(--text)"><strong>Size:</strong> ' + o.teamSize + '</div>' : '') +
+        (o.teamBg ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Background:</strong> ' + o.teamBg + '</div>' : '') +
+        (o.coachability ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Coachability:</strong> ' + o.coachability + '</div>' : '') +
+        (o.advisors ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Advisors:</strong> ' + o.advisors + '</div>' : '') +
+        (o.runway ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Runway:</strong> ' + o.runway + '</div>' : '') +
+      '</div>' +
+      '<div style="padding:16px;background:var(--hover);border-radius:10px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">MARKET</div>' +
+        (o.funding ? '<div style="font-size:12px;color:var(--text)"><strong>Funding:</strong> ' + o.funding + '</div>' : '') +
+        (o.needs ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Needs:</strong> ' + o.needs + '</div>' : '') +
+        (o.farmSupport ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Farm support:</strong> ' + o.farmSupport + '</div>' : '') +
+        (o.cropsSupported ? '<div style="font-size:12px;color:var(--text);margin-top:4px"><strong>Crops:</strong> ' + o.cropsSupported + '</div>' : '') +
+      '</div>' +
+      '<div style="padding:16px;background:var(--hover);border-radius:10px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">NEXT STEPS & NOTES</div>' +
+        '<div style="font-size:12px;color:var(--text);line-height:1.6">' + (o.nextSteps || '<em style="color:var(--text-faint)">None yet</em>') + '</div>' +
+        (o.referralReason ? '<div style="margin-top:8px;font-size:11px;color:var(--text-muted)"><strong>Referral reason:</strong> ' + o.referralReason + '</div>' : '') +
+        (o.referralDest ? '<div style="font-size:11px;color:var(--text-muted)"><strong>Referred to:</strong> ' + o.referralDest + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  } else if (_aivaDetailTab === 'scoring') {
+    const draft = _aivaScoringDraft[o.id] || {};
+    const tV = draft.tech !== undefined ? parseInt(draft.tech) : o.tech;
+    const tmV = draft.team !== undefined ? parseInt(draft.team) : o.team;
+    const mV = draft.market !== undefined ? parseInt(draft.market) : o.market;
+    const total = (tV||0) + (tmV||0) + (mV||0);
+    const tier = TOTAL_TIERS.find(t => total >= t.min && total <= t.max) || TOTAL_TIERS[2];
+    const hasDraft = draft.tech !== undefined || draft.team !== undefined || draft.market !== undefined;
+
+    const scoreSelect = (label, field, val, desc) => {
+      const opts = [0,1,2,3,4].map(v => '<option value="' + v + '" ' + ((val||0)===v?'selected':'') + '>' + (v === 0 ? '— Not scored' : v + ': ' + SCORE_LABELS[v]) + '</option>').join('');
+      return '<div style="margin-bottom:16px">' +
+        '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:4px">' + label + '</label>' +
+        '<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">' + desc + '</div>' +
+        '<select onchange="aivaDraftScore(\'' + o.id + '\',\'' + field + '\',this.value)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px">' + opts + '</select>' +
+        (val > 0 ? '<div style="margin-top:6px;padding:8px;background:' + SCORE_COLORS[val] + '15;border-radius:6px;font-size:11px;color:' + SCORE_COLORS[val] + ';font-weight:600">' + SCORE_LABELS[val] + '</div>' : '') +
+      '</div>';
+    };
+
+    content = '<div style="max-width:700px">' +
+      '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:' + tier.color + '10;border:1px solid ' + tier.color + '44;border-radius:10px">' +
+        '<div style="text-align:center;min-width:80px"><div style="font-size:36px;font-weight:900;color:' + tier.color + '">' + total + '</div><div style="font-size:10px;color:var(--text-muted)">/12</div></div>' +
+        '<div><div style="font-size:16px;font-weight:800;color:' + tier.color + '">' + tier.label + '</div><div style="font-size:12px;color:var(--text-muted)">' + tier.desc + '</div></div>' +
+      '</div>' +
+      scoreSelect('🔬 Technology Score', 'tech', tV, 'Novelty, TRL level, IP strategy, differentiation vs existing Canadian practices') +
+      scoreSelect('👥 Team Score', 'team', tmV, 'Founder experience, ag expertise, coachability, customer support capacity, team balance') +
+      scoreSelect('📈 Market Score', 'market', mV, 'Canadian relevance, data-driven value prop, partner feedback, regulatory alignment') +
+      '<div style="margin-top:8px"><label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:4px">Score Comments</label>' +
+        '<textarea oninput="aivaDraftScore(\'' + o.id + '\',\'comments\',this.value)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;min-height:80px;resize:vertical" placeholder="Reasoning for scores, flags, notes...">' + (draft.comments||o.nextSteps||'') + '</textarea></div>' +
+      (hasDraft ? '<button onclick="aivaSaveScores(\'' + o.id + '\')" style="margin-top:12px;padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%">💾 Save Scores to Airtable</button>' : '') +
+      '<div style="margin-top:20px;padding:16px;background:var(--hover);border-radius:10px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">SCORING RUBRIC REFERENCE</div>' +
+        '<div style="font-size:11px;color:var(--text-muted);line-height:1.8"><strong>Minimum requirements:</strong> Fit farm capabilities, tech crosses 2+ farms, 18-month+ runway, tech not established in Canadian market<br>' +
+        '<strong>1 — Not Ready:</strong> TRL 1-3, unproven novelty, sole founder, generic solution<br>' +
+        '<strong>2 — Emergent:</strong> TRL 4-5, lab-validated, basic team, broad problem<br>' +
+        '<strong>3 — High Potential:</strong> TRL 6, unique moat/IP, balanced team with ag experience<br>' +
+        '<strong>4 — Site-Ready:</strong> TRL 7+, field-hardened, multidisciplinary team, direct Canadian fit</div></div>' +
+    '</div>';
+  } else if (_aivaDetailTab === 'charter') {
+    const proj = orgProject;
+    if (proj) {
+      content = '<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
+          '<h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0">Project: ' + proj.name + '</h3>' +
+          '<span style="padding:4px 10px;background:var(--accent-bg);color:var(--green);border-radius:6px;font-size:11px;font-weight:700">' + proj.year + '</span>' +
+        '</div>' +
+        (proj.hubs.length ? '<div style="margin-bottom:12px"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Validation Hubs: </span>' + proj.hubs.map(h => '<span style="padding:3px 8px;background:var(--hover);border-radius:4px;font-size:11px;font-weight:600;color:var(--text);margin-right:4px">' + h + '</span>').join('') + '</div>' : '') +
+        (proj.sowLink ? '<div style="margin-bottom:12px;font-size:12px">📄 <strong>SOW:</strong> ' + proj.sowLink + '</div>' : '') +
+        (proj.aivaDeliverables ? '<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px">AIVA DELIVERABLES</div><div style="font-size:12px;color:var(--text)">' + proj.aivaDeliverables + '</div></div>' : '') +
+        (proj.vhDeliverables ? '<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px">VH DELIVERABLES</div><div style="font-size:12px;color:var(--text)">' + proj.vhDeliverables + '</div></div>' : '') +
+        (proj.actionItems ? '<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px">ACTION ITEMS</div><div style="font-size:12px;color:var(--text);white-space:pre-wrap">' + proj.actionItems + '</div></div>' : '') +
+        (proj.contacts ? '<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px">KEY CONTACTS</div><div style="font-size:12px;color:var(--text);white-space:pre-wrap">' + proj.contacts.substring(0,500) + '</div></div>' : '') +
+        (proj.notes ? '<div><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px">NOTES</div><div style="font-size:12px;color:var(--text)">' + proj.notes + '</div></div>' : '') +
+      '</div>';
+    } else {
+      // One-click charter generator + manual fields
+      const hasData = o.techProblem || o.trl || o.total > 0 || o.teamSize || o.needs;
+      const dataFields = [
+        o.name ? '✅ Company name' : '❌ Company name',
+        o.techProblem ? '✅ Tech/problem description' : '⚠️ Tech/problem description',
+        o.trl ? '✅ TRL level' : '⚠️ TRL level',
+        o.total > 0 ? '✅ Rubric scores ('+o.total+'/12)' : '⚠️ Rubric scores',
+        o.teamSize ? '✅ Team size' : '⚠️ Team size',
+        o.runway ? '✅ Runway' : '⚠️ Runway',
+        o.ip ? '✅ IP ownership' : '⚠️ IP ownership',
+        o.needs ? '✅ Startup needs' : '⚠️ Startup needs',
+        o.country ? '✅ Location' : '⚠️ Location',
+        o.funding ? '✅ Funding stage' : '⚠️ Funding stage'
+      ];
+      const readyCount = dataFields.filter(d => d.startsWith('✅')).length;
+      const readyPct = Math.round((readyCount / dataFields.length) * 100);
+
+      content = '<div style="max-width:700px;margin:0 auto">' +
+        '<div style="padding:24px;background:var(--surface);border:2px solid var(--green);border-radius:14px;text-align:center;margin-bottom:16px">' +
+          '<div style="font-size:32px;margin-bottom:8px">📋</div>' +
+          '<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px">One-Click Project Charter</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Auto-generates a branded AIVA charter from all data in Airtable for <strong>' + o.name + '</strong></div>' +
+          '<button onclick="aivaGenerateCharter(\'' + o.id + '\')" style="padding:14px 40px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,.3)">⚡ Generate Charter</button>' +
+          '<div style="font-size:11px;color:var(--text-faint);margin-top:8px">Opens in a new tab · Print to PDF · Auto-advances pipeline stage</div>' +
+        '</div>' +
+
+        '<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--text)">Charter Data Readiness</div>' +
+            '<span style="font-size:12px;font-weight:800;color:' + (readyPct >= 70 ? 'var(--green)' : readyPct >= 40 ? '#f59e0b' : '#ef4444') + '">' + readyPct + '% complete</span>' +
+          '</div>' +
+          '<div style="height:8px;background:var(--hover);border-radius:4px;overflow:hidden;margin-bottom:12px"><div style="width:' + readyPct + '%;height:100%;background:' + (readyPct >= 70 ? 'var(--green)' : readyPct >= 40 ? '#f59e0b' : '#ef4444') + ';border-radius:4px;transition:width .3s"></div></div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px">' + dataFields.map(d => '<div style="color:' + (d.startsWith('✅') ? 'var(--green)' : '#f59e0b') + ';padding:3px 0">' + d + '</div>').join('') + '</div>' +
+          (readyPct < 70 ? '<div style="margin-top:12px;padding:8px 12px;background:#fef3c7;border-radius:6px;font-size:11px;color:#92400e">Tip: Score the startup first (Scoring tab) and fill in missing fields in Airtable for a richer charter.</div>' : '') +
+        '</div>' +
+
+        '<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Charter includes:</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);line-height:1.8">' +
+            '1. Company Overview (name, location, TRL, funding, team)<br>' +
+            '2. Technology & Problem statement<br>' +
+            '3. Rubric Scoring Assessment (Tech/Team/Market with tier)<br>' +
+            '4. Team Assessment (background, coachability, advisors)<br>' +
+            '5. Project Scope (needs, farm capabilities, deliverables — editable)<br>' +
+            '6. Validation Hub Fit (which hubs, AIVA resource level — editable)<br>' +
+            '7. Decision & Next Steps (recommendation based on score)<br>' +
+            '8. Internal Review sign-off section (Russell → Dale → Jacqueline)' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+  } else if (_aivaDetailTab === 'meetings') {
+    const meetingCards = orgMeetings.sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(m =>
+      '<div style="padding:14px;background:var(--hover);border-radius:10px;margin-bottom:8px">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:6px">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text)">' + m.title + '</div>' +
+          '<div style="font-size:11px;color:var(--text-faint)">' + m.date + (m.type ? ' · ' + m.type : '') + '</div>' +
+        '</div>' +
+        (m.notes ? '<div style="font-size:12px;color:var(--text);line-height:1.6;margin-bottom:6px">' + m.notes.substring(0,300) + '</div>' : '') +
+        (m.nextSteps ? '<div style="font-size:11px;color:var(--text-muted)"><strong>Next:</strong> ' + m.nextSteps.substring(0,200) + '</div>' : '') +
+        (m.followUp ? '<div style="font-size:11px;color:var(--green);margin-top:4px">📅 Follow up: ' + m.followUp + '</div>' : '') +
+      '</div>'
+    ).join('');
+
+    // New meeting form
+    const form = _aivaMeetingForm && _aivaMeetingForm.orgId === o.id ?
+      '<div style="padding:16px;background:var(--surface);border:2px solid var(--green);border-radius:12px;margin-bottom:16px">' +
+        '<h4 style="font-size:14px;font-weight:700;color:var(--text);margin:0 0 12px">New Meeting Entry</h4>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+          '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Title</label><input id="mt-title" oninput="aivaMeetingField(\'title\',this.value)" value="' + (_aivaMeetingForm.title||'').replace(/"/g,'&quot;') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px" placeholder="Meeting title"></div>' +
+          '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Date</label><input type="date" id="mt-date" oninput="aivaMeetingField(\'date\',this.value)" value="' + (_aivaMeetingForm.date||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px"></div>' +
+        '</div>' +
+        '<div style="margin-bottom:10px"><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Notes</label><textarea id="mt-notes" oninput="aivaMeetingField(\'notes\',this.value)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;min-height:60px;resize:vertical" placeholder="Meeting notes...">' + (_aivaMeetingForm.notes||'') + '</textarea></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+          '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Next Steps</label><textarea id="mt-next" oninput="aivaMeetingField(\'nextSteps\',this.value)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;min-height:40px;resize:vertical">' + (_aivaMeetingForm.nextSteps||'') + '</textarea></div>' +
+          '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Follow-up Date</label><input type="date" id="mt-followup" oninput="aivaMeetingField(\'followUp\',this.value)" value="' + (_aivaMeetingForm.followUp||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px"><button onclick="aivaSaveMeeting()" style="flex:1;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">💾 Save Meeting</button><button onclick="aivaCancelMeeting()" style="padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);cursor:pointer">Cancel</button></div>' +
+      '</div>' : '';
+
+    content = form +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text)">' + orgMeetings.length + ' meeting' + (orgMeetings.length!==1?'s':'') + '</div>' +
+        (!_aivaMeetingForm ? '<button onclick="aivaNewMeeting(\'' + o.id + '\')" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ Log Meeting</button>' : '') +
+      '</div>' +
+      (meetingCards || '<div style="text-align:center;padding:30px;color:var(--text-faint)">No meetings logged yet</div>');
+  }
+
+  return '<div style="max-width:900px;margin:0 auto">' +
+    '<button onclick="aivaCloseDetail()" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:4px">← Back to Pipeline</button>' +
+    '<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;flex-wrap:wrap">' +
+      '<div style="flex:1;min-width:300px">' +
+        '<h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0 0 4px">' + o.name + '</h1>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+          '<span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;background:' + stg.color + '18;color:' + stg.color + ';border:1px solid ' + stg.color + '44">' + stg.label + '</span>' +
+          (o.trl ? '<span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:var(--hover);color:var(--text-muted)">' + o.trl.split(':')[0].split('–')[0].trim() + '</span>' : '') +
+          (o.funding ? '<span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:var(--hover);color:var(--text-muted)">' + o.funding + '</span>' : '') +
+          (o.country ? '<span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:var(--hover);color:var(--text-muted)">📍 ' + o.country + (o.province ? ', ' + o.province : '') + '</span>' : '') +
+        '</div>' +
+        (o.website ? '<a href="' + (o.website.startsWith('http')?o.website:'https://'+o.website) + '" target="_blank" style="font-size:12px;color:var(--green);text-decoration:none">🔗 ' + o.website + '</a>' : '') +
+      '</div>' +
+      (o.total > 0 ? '<div style="text-align:center;padding:12px 20px;background:var(--hover);border-radius:10px"><div style="font-size:28px;font-weight:900;color:' + (TOTAL_TIERS.find(t=>o.total>=t.min&&o.total<=t.max)||TOTAL_TIERS[2]).color + '">' + o.total + '<span style="font-size:14px;color:var(--text-muted)">/12</span></div><div style="font-size:10px;color:var(--text-muted)">Total Score</div></div>' : '') +
+    '</div>' +
+    '<div style="margin-bottom:12px;display:flex;gap:4px;align-items:center;flex-wrap:wrap"><span style="font-size:10px;font-weight:700;color:var(--text-muted);margin-right:4px">Move to:</span>' + nextStages + '</div>' +
+    '<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">' + tabBar + '</div>' +
+    content +
+  '</div>';
+}
+
+// ── RENDER: Meeting Log (global) ──
+function renderAivaMeetingLog() {
+  const sorted = [..._aivaMeetings].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const form = _aivaMeetingForm && !_aivaMeetingForm.orgId ?
+    '<div style="padding:16px;background:var(--surface);border:2px solid var(--green);border-radius:12px;margin-bottom:16px">' +
+      '<h4 style="font-size:14px;font-weight:700;color:var(--text);margin:0 0 12px">New Meeting Entry</h4>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">' +
+        '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Title</label><input oninput="aivaMeetingField(\'title\',this.value)" value="' + (_aivaMeetingForm.title||'').replace(/"/g,'&quot;') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px" placeholder="Meeting title"></div>' +
+        '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Date</label><input type="date" oninput="aivaMeetingField(\'date\',this.value)" value="' + (_aivaMeetingForm.date||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px"></div>' +
+        '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Organization</label><select oninput="aivaMeetingField(\'orgId\',this.value)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px"><option value="">— Select —</option>' + _aivaOrgs.filter(o=>o.stage&&o.stage!=='Prospect').sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(o => '<option value="' + o.id + '">' + o.name + '</option>').join('') + '</select></div>' +
+      '</div>' +
+      '<div style="margin-bottom:10px"><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Notes</label><textarea oninput="aivaMeetingField(\'notes\',this.value)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;min-height:60px;resize:vertical" placeholder="Meeting notes..."></textarea></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+        '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Next Steps</label><textarea oninput="aivaMeetingField(\'nextSteps\',this.value)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;min-height:40px;resize:vertical"></textarea></div>' +
+        '<div><label style="font-size:10px;font-weight:700;color:var(--text-muted)">Follow-up Date</label><input type="date" oninput="aivaMeetingField(\'followUp\',this.value)" value="" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px"></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px"><button onclick="aivaSaveMeeting()" style="flex:1;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">💾 Save Meeting</button><button onclick="aivaCancelMeeting()" style="padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);cursor:pointer">Cancel</button></div>' +
+    '</div>' : '';
+
+  const cards = sorted.map(m =>
+    '<div style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
+        '<div><div style="font-size:13px;font-weight:700;color:var(--text)">' + m.title + '</div>' +
+          (m.orgNames.length ? '<div style="font-size:11px;color:var(--green);margin-top:2px">' + m.orgNames.join(', ') + '</div>' : '') +
+        '</div>' +
+        '<div style="text-align:right"><div style="font-size:11px;color:var(--text-faint)">' + m.date + '</div>' +
+          (m.type ? '<div style="font-size:10px;color:var(--text-muted)">' + m.type + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      (m.notes ? '<div style="font-size:12px;color:var(--text);line-height:1.6;margin-bottom:6px">' + m.notes.substring(0,300) + (m.notes.length>300?'...':'') + '</div>' : '') +
+      (m.nextSteps ? '<div style="font-size:11px;color:var(--text-muted)"><strong>Next:</strong> ' + m.nextSteps.substring(0,200) + '</div>' : '') +
+      (m.followUp ? '<div style="font-size:11px;color:var(--green);margin-top:4px">📅 Follow up: ' + m.followUp + '</div>' : '') +
+    '</div>'
+  ).join('');
+
+  return form +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+      '<div style="font-size:14px;font-weight:700;color:var(--text)">' + _aivaMeetings.length + ' meetings logged</div>' +
+      (!_aivaMeetingForm ? '<button onclick="aivaNewMeeting(\'\')" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ Log Meeting</button>' : '') +
+    '</div>' +
+    (cards || '<div style="text-align:center;padding:40px;color:var(--text-faint)">No meetings logged yet. Add your Airtable PAT to sync existing meetings.</div>');
+}
+
+// ── RENDER: Projects / SOWs (Admin view) ──
+function renderAivaProjects() {
+  const cards = _aivaProjects.filter(p => p.name && !p.name.startsWith('_')).map(p => {
+    const hubBadges = p.hubs.map(h => '<span style="padding:2px 8px;background:var(--accent-bg);border-radius:4px;font-size:10px;font-weight:600;color:var(--green);margin-right:4px">' + h + '</span>').join('');
+    return '<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+        '<div><div style="font-size:14px;font-weight:800;color:var(--text)">' + p.name + '</div><div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">' + hubBadges + '</div></div>' +
+        (p.year ? '<span style="padding:4px 10px;background:var(--hover);border-radius:6px;font-size:11px;font-weight:700;color:var(--text-muted)">' + p.year + '</span>' : '') +
+      '</div>' +
+      (p.sowLink ? '<div style="margin-bottom:8px;font-size:12px;color:var(--text)">' + p.sowLink + '</div>' : '') +
+      (p.actionItems ? '<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:3px">ACTION ITEMS</div><div style="font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.6">' + p.actionItems + '</div></div>' : '') +
+      (p.aivaDeliverables ? '<div style="font-size:11px;color:var(--text-muted)"><strong>AIVA deliverables:</strong> ' + p.aivaDeliverables + '</div>' : '') +
+      (p.vhDeliverables ? '<div style="font-size:11px;color:var(--text-muted);margin-top:4px"><strong>VH deliverables:</strong> ' + p.vhDeliverables + '</div>' : '') +
+    '</div>';
+  }).join('');
+  return '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">' + _aivaProjects.filter(p=>p.name&&!p.name.startsWith('_')).length + ' active projects</div>' +
+    (cards || '<div style="text-align:center;padding:40px;color:var(--text-faint)">No projects loaded. Add your Airtable PAT to sync.</div>');
+}
+
+// ── RENDER: Airtable Settings ──
+function renderAivaSettings() {
+  const inputStyle = 'width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit';
+  return '<div style="max-width:600px">' +
+    '<div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px">' +
+      '<h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Airtable Connection</h3>' +
+      '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.6">Connect to your AIVA Airtable base for live two-way sync. Your PAT is stored locally and never sent to our servers.</p>' +
+      '<label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">Personal Access Token</label>' +
+      '<input id="aiva-pat-input" type="password" style="' + inputStyle + ';margin-bottom:8px" value="' + (_aivaPAT||'') + '" placeholder="pat...">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="aivaSavePAT(document.getElementById(\'aiva-pat-input\').value)" style="padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">Save & Connect</button>' +
+        (_aivaPAT ? '<button onclick="aivaSavePAT(\'\')" style="padding:8px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);cursor:pointer">Disconnect</button>' : '') +
+      '</div>' +
+      (_aivaPAT && _aivaLastSync ? '<div style="margin-top:12px;padding:8px 12px;background:var(--accent-bg);border-radius:6px;font-size:11px;color:var(--green)">✅ Connected · ' + _aivaOrgs.length + ' orgs · ' + _aivaMeetings.length + ' meetings · ' + _aivaProjects.length + ' projects · Last sync: ' + _aivaLastSync.toLocaleTimeString() + '</div>' : '') +
+      (!_aivaPAT ? '<div style="margin-top:12px;padding:8px 12px;background:#fef3c7;border-radius:6px;font-size:11px;color:#92400e">📦 Using cached data (' + _aivaOrgs.length + ' Agtech Innovators). Connect for full data + write-back.</div>' : '') +
+    '</div>' +
+    '<div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px">' +
+      '<h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0 0 8px">Role</h3>' +
+      '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px">Switch between Ecosystem Manager (pipeline, scoring, charters) and Admin (review, SOWs, feedback) views.</p>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="aivaSetRole(\'manager\')" style="flex:1;padding:12px;border:2px solid ' + (_aivaRole==='manager'?'var(--green)':'var(--border)') + ';background:' + (_aivaRole==='manager'?'var(--accent-bg)':'var(--surface)') + ';border-radius:10px;cursor:pointer"><div style="font-size:14px;font-weight:800;color:' + (_aivaRole==='manager'?'var(--green)':'var(--text)') + '">🏗️ Ecosystem Manager</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px">Pipeline, scoring, charter building</div></button>' +
+        '<button onclick="aivaSetRole(\'admin\')" style="flex:1;padding:12px;border:2px solid ' + (_aivaRole==='admin'?'var(--green)':'var(--border)') + ';background:' + (_aivaRole==='admin'?'var(--accent-bg)':'var(--surface)') + ';border-radius:10px;cursor:pointer"><div style="font-size:14px;font-weight:800;color:' + (_aivaRole==='admin'?'var(--green)':'var(--text)') + '">📋 Admin / Project Manager</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px">Review charters, contracts, SOWs, farm feedback</div></button>' +
+      '</div>' +
+    '</div>' +
+    (_aivaPendingWrites.length > 0 ? '<div style="padding:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px"><div style="font-size:13px;font-weight:700;color:#b91c1c;margin-bottom:4px">⚠️ ' + _aivaPendingWrites.length + ' pending write(s)</div><div style="font-size:11px;color:#991b1b">These changes were made offline and will sync when connected.</div></div>' : '') +
+  '</div>';
+}
+
+
 function pgEcosystemWorkspace() {
-  if (!_ecoLoaded) { loadEcoData().then(() => render('ecosystem_ws')); return '<div style="text-align:center;padding:60px"><div style="font-size:24px;margin-bottom:12px">🏗️</div><div style="color:var(--text-muted)">Loading workspace...</div></div>'; }
+  // Load both eco data and AIVA pipeline data
+  if (!_ecoLoaded) { loadEcoData().then(() => { loadAivaData().then(() => render('ecosystem_ws')); }); return '<div style="text-align:center;padding:60px"><div style="font-size:24px;margin-bottom:12px">🏗️</div><div style="color:var(--text-muted)">Loading workspace...</div></div>'; }
+  if (!_aivaLoaded && !_aivaLoading) { loadAivaData().then(() => render('ecosystem_ws')); }
   const profile = _userProfile || {};
-  const programName = _ecoSettings?.program_name || profile.company_name || profile.organization || 'My Program';
+  const programName = _ecoSettings?.program_name || profile.company_name || profile.organization || 'AIVA Network';
 
   // Stats
   const total = _ecoStartups.length;
@@ -15247,20 +16311,37 @@ function pgEcosystemWorkspace() {
   const totalMentors = [...new Set(_ecoStartups.flatMap(s=>s.mentors))].length;
   const pendingApps = _ecoApplications.filter(a=>a.status==='pending').length;
 
-  // Persistence badge
-  const modeBadge = _ecoUseSupabase
-    ? '<span style="padding:3px 8px;background:#dcfce7;color:#166534;border-radius:4px;font-size:10px;font-weight:700">☁️ Live — Supabase</span>'
-    : '<span style="padding:3px 8px;background:#fef3c7;color:#92400e;border-radius:4px;font-size:10px;font-weight:700">💾 Demo — localStorage</span>';
+  // Connection badge
+  const modeBadge = _aivaPAT
+    ? '<span style="padding:3px 8px;background:#dcfce7;color:#166534;border-radius:4px;font-size:10px;font-weight:700">☁️ Live — Airtable</span>'
+    : '<span style="padding:3px 8px;background:#fef3c7;color:#92400e;border-radius:4px;font-size:10px;font-weight:700">📦 Cached Mode</span>';
 
-  // Tabs
-  const tabs = [
-    {id:'pipeline',label:'Startup Pipeline',icon:'📊',badge:null},
+  // AIVA pipeline detail view
+  if (_aivaDetailId) {
+    const detailHtml = renderAivaDetail();
+    if (detailHtml) return `<div style="max-width:1100px;margin:0 auto;padding:24px">${detailHtml}</div>`;
+  }
+
+  // Build tabs based on role
+  const managerTabs = [
+    {id:'aiva_pipeline',label:'Pipeline',icon:'🚀',badge:null},
+    {id:'aiva_meetings',label:'Meeting Log',icon:'📝',badge:_aivaMeetings.filter(m=>m.followUp && m.followUp <= new Date().toISOString().split('T')[0]).length||null},
+    {id:'aiva_projects',label:'Projects & SOWs',icon:'📋',badge:null},
+    {id:'pipeline',label:'Program Pipeline',icon:'📊',badge:null},
     {id:'applications',label:'Applications',icon:'📩',badge:pendingApps||null},
-    {id:'mentors',label:'Mentor Coordination',icon:'🧑‍🏫',badge:null},
-    {id:'metrics',label:'Program Metrics',icon:'📈',badge:null},
-    {id:'activity',label:'Activity Log',icon:'📋',badge:null},
-    {id:'settings',label:'Settings',icon:'⚙️',badge:null}
+    {id:'metrics',label:'Metrics',icon:'📈',badge:null},
+    {id:'activity',label:'Activity',icon:'📋',badge:null},
+    {id:'aiva_settings',label:'Settings',icon:'⚙️',badge:null}
   ];
+  const adminTabs = [
+    {id:'aiva_projects',label:'Projects & SOWs',icon:'📋',badge:null},
+    {id:'aiva_pipeline',label:'Pipeline',icon:'🚀',badge:null},
+    {id:'aiva_meetings',label:'Meeting Log',icon:'📝',badge:null},
+    {id:'applications',label:'Applications',icon:'📩',badge:pendingApps||null},
+    {id:'activity',label:'Activity',icon:'📋',badge:null},
+    {id:'aiva_settings',label:'Settings',icon:'⚙️',badge:null}
+  ];
+  const tabs = _aivaRole === 'admin' ? adminTabs : managerTabs;
   const tabBar = tabs.map(t => `<button onclick="ecoSwitchTab('${t.id}')" style="padding:10px 18px;border:none;background:${_ecoTab===t.id?'var(--green)':'var(--hover)'};color:${_ecoTab===t.id?'#fff':'var(--text-muted)'};border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;position:relative">${t.icon} ${t.label}${t.badge?`<span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px">${t.badge}</span>`:''}</button>`).join('');
 
   // Detail view
@@ -15649,6 +16730,16 @@ function pgEcosystemWorkspace() {
 
       <button onclick="ecoSaveSettings()" style="padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%">Save Settings</button>
     </div>`;
+
+  // ── AIVA Pipeline Tabs ──
+  } else if (_ecoTab === 'aiva_pipeline') {
+    content = _aivaLoaded ? renderAivaKanban() : '<div style="text-align:center;padding:40px;color:var(--text-muted)">Loading pipeline data...</div>';
+  } else if (_ecoTab === 'aiva_meetings') {
+    content = _aivaLoaded ? renderAivaMeetingLog() : '<div style="text-align:center;padding:40px;color:var(--text-muted)">Loading meetings...</div>';
+  } else if (_ecoTab === 'aiva_projects') {
+    content = _aivaLoaded ? renderAivaProjects() : '<div style="text-align:center;padding:40px;color:var(--text-muted)">Loading projects...</div>';
+  } else if (_ecoTab === 'aiva_settings') {
+    content = renderAivaSettings();
   }
 
   // Stat cards
@@ -15671,8 +16762,10 @@ function pgEcosystemWorkspace() {
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
         <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:900">🏗️</div>
         <div>
-          <h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0">Ecosystem Workspace ${modeBadge}</h1>
-          <div style="font-size:13px;color:var(--text-muted)">${programName} · Your command center for managing startups, mentors, and program outcomes</div>
+          <h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0">AIVA Ecosystem Workspace ${modeBadge}</h1>
+          <div style="font-size:13px;color:var(--text-muted)">${programName} · ${_aivaRole === 'admin' ? 'Admin: Projects, SOWs, contracts & farm feedback' : 'Pipeline management, scoring, and project charters'}
+            <span onclick="aivaSetRole(_aivaRole==='manager'?'admin':'manager')" style="margin-left:8px;padding:2px 8px;background:var(--hover);border-radius:4px;font-size:10px;font-weight:700;color:var(--green);cursor:pointer;border:1px solid var(--border)">Switch to ${_aivaRole==='manager'?'Admin':'Manager'} View</span>
+          </div>
         </div>
       </div>
     </div>
@@ -15688,14 +16781,14 @@ function pgEcosystemWorkspace() {
 const pages = {
   overview: pgOverview, segments: pgSegments, journey: pgJourney, glossary: pgGlossary,
   documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem, market_intel: pgMarketIntel,
-  crops: pgCrops, mentors: pgMentors, accelerators: pgAccelerators, venture: pgVenture, resources: pgResources,
+  crops: pgCrops, mentors: function(){ go('hub'); return ''; }, accelerators: pgAccelerators, venture: pgVenture, resources: pgResources,
   admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone,
   connections: pgUserConnections, hub: pgCommunityHub, action: pgActionCenter,
   investor: pgInvestorDashboard, ecosystem_ws: pgEcosystemWorkspace
 };
 
 // Pages guests can see in full
-const GUEST_PAGES = ['overview'];
+const GUEST_PAGES = ['overview','venture'];
 // Pages guests get a teaser of (show top portion blurred)
 const TEASER_PAGES = ['ecosystem', 'journey', 'glossary', 'market_intel'];
 
