@@ -1215,7 +1215,7 @@ const FOC_EMAIL_TEMPLATES = {
       },
       investor: {
         subject: `Welcome to FounderOps Center, ${first}!`,
-        note: `Hey ${first} — welcome to FounderOps Center! I built this platform to give AgTech investors a better lens into the ecosystem. You now have access to curated deal flow, founder pipelines, and market intelligence you won't find anywhere else. Hit reply anytime — I'm always around.`,
+        note: `Hey ${first} — welcome to FounderOps Center! I built this platform to give AgTech investors a better lens into the ecosystem. You now have access to curated deal flow and market intelligence you won't find anywhere else. Hit reply anytime — I'm always around.`,
         bullets: `
           <li style="margin-bottom:8px"><strong>Browse deal flow</strong> — curated AgTech startups filtered by stage, sector, and funding status</li>
           <li style="margin-bottom:8px"><strong>Get founder-matched</strong> — our AI surfaces founders aligned with your thesis and check size</li>
@@ -2958,7 +2958,7 @@ function pgOverview(){
     const name = _userProfile.full_name ? _userProfile.full_name.split(' ')[0] : '';
     const msgs = {
       founder: { icon:'🚀', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your AgTech founder intelligence hub. Check your <a href="#" onclick="go(\'action\');return false" style="color:var(--green);font-weight:600">Action Center</a> for personalized next steps.' },
-      investor: { icon:'📈', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your deal flow dashboard is live. Check the <a href="#" onclick="go(\'investor\');return false" style="color:var(--green);font-weight:600">Investor Dashboard</a> for founder pipeline and market data.' },
+      investor: { icon:'📈', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your deal flow dashboard is live. Check the <a href="#" onclick="go(\'investor\');return false" style="color:var(--green);font-weight:600">Investor Dashboard</a> for live deal flow and market data.' },
       farmer: { icon:'🌾', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Explore AgTech innovations built for your operation. Browse <a href="#" onclick="go(\'ecosystem\');return false" style="color:var(--green);font-weight:600">Ecosystem Overview</a> for your region.' },
       advisor: { icon:'🧭', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Mentor the next generation of AgTech. See <a href="#" onclick="go(\'hub\');return false" style="color:var(--green);font-weight:600">Community Hub</a> for connections.' },
       ecosystem_manager: { icon:'🏗️', title:'Welcome back' + (name ? ', ' + name : '') + '!', sub:'Your program workspace is ready. Open your <a href="#" onclick="go(\'ecosystem_ws\');return false" style="color:var(--green);font-weight:600">Ecosystem Workspace</a> to manage your startup pipeline.' }
@@ -14301,7 +14301,7 @@ const PERSONA_RECS = {
   ],
   'investor': [
     { icon:'📰', title:'Subscribe to AgFunderNews', sub:'The industry standard for agri-food tech deal flow and analysis', url:'https://agfundernews.com/newsletter', type:'action' },
-    { icon:'🔍', title:'Use Smart Connections for deal discovery', sub:'AI-scored matches surface founders aligned with your thesis', action:'connections', type:'action' },
+    { icon:'🔍', title:'Use Smart Connections for deal discovery', sub:'AI-scored matches surface companies aligned with your thesis', action:'connections', type:'action' },
     { icon:'🌱', title:'Browse the Ecosystem Overview', sub:'Full map of VCs, accelerators, and government programs', action:'ecosystem', type:'action' },
     { icon:'📅', title:'Attend FoodBytes! and World Agri-Tech', sub:'Best events for meeting portfolio-ready AgTech startups', url:'https://www.foodbytesworld.com/', type:'action' },
     { icon:'🤝', title:'Join Founders Network — AgTech', sub:'Support founders and discover investment opportunities', action:'hub', type:'action' }
@@ -14538,7 +14538,7 @@ function pgInvestorDashboard() {
   // Load profiles for pipeline if not yet loaded
   if (!_allProfiles.length) {
     loadAllProfiles().then(profiles => { _allProfiles = profiles; render('investor'); });
-    return `<div class="page-hdr"><h1>📈 Investor Dashboard</h1><p>Loading pipeline data...</p></div><div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading founder pipeline...</p></div>`;
+    return `<div class="page-hdr"><h1>📈 Investor Dashboard</h1><p>Loading pipeline data...</p></div><div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading deal flow...</p></div>`;
   }
 
   const allDeals = _supabaseDeals.length ? _supabaseDeals : INVESTOR_DEALS;
@@ -14824,7 +14824,7 @@ function pgInvestorDashboard() {
     </div>
   </div>`;
 
-  // ── Founder Pipeline (from platform profiles) ──
+  // ── Live Deal Flow (sourced from platform company profiles) ──
   const pipelineFounders = _allProfiles.filter(p =>
     p.persona === 'founder' && p.onboarding_complete && !p.blocked &&
     (p.funding_status || (p.biggest_needs && p.biggest_needs.includes('Funding')))
@@ -14844,19 +14844,19 @@ function pgInvestorDashboard() {
 
   const pipelineSection = `<div class="hub-accordion ${_investorOpen.pipeline ? 'open' : ''}">
     <div class="ha-header" onclick="investorToggle('pipeline')">
-      <span class="ha-icon">🌱</span><span class="ha-title">Founder Pipeline — Live from the Network</span>
-      <span class="ha-count">${pipelineFounders.length} founder${pipelineFounders.length!==1?'s':''}</span><span class="ha-arrow">▼</span>
+      <span class="ha-icon">🌱</span><span class="ha-title">Live Deal Flow — From the Network</span>
+      <span class="ha-count">${pipelineFounders.length} ${pipelineFounders.length!==1?'opportunities':'opportunity'}</span><span class="ha-arrow">▼</span>
     </div>
     <div class="ha-body">
       ${pipelineFounders.length ? `
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px">
         <div class="ac-card" style="text-align:center;padding:16px">
           <div style="font-size:24px;font-weight:800;color:var(--green)">${pipelineFounders.length}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Active Founders</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Active Opportunities</div>
         </div>
         <div class="ac-card" style="text-align:center;padding:16px">
           <div style="font-size:24px;font-weight:800;color:var(--green)">${raisingNow.length}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Seeking Funding</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Actively Raising</div>
         </div>
         <div class="ac-card" style="text-align:center;padding:16px">
           <div style="font-size:24px;font-weight:800;color:var(--green)">${Object.keys(byStage).length}</div>
@@ -14876,31 +14876,31 @@ function pgInvestorDashboard() {
           const stage = (COMPANY_STAGES.find(x=>x.id===p.company_stage)||{}).label || 'Early';
           const funding = (FUNDING_STATUSES.find(x=>x.id===p.funding_status)||{}).label || '';
           const seeking = p.biggest_needs && p.biggest_needs.includes('Funding');
-          const liLink = p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" rel="noopener" class="ac-btn primary" style="margin-top:8px;font-size:11px;padding:5px 10px">View Profile →</a>` : '';
+          const liLink = p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" rel="noopener" class="ac-btn primary" style="margin-top:8px;font-size:11px;padding:5px 10px">Request Intro →</a>` : '';
           return `<div class="ac-card" style="padding:14px;display:flex;flex-direction:column">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
               ${p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover">' : '<div style="width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">'+(p.full_name||'?').charAt(0).toUpperCase()+'</div>'}
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.full_name||'Anonymous Founder'}</div>
-                <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.company_name||''}</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.company_name||'Unnamed Company'}</div>
+                <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.full_name||''}</div>
               </div>
             </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.what_building||'Building in AgTech'}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.what_building||'AgTech opportunity'}</div>
             <div style="display:flex;flex-wrap:wrap;gap:4px">
               <span class="ac-tag type">${stage}</span>
               ${funding ? '<span class="ac-tag persona">'+funding+'</span>' : ''}
-              ${seeking ? '<span class="ac-tag" style="background:#dcfce7;color:#166534">Seeking Funding</span>' : ''}
+              ${seeking ? '<span class="ac-tag" style="background:#dcfce7;color:#166534">Raising Now</span>' : ''}
               ${p.location ? '<span class="ac-tag" style="background:var(--hover);color:var(--text-faint)">📍 '+p.location+'</span>' : ''}
             </div>
             ${liLink}
           </div>`;
         }).join('')}
       </div>
-      ${pipelineFounders.length > 12 ? '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)">Showing 12 of '+pipelineFounders.length+' founders. <a href="#" onclick="go(\'hub\');return false" style="color:var(--green)">View all in Community Hub →</a></div>' : ''}
+      ${pipelineFounders.length > 12 ? '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)">Showing 12 of '+pipelineFounders.length+' opportunities. <a href="#" onclick="go(\'hub\');return false" style="color:var(--green)">View full deal flow →</a></div>' : ''}
       ` : `<div style="text-align:center;padding:30px">
         <div style="font-size:28px;margin-bottom:8px">🌱</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Pipeline is Growing</div>
-        <div style="font-size:12px;color:var(--text-muted);max-width:400px;margin:0 auto">As founders join the platform and complete their profiles, they'll appear here — filtered by stage, sector, and funding needs. Early-stage deal flow that's hard to find anywhere else.</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Deal Flow is Building</div>
+        <div style="font-size:12px;color:var(--text-muted);max-width:400px;margin:0 auto">As new AgTech opportunities come onto the platform, they'll appear here — filtered by stage, sector, and round status. Early-stage deal flow that's hard to find anywhere else.</div>
       </div>`}
     </div>
   </div>`;
@@ -14910,13 +14910,13 @@ function pgInvestorDashboard() {
     <span style="font-size:18px;flex-shrink:0">🚀</span>
     <div>
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">We're Early — And That's the Point</div>
-      <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Founder Ops Center is building the first dedicated AgTech deal flow network. Our founder pipeline grows as new startups join the platform — giving you access to early-stage opportunities before they hit the usual channels. The market intelligence below provides broader context, but the real value is the live network above. We're growing fast and appreciate your patience as we scale.</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Founder Ops Center is building the first dedicated AgTech deal flow network. Our live deal flow grows as new companies come onto the platform — giving you access to early-stage opportunities before they hit the usual channels. The market intelligence below provides broader context, but the real value is the live network above. We're growing fast and appreciate your patience as we scale.</div>
     </div>
   </div>`;
 
   return `<div class="page-hdr">
     <h1>📈 Investor Dashboard</h1>
-    <p>Live founder pipeline and AgTech market intelligence across 8 regions.</p>
+    <p>Live AgTech deal flow and market intelligence across 8 regions.</p>
   </div>
   ${disclaimer}
   ${pipelineSection}
@@ -14980,6 +14980,8 @@ async function loadEcoData() {
       const { data: settings } = await _supabase.from('eco_program_settings')
         .select('*').eq('manager_id', currentUser.id).maybeSingle();
       _ecoSettings = settings;
+      // Phase B: apply saved rubric override if present
+      try { applyRubric(_ecoSettings && _ecoSettings.rubric); } catch(e) { console.warn('applyRubric failed:', e); }
 
       _ecoUseSupabase = true;
       _ecoLoaded = true;
@@ -15935,12 +15937,14 @@ function ecoListingSaveNotes(listingId) {
 // ── PIPELINE MANAGEMENT — Airtable-Connected ─────────
 // ═══════════════════════════════════════════════════════════
 
-const WORKSPACE_BASE_ID = ''; // set from Settings → Integrations
+// Default workspace Airtable config (AIVA hub base).
+// Can be overridden per workspace via Settings → Integrations (coming in a later phase).
+const WORKSPACE_BASE_ID = 'appaz6m2ulaHTytRg';
 const WORKSPACE_TABLES = {
-  orgs: '',
-  meetings: '',
-  projects: '',
-  contacts: ''
+  orgs:     'tblS288ag95p58ul3', // Organizations
+  meetings: 'tblLaCMxX87EvvZU2', // Meeting Log
+  projects: 'tblG8SvGzu3A4iN6M', // Project Overview
+  contacts: 'tblCycBFq3ndaUn7P'  // Contacts
 };
 
 const AT = {
@@ -15979,23 +15983,93 @@ const PIPELINE_STAGE_IDS = {
   'Referral':'selBIsb2y4ElZDBcN','Alumni':'selVQswuoQGLurjpf'
 };
 
-// ── Starter Rubric (neutral default — Phase B Rubric Builder lets ecosystems replace this) ──
-// Three dimensions × 0-4 scale → max total 12. Each ecosystem can override via Rubric Builder.
-const SCORE_LABELS = {
-  1: 'Early', 2: 'Developing', 3: 'Promising', 4: 'Advanced'
-};
-const SCORE_COLORS = { 1:'#ef4444', 2:'#f59e0b', 3:'#3b82f6', 4:'#22c55e' };
-const TOTAL_TIERS = [
-  {min:10,max:12,label:'Prioritize',color:'#22c55e',desc:'Advance to next stage'},
-  {min:6,max:9, label:'Explore',   color:'#f59e0b',desc:'Monitor and re-evaluate'},
-  {min:0,max:5, label:'Pass',      color:'#ef4444',desc:'Not a fit right now'}
-];
-// Dimension labels (neutral defaults — Rubric Builder overrides these per workspace)
-const RUBRIC_DIMENSIONS = [
-  { key:'dim1', label:'Innovation', field:'techScore' },
-  { key:'dim2', label:'Execution',  field:'teamScore' },
-  { key:'dim3', label:'Traction',   field:'marketScore' }
-];
+// ── Rubric System (Phase B: bring-your-own-rubric) ──
+// Ecosystems can edit dimension labels, score labels, and tier thresholds via the Rubric Builder
+// in Settings → Rubric. Overrides are persisted to Supabase (eco_program_settings.rubric JSONB)
+// and applied on load. Until an override is saved, the Starter Rubric defaults are used.
+// Three dimensions × 0-4 scale → max total 12.
+const STARTER_RUBRIC = Object.freeze({
+  scoreLabels: { 1:'Early', 2:'Developing', 3:'Promising', 4:'Advanced' },
+  scoreColors: { 1:'#ef4444', 2:'#f59e0b', 3:'#3b82f6', 4:'#22c55e' },
+  totalTiers: [
+    { min:10, max:12, label:'Prioritize', color:'#22c55e', desc:'Advance to next stage' },
+    { min:6,  max:9,  label:'Explore',    color:'#f59e0b', desc:'Monitor and re-evaluate' },
+    { min:0,  max:5,  label:'Pass',       color:'#ef4444', desc:'Not a fit right now' }
+  ],
+  dimensions: [
+    { key:'dim1', label:'Innovation', field:'tech',   airtableField:'techScore',   desc:'Novelty, differentiation, defensibility of the approach' },
+    { key:'dim2', label:'Execution',  field:'team',   airtableField:'teamScore',   desc:'Team experience, coachability, ability to deliver' },
+    { key:'dim3', label:'Traction',   field:'market', airtableField:'marketScore', desc:'Market pull, early adoption, customer or partner signal' }
+  ],
+  maxTotal: 12
+});
+
+// Mutable live rubric — other code paths read these names directly.
+// applyRubric() overwrites them when an ecosystem override loads.
+let SCORE_LABELS      = { ...STARTER_RUBRIC.scoreLabels };
+let SCORE_COLORS      = { ...STARTER_RUBRIC.scoreColors };
+let TOTAL_TIERS       = STARTER_RUBRIC.totalTiers.map(t => ({ ...t }));
+let RUBRIC_DIMENSIONS = STARTER_RUBRIC.dimensions.map(d => ({ ...d }));
+let RUBRIC_MAX_TOTAL  = STARTER_RUBRIC.maxTotal;
+
+// Return the currently-active rubric as a single object (for the Rubric Builder UI)
+function getRubric() {
+  return {
+    scoreLabels: { ...SCORE_LABELS },
+    scoreColors: { ...SCORE_COLORS },
+    totalTiers:  TOTAL_TIERS.map(t => ({ ...t })),
+    dimensions:  RUBRIC_DIMENSIONS.map(d => ({ ...d })),
+    maxTotal:    RUBRIC_MAX_TOTAL
+  };
+}
+
+// Validate + apply a rubric override in place. Missing fields fall back to STARTER_RUBRIC.
+// Accepts the shape stored in eco_program_settings.rubric.
+function applyRubric(rubric) {
+  const r = rubric && typeof rubric === 'object' ? rubric : {};
+  // Score labels (1..4)
+  const sl = r.scoreLabels || {};
+  SCORE_LABELS = {
+    1: (sl[1] || sl['1'] || STARTER_RUBRIC.scoreLabels[1]),
+    2: (sl[2] || sl['2'] || STARTER_RUBRIC.scoreLabels[2]),
+    3: (sl[3] || sl['3'] || STARTER_RUBRIC.scoreLabels[3]),
+    4: (sl[4] || sl['4'] || STARTER_RUBRIC.scoreLabels[4])
+  };
+  // Score colors (optional override — default palette stays neutral)
+  const sc = r.scoreColors || {};
+  SCORE_COLORS = {
+    1: (sc[1] || sc['1'] || STARTER_RUBRIC.scoreColors[1]),
+    2: (sc[2] || sc['2'] || STARTER_RUBRIC.scoreColors[2]),
+    3: (sc[3] || sc['3'] || STARTER_RUBRIC.scoreColors[3]),
+    4: (sc[4] || sc['4'] || STARTER_RUBRIC.scoreColors[4])
+  };
+  // Dimensions — labels/descriptions editable; Airtable field bindings stay fixed
+  const dims = Array.isArray(r.dimensions) ? r.dimensions : [];
+  RUBRIC_DIMENSIONS = STARTER_RUBRIC.dimensions.map((def, i) => {
+    const d = dims[i] || {};
+    return {
+      key: def.key,
+      label: (d.label || def.label),
+      field: def.field,
+      airtableField: def.airtableField,
+      desc: (d.desc || def.desc)
+    };
+  });
+  // Tier thresholds + labels
+  const tiers = Array.isArray(r.totalTiers) && r.totalTiers.length === 3 ? r.totalTiers : null;
+  if (tiers) {
+    TOTAL_TIERS = tiers.map((t, i) => ({
+      min:   Number.isFinite(+t.min) ? +t.min : STARTER_RUBRIC.totalTiers[i].min,
+      max:   Number.isFinite(+t.max) ? +t.max : STARTER_RUBRIC.totalTiers[i].max,
+      label: t.label || STARTER_RUBRIC.totalTiers[i].label,
+      color: t.color || STARTER_RUBRIC.totalTiers[i].color,
+      desc:  t.desc  || STARTER_RUBRIC.totalTiers[i].desc
+    }));
+  } else {
+    TOTAL_TIERS = STARTER_RUBRIC.totalTiers.map(t => ({ ...t }));
+  }
+  RUBRIC_MAX_TOTAL = Number.isFinite(+r.maxTotal) ? +r.maxTotal : STARTER_RUBRIC.maxTotal;
+}
 
 // State
 let _wksOrgs = [];
@@ -16280,24 +16354,24 @@ ${o.techTheme ? '<div class="section"><div class="field-label">Tech Theme</div><
 <h2>3. Scoring Assessment</h2>
 <div style="display:flex;gap:12px;flex-wrap:wrap;margin:12px 0">
   <div class="score-box" style="background:${o.tech ? SCORE_COLORS[o.tech]+'18' : '#f1f5f9'};border:1px solid ${o.tech ? SCORE_COLORS[o.tech]+'44' : '#e2e8f0'}">
-    <span style="font-size:11px;font-weight:700;color:#64748b">Tech:</span>
+    <span style="font-size:11px;font-weight:700;color:#64748b">${RUBRIC_DIMENSIONS[0].label}:</span>
     <span style="font-size:20px;font-weight:900;color:${o.tech ? SCORE_COLORS[o.tech] : '#94a3b8'}">${o.tech||'—'}</span>
     <span style="font-size:11px;color:#64748b">${o.tech ? SCORE_LABELS[o.tech] : 'Not scored'}</span>
   </div>
   <div class="score-box" style="background:${o.team ? SCORE_COLORS[o.team]+'18' : '#f1f5f9'};border:1px solid ${o.team ? SCORE_COLORS[o.team]+'44' : '#e2e8f0'}">
-    <span style="font-size:11px;font-weight:700;color:#64748b">Team:</span>
+    <span style="font-size:11px;font-weight:700;color:#64748b">${RUBRIC_DIMENSIONS[1].label}:</span>
     <span style="font-size:20px;font-weight:900;color:${o.team ? SCORE_COLORS[o.team] : '#94a3b8'}">${o.team||'—'}</span>
     <span style="font-size:11px;color:#64748b">${o.team ? SCORE_LABELS[o.team] : 'Not scored'}</span>
   </div>
   <div class="score-box" style="background:${o.market ? SCORE_COLORS[o.market]+'18' : '#f1f5f9'};border:1px solid ${o.market ? SCORE_COLORS[o.market]+'44' : '#e2e8f0'}">
-    <span style="font-size:11px;font-weight:700;color:#64748b">Market:</span>
+    <span style="font-size:11px;font-weight:700;color:#64748b">${RUBRIC_DIMENSIONS[2].label}:</span>
     <span style="font-size:20px;font-weight:900;color:${o.market ? SCORE_COLORS[o.market] : '#94a3b8'}">${o.market||'—'}</span>
     <span style="font-size:11px;color:#64748b">${o.market ? SCORE_LABELS[o.market] : 'Not scored'}</span>
   </div>
   <div class="score-box" style="background:${tier.color}18;border:2px solid ${tier.color}44">
     <span style="font-size:11px;font-weight:700;color:#64748b">Total:</span>
     <span style="font-size:24px;font-weight:900;color:${tier.color}">${o.total||0}</span>
-    <span style="font-size:11px;color:${tier.color};font-weight:700">/12 · ${tier.label}</span>
+    <span style="font-size:11px;color:${tier.color};font-weight:700">/${RUBRIC_MAX_TOTAL} · ${tier.label}</span>
   </div>
 </div>
 ${o.nextSteps ? '<div class="section"><div class="field-label">Score Comments / Notes</div><div class="field-value">'+o.nextSteps+'</div></div>' : ''}
@@ -16343,7 +16417,7 @@ ${o.nextSteps ? '<div class="section"><div class="field-label">Score Comments / 
 
 <h2>7. Decision & Next Steps</h2>
 <table>
-  <tr><th style="width:180px">Recommendation</th><td style="font-weight:700;color:${tier.color}">${o.total >= 10 ? 'Prioritize — advance to next stage' : o.total >= 6 ? 'Explore — requires scoping discussion' : 'Pass — further nurturing or refer to partner'}</td></tr>
+  <tr><th style="width:180px">Recommendation</th><td style="font-weight:700;color:${tier.color}">${tier.label} — ${tier.desc}</td></tr>
   <tr><th>Referral Consideration</th><td>${o.referralReason||o.referralDest ? (o.referralReason||'')+' → '+(o.referralDest||'') : '<span class="empty">N/A or to be determined</span>'}</td></tr>
   <tr><th>Pitch to Farms?</th><td>${o.pitchToFarms||'<span class="empty">Pending charter review</span>'}</td></tr>
   <tr><th>Next Steps</th><td>${o.nextSteps||'<span class="empty">To be determined</span>'}</td></tr>
@@ -16740,23 +16814,26 @@ function renderAivaDetail() {
       '</div>';
     };
 
+    const dimA = RUBRIC_DIMENSIONS[0], dimB = RUBRIC_DIMENSIONS[1], dimC = RUBRIC_DIMENSIONS[2];
+    const rubricRefRows = [1,2,3,4].map(n =>
+      '<strong>' + n + ' — ' + SCORE_LABELS[n] + ':</strong> <span style="color:' + SCORE_COLORS[n] + '">●</span>'
+    ).join('<br>');
     content = '<div style="max-width:700px">' +
       '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:' + tier.color + '10;border:1px solid ' + tier.color + '44;border-radius:10px">' +
-        '<div style="text-align:center;min-width:80px"><div style="font-size:36px;font-weight:900;color:' + tier.color + '">' + total + '</div><div style="font-size:10px;color:var(--text-muted)">/12</div></div>' +
+        '<div style="text-align:center;min-width:80px"><div style="font-size:36px;font-weight:900;color:' + tier.color + '">' + total + '</div><div style="font-size:10px;color:var(--text-muted)">/' + RUBRIC_MAX_TOTAL + '</div></div>' +
         '<div><div style="font-size:16px;font-weight:800;color:' + tier.color + '">' + tier.label + '</div><div style="font-size:12px;color:var(--text-muted)">' + tier.desc + '</div></div>' +
       '</div>' +
-      scoreSelect('🔬 Technology Score', 'tech', tV, 'Novelty, TRL level, IP strategy, differentiation vs existing Canadian practices') +
-      scoreSelect('👥 Team Score', 'team', tmV, 'Founder experience, ag expertise, coachability, customer support capacity, team balance') +
-      scoreSelect('📈 Market Score', 'market', mV, 'Canadian relevance, data-driven value prop, partner feedback, regulatory alignment') +
+      scoreSelect(dimA.label + ' Score', 'tech', tV, dimA.desc || '') +
+      scoreSelect(dimB.label + ' Score', 'team', tmV, dimB.desc || '') +
+      scoreSelect(dimC.label + ' Score', 'market', mV, dimC.desc || '') +
       '<div style="margin-top:8px"><label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:4px">Score Comments</label>' +
         '<textarea oninput="wksDraftScore(\'' + o.id + '\',\'comments\',this.value)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px;min-height:80px;resize:vertical" placeholder="Reasoning for scores, flags, notes...">' + (draft.comments||o.nextSteps||'') + '</textarea></div>' +
-      (hasDraft ? '<button onclick="wksSaveScores(\'' + o.id + '\')" style="margin-top:12px;padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%">💾 Save Scores to Airtable</button>' : '') +
+      (hasDraft ? '<button onclick="wksSaveScores(\'' + o.id + '\')" style="margin-top:12px;padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%">💾 Save Scores</button>' : '') +
       '<div style="margin-top:20px;padding:16px;background:var(--hover);border-radius:10px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">SCORING RUBRIC REFERENCE</div>' +
-        '<div style="font-size:11px;color:var(--text-muted);line-height:1.8"><strong>Starter Rubric (editable in Rubric Builder):</strong> Each dimension scored 1–4.<br>' +
-        '<strong>1 — Early:</strong> Concept or early prototype, unproven, small or solo team<br>' +
-        '<strong>2 — Developing:</strong> Lab-validated, basic team, broad problem definition<br>' +
-        '<strong>3 — Promising:</strong> Field-tested, differentiated approach, balanced team<br>' +
-        '<strong>4 — Advanced:</strong> Production-ready, clear moat, multidisciplinary team, direct ecosystem fit</div></div>' +
+        '<div style="font-size:11px;color:var(--text-muted);line-height:1.8"><strong>Active rubric (editable in Settings → Rubric):</strong> Each dimension scored 1–4.<br>' + rubricRefRows +
+        '<br><br><strong>Dimensions:</strong> ' + RUBRIC_DIMENSIONS.map(d => d.label).join(' · ') +
+        '<br><strong>Tiers:</strong> ' + TOTAL_TIERS.map(t => t.label + ' (' + t.min + '–' + t.max + ')').join(' · ') +
+        '</div></div>' +
     '</div>';
   } else if (_wksDetailTab === 'charter') {
     const proj = orgProject;
@@ -16781,7 +16858,7 @@ function renderAivaDetail() {
         o.name ? '✅ Company name' : '❌ Company name',
         o.techProblem ? '✅ Tech/problem description' : '⚠️ Tech/problem description',
         o.trl ? '✅ TRL level' : '⚠️ TRL level',
-        o.total > 0 ? '✅ Rubric scores ('+o.total+'/12)' : '⚠️ Rubric scores',
+        o.total > 0 ? '✅ Rubric scores ('+o.total+'/'+RUBRIC_MAX_TOTAL+')' : '⚠️ Rubric scores',
         o.teamSize ? '✅ Team size' : '⚠️ Team size',
         o.runway ? '✅ Runway' : '⚠️ Runway',
         o.ip ? '✅ IP ownership' : '⚠️ IP ownership',
@@ -16969,7 +17046,7 @@ function renderAivaDetail() {
         '</div>' +
         (o.website ? '<a href="' + (o.website.startsWith('http')?o.website:'https://'+o.website) + '" target="_blank" style="font-size:12px;color:var(--green);text-decoration:none">🔗 ' + o.website + '</a>' : '') +
       '</div>' +
-      (o.total > 0 ? '<div style="text-align:center;padding:12px 20px;background:var(--hover);border-radius:10px"><div style="font-size:28px;font-weight:900;color:' + (TOTAL_TIERS.find(t=>o.total>=t.min&&o.total<=t.max)||TOTAL_TIERS[2]).color + '">' + o.total + '<span style="font-size:14px;color:var(--text-muted)">/12</span></div><div style="font-size:10px;color:var(--text-muted)">Total Score</div></div>' : '') +
+      (o.total > 0 ? '<div style="text-align:center;padding:12px 20px;background:var(--hover);border-radius:10px"><div style="font-size:28px;font-weight:900;color:' + (TOTAL_TIERS.find(t=>o.total>=t.min&&o.total<=t.max)||TOTAL_TIERS[2]).color + '">' + o.total + '<span style="font-size:14px;color:var(--text-muted)">/' + RUBRIC_MAX_TOTAL + '</span></div><div style="font-size:10px;color:var(--text-muted)">Total Score</div></div>' : '') +
     '</div>' +
     '<div style="margin-bottom:12px;display:flex;gap:4px;align-items:center;flex-wrap:wrap"><span style="font-size:10px;font-weight:700;color:var(--text-muted);margin-right:4px">Move to:</span>' + nextStages + '</div>' +
     '<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">' + tabBar + '</div>' +
@@ -17199,6 +17276,131 @@ function ecoSaveUnifiedSettings() {
   render('ecosystem_ws');
 }
 
+// ── RUBRIC BUILDER — save / reset / preview ──
+function ecoBuildRubricFromForm() {
+  const rb = getRubric();
+  // Dimensions
+  const dimensions = rb.dimensions.map((d, i) => {
+    const labelEl = document.getElementById('rb-dim-label-' + i);
+    const descEl  = document.getElementById('rb-dim-desc-' + i);
+    return {
+      key:   d.key,
+      label: (labelEl && labelEl.value.trim()) || d.label,
+      desc:  (descEl  && descEl.value.trim())  || d.desc
+    };
+  });
+  // Score labels
+  const scoreLabels = {};
+  [1,2,3,4].forEach(n => {
+    const el = document.getElementById('rb-score-label-' + n);
+    scoreLabels[n] = (el && el.value.trim()) || rb.scoreLabels[n];
+  });
+  // Tiers
+  const totalTiers = rb.totalTiers.map((t, i) => {
+    const labelEl = document.getElementById('rb-tier-label-' + i);
+    const minEl   = document.getElementById('rb-tier-min-' + i);
+    const maxEl   = document.getElementById('rb-tier-max-' + i);
+    const descEl  = document.getElementById('rb-tier-desc-' + i);
+    return {
+      label: (labelEl && labelEl.value.trim()) || t.label,
+      min:   minEl ? parseInt(minEl.value, 10) : t.min,
+      max:   maxEl ? parseInt(maxEl.value, 10) : t.max,
+      color: t.color,
+      desc:  (descEl && descEl.value.trim()) || t.desc
+    };
+  });
+  return {
+    version: 1,
+    scoreLabels,
+    scoreColors: rb.scoreColors,
+    dimensions,
+    totalTiers,
+    maxTotal: rb.maxTotal
+  };
+}
+
+function ecoValidateRubric(r) {
+  const errs = [];
+  if (!r.dimensions.every(d => d.label && d.label.length <= 40)) errs.push('All dimension labels are required (≤40 chars).');
+  if (![1,2,3,4].every(n => r.scoreLabels[n] && r.scoreLabels[n].length <= 20)) errs.push('All score labels are required (≤20 chars).');
+  if (!r.totalTiers.every(t => t.label && Number.isFinite(t.min) && Number.isFinite(t.max) && t.min <= t.max)) {
+    errs.push('All tiers need a label and valid min ≤ max.');
+  }
+  // Tier coverage: should span 0..maxTotal without gaps. Warn if not.
+  const sorted = [...r.totalTiers].sort((a,b) => a.min - b.min);
+  if (sorted[0].min !== 0) errs.push('First tier must start at 0.');
+  if (sorted[sorted.length-1].max < r.maxTotal) errs.push('Last tier must cover up to ' + r.maxTotal + '.');
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].min !== sorted[i-1].max + 1) errs.push('Tier ranges must be contiguous with no gaps or overlaps.');
+  }
+  return errs;
+}
+
+async function ecoSaveRubric() {
+  const rubric = ecoBuildRubricFromForm();
+  const errs = ecoValidateRubric(rubric);
+  if (errs.length) { toast('⚠️ ' + errs[0]); return; }
+
+  // Apply locally immediately so UI reflects the change
+  applyRubric(rubric);
+  if (!_ecoSettings) _ecoSettings = {};
+  _ecoSettings.rubric = rubric;
+
+  // Persist: Supabase if available, else localStorage via saveEcoData
+  if (_ecoUseSupabase && currentUser && currentUser.id && typeof _supabase !== 'undefined') {
+    try {
+      const { error } = await _supabase.from('eco_program_settings')
+        .upsert({ manager_id: currentUser.id, rubric }, { onConflict: 'manager_id' });
+      if (error) throw error;
+      toast('✅ Rubric saved');
+    } catch(e) {
+      console.warn('Rubric Supabase save failed, falling back:', e);
+      try { saveEcoData(); } catch(_) {}
+      toast('⚠️ Saved locally — run the rubric migration in Supabase to sync across devices');
+    }
+  } else {
+    try { saveEcoData(); } catch(_) {}
+    toast('✅ Rubric saved locally');
+  }
+  render('ecosystem_ws');
+}
+
+async function ecoResetRubric() {
+  if (!confirm('Reset to the Starter Rubric defaults? Your custom labels and thresholds will be cleared.')) return;
+  applyRubric(null);
+  if (!_ecoSettings) _ecoSettings = {};
+  _ecoSettings.rubric = null;
+  if (_ecoUseSupabase && currentUser && currentUser.id && typeof _supabase !== 'undefined') {
+    try {
+      await _supabase.from('eco_program_settings')
+        .upsert({ manager_id: currentUser.id, rubric: null }, { onConflict: 'manager_id' });
+    } catch(e) { console.warn('Rubric reset Supabase call failed:', e); }
+  }
+  try { saveEcoData(); } catch(_) {}
+  toast('↺ Rubric reset to defaults');
+  render('ecosystem_ws');
+}
+
+function ecoPreviewRubric() {
+  const rubric = ecoBuildRubricFromForm();
+  const errs = ecoValidateRubric(rubric);
+  if (errs.length) { toast('⚠️ ' + errs[0]); return; }
+  const rows = rubric.totalTiers.map(t =>
+    '<tr><td style="padding:8px;border:1px solid #e2e8f0;background:' + t.color + '18;font-weight:700;color:' + t.color + '">' + t.label + '</td>' +
+    '<td style="padding:8px;border:1px solid #e2e8f0">' + t.min + '–' + t.max + '</td>' +
+    '<td style="padding:8px;border:1px solid #e2e8f0">' + t.desc + '</td></tr>'
+  ).join('');
+  const dims = rubric.dimensions.map((d, i) =>
+    '<div style="padding:10px;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:6px"><strong>' + (i+1) + '. ' + d.label + '</strong><div style="font-size:12px;color:#64748b;margin-top:2px">' + (d.desc||'') + '</div></div>'
+  ).join('');
+  const scores = [1,2,3,4].map(n =>
+    '<span style="display:inline-block;padding:4px 10px;margin:2px;background:' + rubric.scoreColors[n] + '18;color:' + rubric.scoreColors[n] + ';border-radius:6px;font-size:12px;font-weight:700">' + n + ' — ' + rubric.scoreLabels[n] + '</span>'
+  ).join(' ');
+  const html = '<!DOCTYPE html><html><head><title>Rubric Preview</title><style>body{font-family:-apple-system,sans-serif;color:#0f172a;max-width:700px;margin:24px auto;padding:24px;line-height:1.5}h1{font-size:20px;color:#16a34a;border-bottom:2px solid #16a34a;padding-bottom:8px}h2{font-size:14px;color:#16a34a;margin-top:24px}table{width:100%;border-collapse:collapse;font-size:13px}</style></head><body><h1>Rubric Preview</h1><h2>Dimensions</h2>' + dims + '<h2>Score Levels</h2><div>' + scores + '</div><h2>Tiers</h2><table><tr><th style="padding:8px;border:1px solid #e2e8f0;background:#f0fdf4">Tier</th><th style="padding:8px;border:1px solid #e2e8f0;background:#f0fdf4">Range</th><th style="padding:8px;border:1px solid #e2e8f0;background:#f0fdf4">Recommendation</th></tr>' + rows + '</table><p style="margin-top:24px;font-size:11px;color:#94a3b8">Preview only — click Save Rubric to apply.</p></body></html>';
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); }
+}
+
 // ── UNIFIED SETTINGS RENDERER ──
 function renderEcoUnifiedSettings(ecoConfig, programName, profile, modeBadge) {
   const s = _ecoSettings || {};
@@ -17210,6 +17412,7 @@ function renderEcoUnifiedSettings(ecoConfig, programName, profile, modeBadge) {
 
   const settingsTabs = [
     {id:'general', label:'General', icon:'⚙️'},
+    {id:'rubric', label:'Rubric', icon:'📊'},
     {id:'features', label:'Features', icon:'🧩'},
     {id:'integrations', label:'Integrations', icon:'🔌'},
     {id:'team', label:'Team', icon:'👥'},
@@ -17257,6 +17460,90 @@ function renderEcoUnifiedSettings(ecoConfig, programName, profile, modeBadge) {
       <div style="display:flex;gap:8px;align-items:center">${modeBadge} <span style="font-size:11px;color:var(--text-faint)">· Template: ${ECO_TEMPLATES[ecoConfig.template]?.label || 'Custom'}</span></div>
     </div>
     <button onclick="ecoSaveUnifiedSettings()" style="padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%">Save Settings</button>`;
+
+  } else if (_settingsTab === 'rubric') {
+    // ── RUBRIC BUILDER ──
+    const rb = getRubric();
+    const isDefault = !_ecoSettings || !_ecoSettings.rubric;
+    const previewTotal = rb.dimensions.length * 4; // max score across all dims
+    const dimCards = rb.dimensions.map((d, i) => `
+      <div style="padding:14px;background:var(--hover);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <span style="width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">${i+1}</span>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);flex:1">DIMENSION ${i+1} — LABEL</label>
+        </div>
+        <input id="rb-dim-label-${i}" value="${(d.label||'').replace(/"/g,'&quot;')}" style="${inputStyle};margin-bottom:10px" placeholder="e.g. Innovation">
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px">DESCRIPTION (shown under score dropdown)</label>
+        <textarea id="rb-dim-desc-${i}" style="${inputStyle};min-height:56px;resize:vertical" placeholder="What does a reviewer judge in this dimension?">${(d.desc||'').replace(/</g,'&lt;')}</textarea>
+      </div>
+    `).join('');
+
+    const scoreRows = [1,2,3,4].map(n => `
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <span style="width:28px;height:28px;border-radius:6px;background:${rb.scoreColors[n]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">${n}</span>
+        <input id="rb-score-label-${n}" value="${(rb.scoreLabels[n]||'').replace(/"/g,'&quot;')}" style="${inputStyle};flex:1" placeholder="Score ${n} label">
+      </div>
+    `).join('');
+
+    const tierRows = rb.totalTiers.map((t, i) => `
+      <div style="padding:12px;background:var(--hover);border:1px solid var(--border);border-radius:10px;margin-bottom:8px">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <span style="width:14px;height:14px;border-radius:3px;background:${t.color};flex-shrink:0"></span>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);flex:1">TIER ${i+1}</label>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:2px">LABEL</label>
+            <input id="rb-tier-label-${i}" value="${(t.label||'').replace(/"/g,'&quot;')}" style="${inputStyle}" placeholder="e.g. Prioritize">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:2px">MIN</label>
+            <input id="rb-tier-min-${i}" type="number" min="0" max="${previewTotal}" value="${t.min}" style="${inputStyle}">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:2px">MAX</label>
+            <input id="rb-tier-max-${i}" type="number" min="0" max="${previewTotal}" value="${t.max}" style="${inputStyle}">
+          </div>
+        </div>
+        <label style="font-size:10px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:2px">RECOMMENDATION</label>
+        <input id="rb-tier-desc-${i}" value="${(t.desc||'').replace(/"/g,'&quot;')}" style="${inputStyle}" placeholder="What should reviewers do at this tier?">
+      </div>
+    `).join('');
+
+    inner = `
+    <div style="${sectionStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px">
+        <div>
+          <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0">Rubric Builder</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0;line-height:1.5">Customize how your workspace scores incoming deals. Three dimensions × four score levels = ${previewTotal} max. ${isDefault ? '<span style="color:var(--text-faint)">Currently using the Starter Rubric defaults.</span>' : '<span style="color:var(--green);font-weight:700">Custom rubric active.</span>'}</p>
+        </div>
+        ${isDefault ? '' : '<button onclick="ecoResetRubric()" style="padding:6px 12px;background:var(--hover);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;white-space:nowrap">↺ Reset to defaults</button>'}
+      </div>
+    </div>
+
+    <div style="${sectionStyle}">
+      <h4 style="font-size:13px;font-weight:800;color:var(--text);margin:0 0 4px">1. Dimensions</h4>
+      <p style="font-size:11px;color:var(--text-muted);margin:0 0 14px;line-height:1.5">Name the three lenses you judge deals on. Each one is scored 1–4 and summed into the total.</p>
+      ${dimCards}
+      <p style="font-size:10px;color:var(--text-faint);margin:8px 0 0;line-height:1.5">Adding or removing dimensions beyond three comes in the next release. For now, labels and descriptions are editable — the underlying data fields stay fixed so historical scores remain consistent.</p>
+    </div>
+
+    <div style="${sectionStyle}">
+      <h4 style="font-size:13px;font-weight:800;color:var(--text);margin:0 0 4px">2. Score Levels (1–4)</h4>
+      <p style="font-size:11px;color:var(--text-muted);margin:0 0 14px;line-height:1.5">Shown in the scoring dropdown and rubric reference card. Colors stay on the neutral palette.</p>
+      ${scoreRows}
+    </div>
+
+    <div style="${sectionStyle}">
+      <h4 style="font-size:13px;font-weight:800;color:var(--text);margin:0 0 4px">3. Total Tiers</h4>
+      <p style="font-size:11px;color:var(--text-muted);margin:0 0 14px;line-height:1.5">Totals roll up into three tiers that drive the charter recommendation. Set min/max thresholds across 0–${previewTotal}.</p>
+      ${tierRows}
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="ecoSaveRubric()" style="flex:1;padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">Save Rubric</button>
+      <button onclick="ecoPreviewRubric()" style="padding:12px 20px;background:var(--hover);border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer">Preview</button>
+    </div>`;
 
   } else if (_settingsTab === 'features') {
     const featureCards = ECO_FEATURES.map(feat => {
