@@ -1493,6 +1493,10 @@ function applyUser(user, isNew) {
     isAdmin = !!(profile && profile.is_platform_admin === true);
     // Load the workspaces this user is an active member of (Supabase source of truth).
     await loadUserWorkspaces();
+    // Claim flow: if the user arrived via ?claim=<code>, redeem it now.
+    await consumePendingClaim();
+    // First-login auto-join: attach to workspaces matching this user's email domain.
+    await maybeAutoJoinOnFirstLogin();
     if (profile && profile.blocked) {
       showBlockedScreen();
       return;
@@ -9462,7 +9466,7 @@ function toggleSeg(id){
   openModal('seg-modal');
 }
 
-// ── USER TRACKING ─────────────────────────
+// ── USER TRACKING ─────────────────────────────────────────────────
 // Platform admin state now lives in Supabase (profiles.is_platform_admin).
 // Workspaces live in public.workspaces + public.workspace_members.
 const RUSSELL_EMAIL = 'russellcolevop@gmail.com'; // root-owner protection only
@@ -9539,6 +9543,273 @@ async function loadUserWorkspaces(){
     if (_userWorkspaces.length > 0) _activeWorkspaceId = (getActiveWorkspace()||{}).id || null;
   } catch(e) {
     console.warn('loadUserWorkspaces threw', e);
+  }
+}
+
+// ── CLAIM FLOW ───────────────────────────────────────────────
+// Works for all workspace types (ecosystem, investor, founder, advisor, other).
+// Invites are stored in public.workspace_invites and redeemed via RPC claim_workspace(p_code).
+
+// Stash a ?claim=<code> from the URL at page load (before auth kicks in).
+// We hold it in memory + localStorage so it survives the OAuth round-trip.
+let _pendingClaimCode = null;
+(function captureClaimCode(){
+  try {
+    const p = new URLSearchParams(location.search);
+    const code = p.get('claim');
+    if (code && /^[A-Z0-9]{4,16}$/i.test(code.trim())) {
+      _pendingClaimCode = code.trim().toUpperCase();
+      localStorage.setItem('foc_pending_claim', _pendingClaimCode);
+      // Clean URL so the code doesn't linger in history
+      p.delete('claim');
+      const next = location.pathname + (p.toString() ? '?' + p.toString() : '') + location.hash;
+      history.replaceState({}, '', next);
+    } else if (localStorage.getItem('foc_pending_claim')) {
+      _pendingClaimCode = localStorage.getItem('foc_pending_claim');
+    }
+  } catch(e){ console.warn('captureClaimCode failed', e); }
+})();
+
+// Call claim_workspace RPC. Returns { ok, workspace?, errorCode?, message? }.
+async function claimWorkspaceByCode(code){
+  if (!_supabase) return { ok:false, errorCode:'NO_CLIENT', message:'Supabase not ready' };
+  if (!currentUser) return { ok:false, errorCode:'NOT_SIGNED_IN', message:'Please sign in first' };
+  try {
+    const { data, error } = await _supabase.rpc('claim_workspace', { p_code: code });
+    if (error) {
+      const msg = error.message || '';
+      const ec = /INVITE_NOT_FOUND/.test(msg) ? 'INVITE_NOT_FOUND'
+              : /INVITE_EXPIRED/.test(msg) ? 'INVITE_EXPIRED'
+              : /INVITE_EXHAUSTED/.test(msg) ? 'INVITE_EXHAUSTED'
+              : /INVITE_EMAIL_MISMATCH/.test(msg) ? 'INVITE_EMAIL_MISMATCH'
+              : /INVITE_DOMAIN_MISMATCH/.test(msg) ? 'INVITE_DOMAIN_MISMATCH'
+              : 'ERROR';
+      return { ok:false, errorCode:ec, message:msg };
+    }
+    return { ok:true, workspace:data };
+  } catch(e) {
+    return { ok:false, errorCode:'EXCEPTION', message:String(e) };
+  }
+}
+
+// Call auto_join_by_domain RPC — attaches caller to any workspace whose
+// email_domain matches their sign-in email, or any open domain-scoped invite.
+async function autoJoinByDomain(){
+  if (!_supabase || !currentUser) return 0;
+  try {
+    const { data, error } = await _supabase.rpc('auto_join_by_domain');
+    if (error) { console.warn('auto_join_by_domain error', error); return 0; }
+    return typeof data === 'number' ? data : 0;
+  } catch(e) { console.warn('auto_join_by_domain threw', e); return 0; }
+}
+
+// Consume a pending claim after sign-in. Called right after loadUserWorkspaces().
+async function consumePendingClaim(){
+  const code = _pendingClaimCode || localStorage.getItem('foc_pending_claim');
+  if (!code || !currentUser) return;
+  const res = await claimWorkspaceByCode(code);
+  if (res.ok) {
+    _pendingClaimCode = null;
+    localStorage.removeItem('foc_pending_claim');
+    // Refresh memberships so the UI unlocks the newly-joined workspace.
+    await loadUserWorkspaces();
+    const ws = res.workspace || {};
+    toast('✅ Joined workspace: ' + (ws.name || 'Workspace'));
+  } else {
+    // Surface a dismissible error but keep the code so the user can retry after
+    // signing in with the right email (e.g. for email- or domain-gated invites).
+    const friendly = {
+      INVITE_NOT_FOUND: 'That invite code is invalid or has been revoked.',
+      INVITE_EXPIRED: 'That invite code has expired.',
+      INVITE_EXHAUSTED: 'That invite code has reached its use limit.',
+      INVITE_EMAIL_MISMATCH: 'This invite is for a different email address. Sign in with the invited account.',
+      INVITE_DOMAIN_MISMATCH: 'This invite requires an email from a specific company domain.',
+    }[res.errorCode] || ('Could not claim workspace: ' + (res.message || res.errorCode));
+    toast('⚠️ ' + friendly, 6000);
+    // On permanent failures, drop the cached code so it doesn't keep firing.
+    if (res.errorCode === 'INVITE_NOT_FOUND' || res.errorCode === 'INVITE_EXPIRED' || res.errorCode === 'INVITE_EXHAUSTED') {
+      _pendingClaimCode = null;
+      localStorage.removeItem('foc_pending_claim');
+    }
+  }
+}
+
+// Create an invite for a workspace via RPC. Returns the invite row.
+async function createWorkspaceInvite(opts){
+  if (!_supabase) return { ok:false, message:'Supabase not ready' };
+  const body = {
+    p_workspace_id: opts.workspace_id,
+    p_role:         opts.role || 'member',
+    p_email:        opts.email || null,
+    p_email_domain: opts.email_domain || null,
+    p_max_uses:     opts.max_uses || 1,
+    p_expires_in:   opts.expires_in || null, // e.g. '7 days'
+  };
+  try {
+    const { data, error } = await _supabase.rpc('create_invite', body);
+    if (error) return { ok:false, message: error.message };
+    return { ok:true, invite:data };
+  } catch(e) { return { ok:false, message:String(e) }; }
+}
+
+// Revoke an invite via RPC.
+async function revokeWorkspaceInvite(inviteId){
+  if (!_supabase) return false;
+  try {
+    const { data, error } = await _supabase.rpc('revoke_invite', { p_invite_id: inviteId });
+    if (error) { console.warn('revoke_invite error', error); return false; }
+    return !!data;
+  } catch(e) { return false; }
+}
+
+// Create a workspace from scratch via RPC.
+async function createWorkspaceRPC(opts){
+  if (!_supabase) return { ok:false, message:'Supabase not ready' };
+  try {
+    const { data, error } = await _supabase.rpc('create_workspace', {
+      p_name:           opts.name,
+      p_workspace_type: opts.workspace_type || 'ecosystem',
+      p_email_domain:   opts.email_domain || null,
+      p_description:    opts.description || '',
+    });
+    if (error) return { ok:false, message: error.message };
+    return { ok:true, workspace:data };
+  } catch(e) { return { ok:false, message:String(e) }; }
+}
+
+// Build a shareable claim URL for a code.
+function buildClaimUrl(code){
+  return location.origin + location.pathname + '?claim=' + encodeURIComponent(code);
+}
+
+// Render the Workspaces & Invites admin panel.
+async function renderWorkspacesAdmin(){
+  const root = document.getElementById('workspaces-admin-root');
+  if (!root) return;
+  if (!_supabase) { root.innerHTML = '<div class="card">Supabase not initialized.</div>'; return; }
+  // Platform admin sees all; others see only those they own or are admin of
+  let wsQuery = _supabase.from('workspaces').select('id, slug, name, workspace_type, owner_id, email_domain, description, created_at').order('created_at', { ascending: false });
+  const { data: workspaces, error: wsErr } = await wsQuery;
+  if (wsErr) { root.innerHTML = `<div class="card">Error loading workspaces: ${wsErr.message}</div>`; return; }
+  const { data: invites } = await _supabase.from('workspace_invites').select('id, workspace_id, claim_code, email, email_domain, role, max_uses, uses, expires_at, revoked_at, created_at').order('created_at', { ascending: false });
+  const byWs = {};
+  (invites || []).forEach(i => { (byWs[i.workspace_id] = byWs[i.workspace_id] || []).push(i); });
+
+  const esc = (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+  const typeOptions = ['ecosystem','investor','founder','advisor','other'].map(t => `<option value="${t}">${t}</option>`).join('');
+
+  let html = '';
+  // Create workspace form (platform admin only)
+  if (isUserAdmin()) {
+    html += `<div class="card" style="margin-bottom:18px"><h3 style="margin-top:0">➕ Create Workspace</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+        <input id="new-ws-name" placeholder="Workspace name (e.g. Picketa)" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)" />
+        <select id="new-ws-type" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)">${typeOptions}</select>
+        <input id="new-ws-domain" placeholder="Email domain (optional, e.g. picketa.com)" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)" />
+      </div>
+      <textarea id="new-ws-desc" placeholder="Description (optional)" style="margin-top:10px;width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);min-height:60px"></textarea>
+      <button onclick="handleCreateWorkspaceClick()" class="btn btn-primary" style="margin-top:10px">Create Workspace</button>
+    </div>`;
+  }
+
+  if (!workspaces || workspaces.length === 0) {
+    html += '<div class="card">No workspaces yet. Create one above to get started.</div>';
+    root.innerHTML = html;
+    return;
+  }
+
+  workspaces.forEach(w => {
+    const wsInvites = byWs[w.id] || [];
+    const activeInvites = wsInvites.filter(i => !i.revoked_at && (!i.expires_at || new Date(i.expires_at) > new Date()) && i.uses < i.max_uses);
+    html += `<div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:0">${esc(w.name)} <span style="font-size:12px;color:var(--text-muted);font-weight:400">· ${esc(w.workspace_type)}</span></h3>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">slug: <code>${esc(w.slug)}</code>${w.email_domain ? ' · domain: <code>' + esc(w.email_domain) + '</code>' : ''}</div>
+          ${w.description ? '<p style="margin:8px 0 0;color:var(--text-muted);font-size:13px">' + esc(w.description) + '</p>' : ''}
+        </div>
+      </div>
+      <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600;color:var(--green)">➕ Generate invite link</summary>
+        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+          <select id="inv-role-${w.id}" style="padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+            <option value="member">Member</option><option value="admin">Admin</option><option value="viewer">Viewer</option><option value="owner">Owner</option>
+          </select>
+          <input id="inv-email-${w.id}" placeholder="Email (optional, email-gated)" style="padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)" />
+          <input id="inv-domain-${w.id}" placeholder="Domain (optional, e.g. acme.com)" style="padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)" />
+          <input id="inv-uses-${w.id}" type="number" min="1" value="1" placeholder="Max uses" style="padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)" />
+          <select id="inv-exp-${w.id}" style="padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+            <option value="">Never expires</option><option value="1 day">1 day</option><option value="7 days">7 days</option><option value="30 days">30 days</option><option value="90 days">90 days</option>
+          </select>
+        </div>
+        <button onclick="handleCreateInviteClick('${w.id}')" class="btn btn-primary" style="margin-top:10px">Generate link</button>
+        <div id="inv-out-${w.id}" style="margin-top:10px;font-size:13px"></div>
+      </details>
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px">Active invites (${activeInvites.length})</div>
+        ${activeInvites.length === 0 ? '<div style="font-size:12px;color:var(--text-muted)">No active invites.</div>' : activeInvites.map(i => {
+          const url = buildClaimUrl(i.claim_code);
+          return `<div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:12px;background:var(--surface)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <code style="font-weight:700">${esc(i.claim_code)}</code>
+              <span style="color:var(--text-muted)">${esc(i.role)}${i.email ? ' · ' + esc(i.email) : ''}${i.email_domain ? ' · @' + esc(i.email_domain) : ''} · ${i.uses}/${i.max_uses} uses${i.expires_at ? ' · exp ' + new Date(i.expires_at).toLocaleDateString() : ''}</span>
+              <button onclick="navigator.clipboard.writeText('${url}').then(() => toast('📋 Link copied'))" class="btn btn-small">Copy link</button>
+              <button onclick="handleRevokeInviteClick('${i.id}')" class="btn btn-small" style="color:var(--red)">Revoke</button>
+            </div>
+            <div style="margin-top:4px;color:var(--text-muted);word-break:break-all">${esc(url)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  root.innerHTML = html;
+}
+
+// UI click handlers
+async function handleCreateWorkspaceClick(){
+  const name = (document.getElementById('new-ws-name')||{}).value || '';
+  const type = (document.getElementById('new-ws-type')||{}).value || 'ecosystem';
+  const domain = (document.getElementById('new-ws-domain')||{}).value || '';
+  const desc = (document.getElementById('new-ws-desc')||{}).value || '';
+  if (!name.trim()) { toast('⚠️ Name is required'); return; }
+  const res = await createWorkspaceRPC({ name, workspace_type: type, email_domain: domain, description: desc });
+  if (!res.ok) { toast('⚠️ ' + res.message); return; }
+  toast('✅ Workspace created: ' + (res.workspace && res.workspace.name || name));
+  await loadUserWorkspaces();
+  renderWorkspacesAdmin();
+}
+
+async function handleCreateInviteClick(wsId){
+  const role = (document.getElementById('inv-role-'+wsId)||{}).value || 'member';
+  const email = (document.getElementById('inv-email-'+wsId)||{}).value || '';
+  const domain = (document.getElementById('inv-domain-'+wsId)||{}).value || '';
+  const uses = parseInt((document.getElementById('inv-uses-'+wsId)||{}).value || '1', 10) || 1;
+  const exp = (document.getElementById('inv-exp-'+wsId)||{}).value || '';
+  const res = await createWorkspaceInvite({
+    workspace_id: wsId, role, email, email_domain: domain, max_uses: uses, expires_in: exp || null
+  });
+  const out = document.getElementById('inv-out-'+wsId);
+  if (!res.ok) { if (out) out.innerHTML = '<span style="color:var(--red)">⚠️ ' + res.message + '</span>'; return; }
+  const url = buildClaimUrl(res.invite.claim_code);
+  if (out) out.innerHTML = '<div style="padding:10px;border:1px solid var(--green);border-radius:8px;background:rgba(0,200,100,.08)"><div style="font-weight:700;margin-bottom:4px">✅ Invite created</div><div style="word-break:break-all;font-family:monospace;font-size:12px">' + url + '</div><button onclick="navigator.clipboard.writeText(\'' + url + '\').then(() => toast(\'📋 Link copied\'))" class="btn btn-small" style="margin-top:6px">Copy link</button></div>';
+  setTimeout(renderWorkspacesAdmin, 400);
+}
+
+async function handleRevokeInviteClick(inviteId){
+  if (!confirm('Revoke this invite? Anyone with the link will no longer be able to use it.')) return;
+  const ok = await revokeWorkspaceInvite(inviteId);
+  if (ok) { toast('✅ Invite revoked'); renderWorkspacesAdmin(); }
+  else { toast('⚠️ Could not revoke invite'); }
+}
+
+// First-login auto-join: if the user has zero workspaces, try domain auto-join.
+async function maybeAutoJoinOnFirstLogin(){
+  if (!currentUser) return;
+  if (_userWorkspaces && _userWorkspaces.length > 0) return;
+  const joined = await autoJoinByDomain();
+  if (joined > 0) {
+    await loadUserWorkspaces();
+    toast('✅ Auto-joined ' + joined + ' workspace' + (joined === 1 ? '' : 's') + ' from your email domain');
   }
 }
 
@@ -11099,6 +11370,8 @@ async function wizSave() {
   _userProfile = await syncProfileMeta(_userProfile);
   isAdmin = !!(_userProfile && _userProfile.is_platform_admin === true);
   await loadUserWorkspaces();
+  await consumePendingClaim();
+  await maybeAutoJoinOnFirstLogin();
   closeWizard();
   // Show ecosystem manager bridge if persona is ecosystem_manager
   const _isNewEcoManager = cleanProfile.persona === 'ecosystem_manager' && _wizPreviewMode !== 'preview' && _wizPreviewMode !== 'create';
@@ -11556,8 +11829,8 @@ function pgAdmin(){
   const pendingVenture = _ventureSubmissions.filter(v => v.status === 'New' || v.status === 'Under Review').length;
   const ecoClaimsBadge = pendingClaims + pendingListings;
   const adminTabBar = (active) => `<div class="admin-tab-bar" style="display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--border);flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch">
-    ${['directory','connections','deals','venture_studio','eco_claims','roadmap','investor','analytics'].map(t => {
-      const labels = {directory:'👥 User Directory', connections:'🧠 Smart Connections', deals:'📈 Deal Manager', venture_studio:'🚀 Venture Studio' + (pendingVenture > 0 ? ' (' + pendingVenture + ')' : ''), eco_claims:'🏗️ Ecosystems' + (ecoClaimsBadge > 0 ? ' (' + ecoClaimsBadge + ')' : ''), roadmap:'🗺️ Product Roadmap', investor:'💼 Investor Opportunity', analytics:'📊 Analytics'};
+    ${['directory','connections','deals','venture_studio','eco_claims','workspaces','roadmap','investor','analytics'].map(t => {
+      const labels = {directory:'👥 User Directory', connections:'🧠 Smart Connections', deals:'📈 Deal Manager', venture_studio:'🚀 Venture Studio' + (pendingVenture > 0 ? ' (' + pendingVenture + ')' : ''), eco_claims:'🏗️ Ecosystems' + (ecoClaimsBadge > 0 ? ' (' + ecoClaimsBadge + ')' : ''), workspaces:'🏢 Workspaces & Invites', roadmap:'🗺️ Product Roadmap', investor:'💼 Investor Opportunity', analytics:'📊 Analytics'};
       const isActive = active === t;
       return `<button onclick="adminTab='${t}';render('admin')" style="padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:${isActive?'var(--green)':'var(--text-muted)'};border-bottom:2px solid ${isActive?'var(--green)':'transparent'};margin-bottom:-2px">${labels[t]}</button>`;
     }).join('')}
@@ -12013,6 +12286,15 @@ function pgAdmin(){
     }
 
     return vsHtml;
+  }
+
+  // Workspaces & Invites tab
+  if (adminTab === 'workspaces') {
+    return `<div class="page-hdr"><h1>🔐 Admin Dashboard</h1>
+    <p>Create workspaces, generate invite links, and manage members.</p></div>
+    ${adminTabBar('workspaces')}
+    <div id="workspaces-admin-root"><div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading workspaces...</p></div></div>`
+    + (setTimeout(renderWorkspacesAdmin, 50), '');
   }
 
   // Roadmap tab
@@ -17262,8 +17544,8 @@ const ECO_TEMPLATES = {
 function getEcoConfig() {
   const raw = localStorage.getItem('foc_eco_config_' + (currentUser?.id || 'anon'));
   if (raw) return JSON.parse(raw);
-  // Admin bootstrap: return full validator preset for demo/admin users
-  const userEcos = currentUser ? getUserEcosystems(currentUser.id) : [];
+  // Bootstrap: any active member of an ecosystem workspace (or a platform admin)
+  // gets the validator preset so the hub unlocks on first load.
   if (hasWorkspaceAccess('ecosystem') || isUserAdmin()) {
     return { setupComplete: true, template: 'validator', features: ECO_TEMPLATES.validator.features, programName: '', programType: '', teamSize: '', roles: [] };
   }
