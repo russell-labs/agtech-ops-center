@@ -4,13 +4,19 @@
 
 **The live site is a single-file HTML app at `index.html` in the repo root.** It is served by **GitHub Pages** at **https://www.founderopscenter.com** (the `CNAME` file maps the custom domain).
 
-That one file (~1.4 MB, ~18,900 lines) contains:
-- All HTML, CSS, and JavaScript for the site
+That one file (~1.2 MB, ~16,100 lines) contains:
+- Most of the HTML and JavaScript for the site
 - An embedded Supabase client for auth, data, and storage
 - Google OAuth + email magic-link sign-in
 - An admin area, profile editor, ecosystem workspace, mentors directory, market intel, etc.
 
-**Edit `index.html` and push to `main` → the live site updates.** There is no build step.
+Two kinds of content have been peeled out of `index.html` into sibling files and are loaded via `<link>` / `<script>` tags from the head:
+- **CSS** → `styles.css`
+- **Big data arrays** (mentors, accelerators, partner ecosystems) → `data/*.js`, each exposing a `window.XXX` global
+
+More splits are planned — see `docs/monolith-split-handoff.md`.
+
+**Edit `index.html` (or `styles.css`, or the relevant `data/*.js` file) and push to `main` → the live site updates.** There is no build step.
 
 ## What this project is NOT
 
@@ -43,13 +49,15 @@ Russell Cole — russellcolevop@gmail.com. **Non-developer.** Explain before run
 
 | File / folder | Purpose |
 |---|---|
-| `index.html` | **THE SITE.** All markup, styles, and client JS. Edit here. |
+| `index.html` | **THE SITE.** Most markup and client JS. Loads `styles.css` and the `data/*.js` files from the head. Edit here. |
+| `styles.css` | Site stylesheet. Loaded via `<link>` from `index.html`. |
+| `data/` | Big data arrays extracted from the monolith: `mentors.js`, `accelerators.js`, `partner_ecosystems.js`. Each sets a `window.XXX` global that the main script references. |
 | `CNAME` | Maps `www.founderopscenter.com` to GitHub Pages. Do not delete. |
 | `Russell.jpeg` | Profile image, referenced directly from the HTML. |
 | `assets/` | Images used by the site (og-image, headshot). Referenced by the HTML. |
 | `supabase/migrations/` | SQL migrations for the Supabase database. Still current, still useful. |
 | `supabase/functions-backup/` | Backup of Supabase Edge Functions. |
-| `docs/` | Project documentation. |
+| `docs/` | Project documentation, including `monolith-split-handoff.md`, `admin-ops.md`, and `staging-playbook.md`. |
 | `_archive/nextjs-experiment/` | Abandoned Next.js rewrite attempt. **Do not edit expecting changes to affect the live site.** |
 
 ## Common tasks
@@ -61,10 +69,10 @@ Russell Cole — russellcolevop@gmail.com. **Non-developer.** Explain before run
 
 ## Known issues and tech debt
 
-- **Admin "Delete" button is a soft delete, not a hard delete.** The `deleteUser()` function in `index.html` (around line 10142) wipes profile fields and sets `blocked: true, blocked_reason: 'DELETED_BY_ADMIN'`, but the `auth.users` row stays. That means the user can't sign in, but their email address is still taken. For a full hard delete (to re-register with the same email, or for a GDPR erase request), run the SQL in `docs/admin-ops.md`. An Edge Function could wrap this into a UI button if volume ever warrants it; not worth building until then.
+- **Admin "Delete" button is a soft delete, not a hard delete.** The `deleteUser()` function in `index.html` (around line 7337) wipes profile fields and sets `blocked: true, blocked_reason: 'DELETED_BY_ADMIN'`, but the `auth.users` row stays. That means the user can't sign in, but their email address is still taken. For a full hard delete (to re-register with the same email, or for a GDPR erase request), run the SQL in `docs/admin-ops.md`. An Edge Function could wrap this into a UI button if volume ever warrants it; not worth building until then.
 - **No permanent staging environment.** Staging is maintained on-demand per `docs/staging-playbook.md`: spin up during hardening pushes, tear down during steady-state copy/UI work. Free-tier cap is 2 projects per user, shared with `Tidy Tails`.
-- **The file is large.** 1.4 MB / ~18,900 lines. This makes diffs hard, merges risky, and tempts assistants to "rewrite" it (which loses fidelity). Edits should always be surgical — find and replace a specific block, never regenerate the whole file.
-- **Content is mixed with code.** Copy, lists, and structured data live inline as JS arrays/objects. Extracting them to JSON files would make content edits safer and non-technical.
+- **The file is still large.** ~1.2 MB / ~16,100 lines after the CSS and data extractions. This makes diffs hard, merges risky, and tempts assistants to "rewrite" it (which loses fidelity). Edits should always be surgical — find and replace a specific block, never regenerate the whole file. The next planned reduction is splitting the main `<script>` block into ES modules; see `docs/monolith-split-handoff.md`.
+- **Content is still partially mixed with code.** The largest data arrays have been extracted to `data/*.js`, but smaller arrays (market intel, hub, badges) still live inline. Extracting the rest will make content edits safer and non-technical.
 
 ## Guidance for assistants
 
