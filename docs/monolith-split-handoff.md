@@ -7,15 +7,17 @@ Written 2026-04-17 at the end of a Cowork session. Read this first before contin
 `index.html` went from 18,913 lines → 16,108 lines in this session. Two extractions done:
 
 1. **CSS** → `styles.css` (724 lines). Loaded via `<link rel="stylesheet" href="styles.css">` in the head. Committed and pushed (commit `7748b7c`).
-2. **Big data arrays** → `data/mentors.js`, `data/accelerators.js`, `data/partner_ecosystems.js`. Loaded via `<script>` tags in the head, each sets a `window.XXX` global that is transparently referenced by the main script. 2,080 lines removed from `index.html`. **Pending commit/push** as of handoff.
+2. **Big data arrays** → `data/mentors.js`, `data/accelerators.js`, `data/partner_ecosystems.js`. Loaded via `<script>` tags in the head, each sets a `window.XXX` global that is transparently referenced by the main script. 2,080 lines removed from `index.html`. Committed, pushed to `main`, verified live on production.
+
+Everything above is **done, tested, and deployed.** No pending cleanup from the Cowork session. You can start directly on the JS modularization.
 
 The three `<style>` blocks at what are now roughly lines 3700 / 15200 / 15400 / 16300 are template literals inside JavaScript that generate printable HTML reports. **Do not extract those** — they live inside JS and belong where they are.
 
-## Still pending from this session (verify before continuing)
+## DO NOT TOUCH: `_archive/nextjs-experiment/`
 
-- Local test of the data-array extraction (I asked Russell to `python3 -m http.server`, hit it, confirm nothing broke).
-- Commit + push of the data-array extraction. Stale `.git/index.lock` may need `rm -f .git/index.lock` first.
-- Delete the redundant `data/*.json` files (kept both .json and .js during extraction; only .js is referenced). Run: `rm data/mentors.json data/accelerators.json data/partner_ecosystems.json`.
+There is a Next.js scaffold at `_archive/nextjs-experiment/` from an earlier aborted attempt to break up the monolith. It is **not deployed, not current, and not the source of truth.** The live site is the single-file HTML app at `index.html` in the repo root, served by GitHub Pages at https://www.founderopscenter.com.
+
+Do the modularization work **in the repo root**, splitting `index.html` into sibling files (e.g., `src/app.js`, feature modules under `src/features/`, more data under `data/`). Do NOT resurrect the Next.js folder, do NOT migrate code into it, do NOT `npm install` anything, and do NOT introduce a build step. Any `package.json`, `app/`, `components/`, or `node_modules` you see under `_archive/` is irrelevant to the task. If something in that folder tempts you, close it and re-read CLAUDE.md.
 
 ## What's next (task #20 territory)
 
