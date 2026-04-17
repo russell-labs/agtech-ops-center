@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { Bell, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
+import { RegionContext } from "@/contexts/RegionContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [region, setRegion] = useState("CA");
@@ -49,7 +50,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-6">
-          {children}
+          <RegionContext.Provider value={region}>
+            {children}
+          </RegionContext.Provider>
         </main>
       </div>
     </div>
