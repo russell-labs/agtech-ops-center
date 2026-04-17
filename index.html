@@ -15455,8 +15455,10 @@ async function ecoToggleSearch() {
 async function ecoLoadPlatformFounders() {
   _ecoPlatformFounders = [];
   if (_supabase) {
-    // Load ALL profiles from the platform (not just founders — managers may want to see advisors/investors too)
-    const { data, error } = await _supabase.from('profiles')
+    // Load ALL profiles from the platform (not just founders — managers may want to see advisors/investors too).
+    // Uses the public_profiles view (see supabase/migrations/20260418_profiles_read_access.sql)
+    // which exposes safe columns only and filters blocked users. RLS on profiles itself stays locked to owner/admin.
+    const { data, error } = await _supabase.from('public_profiles')
       .select('id, email, full_name, persona, company_name, what_building, location, company_stage, onboarding_complete')
       .eq('onboarding_complete', true)
       .order('full_name', { ascending: true });
