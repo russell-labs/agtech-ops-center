@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
-import { Bell, ExternalLink } from "lucide-react";
+import { Bell, ExternalLink, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import { RegionContext } from "@/contexts/RegionContext";
@@ -10,6 +10,21 @@ import { RegionContext } from "@/contexts/RegionContext";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [region, setRegion] = useState("CA");
   const { data: session } = useSession();
+  const [dark, setDark] = useState(true);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const isDark = stored !== "light";
+    setDark(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  function toggleTheme() {
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", next);
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950">
@@ -24,7 +39,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Feedback banner */}
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSfhY5p0D4PQRlke2rH_9Rbe-4dCObvufSfNoMaQTjdbc3vnzQ/viewform"
               target="_blank"
@@ -36,7 +50,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <ExternalLink className="w-3 h-3" />
             </a>
 
-            {/* Auth */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              title={dark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
             {session ? null : (
               <button
                 onClick={() => signIn()}
@@ -48,7 +69,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto p-6">
           <RegionContext.Provider value={region}>
             {children}

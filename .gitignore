@@ -1,9 +1,12 @@
 # dependencies
 /node_modules
+/_archive/nextjs-experiment/node_modules
 
 # next.js
 /.next/
 /out/
+/_archive/nextjs-experiment/.next/
+/_archive/nextjs-experiment/out/
 
 # environment variables
 .env

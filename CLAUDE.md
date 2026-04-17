@@ -1,60 +1,76 @@
-# CLAUDE.md — AgTech Founder Ops Center
+# CLAUDE.md — Founder Ops Center
 
-## What this project is
-A full-stack web app for AgTech founders. Built by Russell Cole. It's an ops/resource center with a dashboard, founder roadmap, glossary, document library, media directory, region-specific data, and a direct booking page.
+## What this project actually is
+
+**The live site is a single-file HTML app at `index.html` in the repo root.** It is served by **GitHub Pages** at **https://www.founderopscenter.com** (the `CNAME` file maps the custom domain).
+
+That one file (~1.4 MB, ~18,900 lines) contains:
+- All HTML, CSS, and JavaScript for the site
+- An embedded Supabase client for auth, data, and storage
+- Google OAuth + email magic-link sign-in
+- An admin area, profile editor, ecosystem workspace, mentors directory, market intel, etc.
+
+**Edit `index.html` and push to `main` → the live site updates.** There is no build step.
+
+## What this project is NOT
+
+- **Not a Next.js app.** A Next.js experiment exists in `_archive/nextjs-experiment/` (scaffolded as an attempt to break up the monolith). It is **not deployed, not current, and not the source of truth.** Do not edit it expecting changes to appear on the live site.
+- **Not a Vercel deployment.** The Vercel project, if any, is pointing at the abandoned Next.js app. The real site is on GitHub Pages.
+- **Not compartmentalized.** There is no component library, no data layer, no server. Everything is inside `index.html`.
 
 ## Who the owner is
-Russell Cole (russellcolevop@gmail.com). Non-developer — explain commands before running them, ask before anything destructive, go one step at a time.
+
+Russell Cole — russellcolevop@gmail.com. **Non-developer.** Explain before running commands, ask before doing anything destructive, go one step at a time, and never try to "regenerate" `index.html` from scratch — it will be lossy. Always edit in place.
 
 ## Local setup
+
 - **Working directory:** `~/Developer/founder-op-center/`
-- **Original iCloud backup:** `~/Documents/DEV PROJECTS/Ops Center/outputs/agtech-ops-center/` — do not modify
-- **GitHub repo:** https://github.com/russellcolevop/agtech-ops-center (branch: main)
-- **Install:** `npm install --legacy-peer-deps` (peer dep conflict between nodemailer v6 and next-auth v4)
-- **Run locally:** `npm run dev` → http://localhost:3000
-- **Deploy:** Vercel (`vercel` CLI or push to main triggers auto-deploy if connected)
+- **GitHub repo:** https://github.com/russellcolevop/agtech-ops-center (branch: `main`)
+- **To preview locally:** open `index.html` directly in a browser, or run `python3 -m http.server` and visit `http://localhost:8000`
+- **To deploy:** commit changes to `index.html` (or assets) and push to `main`. GitHub Pages picks up the change within a minute or two.
+- **No `npm install`, no build step, no dev server.** Any `package.json` or `node_modules` in the archive folder is for the abandoned Next.js experiment only.
 
-## Tech stack
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Auth:** NextAuth.js v4 — Google OAuth + email magic link
-- **Database:** Supabase (PostgreSQL) via `@supabase/supabase-js`
-- **Email:** Nodemailer (configured for Resend SMTP)
+## Stack
 
-## Environment variables
-Stored in `.env.local` (not committed). See `.env.example` for required keys:
-- `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
-- `EMAIL_SERVER_*` (Resend SMTP)
-- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- **Frontend:** hand-written HTML + vanilla JavaScript + some inline CSS inside `index.html`. Uses Supabase JS SDK loaded from a CDN `<script>` tag.
+- **Hosting:** GitHub Pages (static) from the repo root.
+- **Backend:** Supabase project `odvwxgxhacotiuyjyqtk` (PostgreSQL, Auth, Storage).
+  - URL: `https://odvwxgxhacotiuyjyqtk.supabase.co`
+  - Uses the anon key (embedded in HTML). Row Level Security controls access.
+- **Auth:** Supabase Auth — Google OAuth + email magic link. No NextAuth, no server session layer.
 
-## Where content lives
-All site content is in `data/content.ts` — stats, trends, glossary terms, etc. Edit there, save, redeploy.
+## Files that matter at the repo root
 
-## Project structure
-```
-app/
-  (auth)/login/         # Login page
-  (dashboard)/          # All main pages
-    layout.tsx          # Sidebar + header
-    page.tsx            # Global AgTech Overview
-    founders-journey/   # 6-stage founder roadmap
-    glossary/           # Searchable glossary
-    documents/          # Template library
-    media/              # Podcasts, newsletters, influencers
-    ecosystem/          # Region ecosystem data
-    industry-segments/  # Region segments
-    crops/              # Region crops
-    resources/          # Region resources
-    book-a-call/        # Booking page (Russell's calendar)
-  api/auth/             # NextAuth API handler
-components/             # Reusable UI components
-data/content.ts         # ← Primary content file
-lib/                    # Auth + Supabase config
-```
+| File / folder | Purpose |
+|---|---|
+| `index.html` | **THE SITE.** All markup, styles, and client JS. Edit here. |
+| `CNAME` | Maps `www.founderopscenter.com` to GitHub Pages. Do not delete. |
+| `Russell.jpeg` | Profile image, referenced directly from the HTML. |
+| `assets/` | Images used by the site (og-image, headshot). Referenced by the HTML. |
+| `supabase/migrations/` | SQL migrations for the Supabase database. Still current, still useful. |
+| `supabase/functions-backup/` | Backup of Supabase Edge Functions. |
+| `docs/` | Project documentation. |
+| `_archive/nextjs-experiment/` | Abandoned Next.js rewrite attempt. **Do not edit expecting changes to affect the live site.** |
 
-## Known issues / tech debt
-- Next.js 14.2.5 has a known security vulnerability — needs upgrade (breaking change risk, handle carefully)
-- `nodemailer` v6/v7 peer dep conflict with next-auth — use `--legacy-peer-deps` on install
-- Junk folder `{app` exists in project root — likely a sandbox artifact, safe to delete when confirmed
+## Common tasks
+
+- **Update copy on the site** → edit `index.html`, commit, push. Done.
+- **Add a new image** → drop it in `assets/`, reference it from `index.html`, commit, push.
+- **Add a database column or table** → write a migration in `supabase/migrations/`, run it in the Supabase SQL editor, then update `index.html` to use the new field.
+- **Admin actions that need a service-role key** (e.g., `auth.admin.deleteUser`) → build a Supabase Edge Function. These actions **cannot** run from the browser because the service-role key would leak. The HTML's current "Delete User" admin button fails for this reason.
+
+## Known issues and tech debt
+
+- **Admin user delete is broken** from the UI. It calls `auth.admin.deleteUser()` from the browser, which can never work (needs service-role key). Needs an Edge Function. For now, user deletes must be done via SQL in the Supabase dashboard.
+- **FK cascade gaps.** Several tables reference `auth.users` or `public.profiles` without `ON DELETE CASCADE`, which blocks user deletion even via the dashboard. Specifically: `introductions.{requested_by, person_a, person_b}`, `workspaces.owner_id`, and several other `*_by` columns. A future migration should add CASCADE where appropriate.
+- **No staging environment.** Every change to `index.html` goes straight to production. A `staging` branch with a separate Supabase project would make iteration much safer.
+- **The file is large.** 1.4 MB / ~18,900 lines. This makes diffs hard, merges risky, and tempts assistants to "rewrite" it (which loses fidelity). Edits should always be surgical — find and replace a specific block, never regenerate the whole file.
+- **Content is mixed with code.** Copy, lists, and structured data live inline as JS arrays/objects. Extracting them to JSON files would make content edits safer and non-technical.
+
+## Guidance for assistants
+
+1. **Treat `index.html` as append-only / edit-in-place.** Never output a replacement file. Use targeted edits that find an exact string and replace it.
+2. **Before any destructive SQL or file operation, explain what you're about to do and ask.** Russell is a non-developer.
+3. **The Next.js folder is not the source of truth.** Ignore it unless explicitly told otherwise.
+4. **Prefer SQL migrations over in-HTML schema changes.** The HTML queries Supabase; the schema lives in Supabase.
+5. **Small commits, descriptive messages.** Russell reviews everything before push.
