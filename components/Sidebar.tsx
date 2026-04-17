@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { regions } from "@/data/content";
 
 const globalNavItems = [
-  { href: "/", label: "Global AgTech Overview", icon: Globe },
+  { href: "/overview", label: "Global AgTech Overview", icon: Globe },
   { href: "/market-intel", label: "Market Intelligence", icon: BarChart2 },
   { href: "/venture", label: "Venture Studio", icon: Lightbulb },
   { href: "/accelerators", label: "Accelerator Hub", icon: GraduationCap },
@@ -225,6 +225,7 @@ export default function Sidebar({ region, onRegionChange }: SidebarProps) {
                 { href: "/action", label: "Action Center", icon: Zap },
                 { href: "/investor", label: "Investor Dashboard", icon: TrendingUp },
                 { href: "/ecosystem-ws", label: "Ecosystem Workspace", icon: Building2 },
+                { href: "/roadmap", label: "Product Roadmap", icon: Map },
                 ...(session.user.email === "russellcolevop@gmail.com"
                   ? [{ href: "/admin", label: "Admin", icon: Shield }]
                   : []),
