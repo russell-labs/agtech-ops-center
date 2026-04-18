@@ -1521,7 +1521,7 @@ function renderFoundingQ() {
         <p style="background:var(--bg);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text-muted);margin-bottom:20px">
           🏅 <strong>Founding Members</strong> get permanent perks: <strong>10 warm intros/month</strong> (vs 3 standard), early access to new features, and a Founding Member badge on your profile.
         </p>
-        <button onclick="setFqStep(0)" style="padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer">Let's Go →</button>
+        <button onclick="setFqStep(0);renderFoundingQ()" style="padding:12px 32px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer">Let's Go →</button>
         <br><button onclick="skipFoundingQ()" style="margin-top:12px;background:none;border:none;color:var(--text-faint);font-size:12px;cursor:pointer">I'll do this later</button>
       </div>`;
     return;
@@ -1550,7 +1550,7 @@ function renderFoundingQ() {
   if (q.type === 'select') {
     inputHtml = q.opts.map(o => `
       <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid ${_fqAnswers[q.id] === o ? 'var(--green)' : 'var(--border)'};border-radius:10px;cursor:pointer;font-size:13px;transition:all 0.15s;background:${_fqAnswers[q.id] === o ? 'rgba(22,163,74,0.06)' : 'var(--surface)'}"
-        onclick="document.querySelectorAll('.fq-opt').forEach(l=>{l.style.borderColor='var(--border)';l.style.background='var(--surface)'});this.style.borderColor='var(--green)';this.style.background='rgba(22,163,74,0.06)';_fqAnswers['${q.id}']='${o.replace(/'/g, "\\'")}'"
+        onclick="document.querySelectorAll('.fq-opt').forEach(l=>{l.style.borderColor='var(--border)';l.style.background='var(--surface)'});this.style.borderColor='var(--green)';this.style.background='rgba(22,163,74,0.06)';setFqAnswer('${q.id}', '${o.replace(/'/g, "\\'")}')"
         class="fq-opt">${o}</label>
     `).join('');
   } else {
@@ -1572,7 +1572,7 @@ function renderFoundingQ() {
       ${inputHtml}
     </div>
     <div style="display:flex;gap:10px;justify-content:space-between">
-      <button onclick="${_fqStep > 0 ? '_fqStep--;renderFoundingQ()' : 'closeModal(\'founding-q-modal\')'}" style="padding:10px 20px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">${_fqStep > 0 ? '← Back' : 'Skip'}</button>
+      <button onclick="${_fqStep > 0 ? 'prevFqStep()' : 'closeModal(\'founding-q-modal\')'}" style="padding:10px 20px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">${_fqStep > 0 ? '← Back' : 'Skip'}</button>
       <button onclick="fqNext()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">${_fqStep < qs.length - 1 ? 'Next →' : 'Finish ✓'}</button>
     </div>`;
 }
@@ -3705,14 +3705,14 @@ function pgMarketIntel() {
       <!-- Search & Filter Bar -->
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
         <div style="flex:1;min-width:200px;position:relative">
-          <input type="text" placeholder="Search companies, sectors, locations..." value="${_ciSearch}" oninput="_ciSearch=this.value;render('market_intel')" style="width:100%;padding:10px 12px 10px 34px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--card);color:var(--text);font-family:inherit;box-sizing:border-box"/>
+          <input type="text" placeholder="Search companies, sectors, locations..." value="${_ciSearch}" oninput="setCiSearch(this.value);render('market_intel')" style="width:100%;padding:10px 12px 10px 34px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--card);color:var(--text);font-family:inherit;box-sizing:border-box"/>
           <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-faint)">🔍</span>
         </div>
-        <select onchange="_ciFilter=this.value;render('market_intel')" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--card);color:var(--text);font-family:inherit;cursor:pointer">
+        <select onchange="setCiFilter(this.value);render('market_intel')" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--card);color:var(--text);font-family:inherit;cursor:pointer">
           <option value="all" ${_ciFilter==='all'?'selected':''}>All Sectors</option>
           ${sectors.map(s => `<option value="${s}" ${_ciFilter===s?'selected':''}>${MI_SECTOR_MAP[s]||s}</option>`).join('')}
         </select>
-        <select onchange="_ciSort=this.value;render('market_intel')" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--card);color:var(--text);font-family:inherit;cursor:pointer">
+        <select onchange="setCiSort(this.value);render('market_intel')" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--card);color:var(--text);font-family:inherit;cursor:pointer">
           <option value="funding" ${_ciSort==='funding'?'selected':''}>Sort: Funding ↓</option>
           <option value="name" ${_ciSort==='name'?'selected':''}>Sort: Name A→Z</option>
           <option value="sector" ${_ciSort==='sector'?'selected':''}>Sort: Sector</option>
@@ -5229,23 +5229,23 @@ function pgVenture(){
       <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px">Your Idea</h2>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Startup/Project Name *</label>
-        <input type="text" style="${inputStyle()}" value="${_ventureForm.name||''}" onchange="_ventureForm.name=this.value" placeholder="e.g., GreenHarvest AI">
+        <input type="text" style="${inputStyle()}" value="${_ventureForm.name||''}" onchange="setVentureField('name', this.value)" placeholder="e.g., GreenHarvest AI">
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">One-Line Pitch (Elevator Pitch) *</label>
         <div style="position:relative">
-          <textarea style="${inputStyle()};resize:vertical;min-height:60px" placeholder="What does your startup do in one sentence?" onchange="_ventureForm.pitch=this.value;render('venture')">${_ventureForm.pitch||''}</textarea>
+          <textarea style="${inputStyle()};resize:vertical;min-height:60px" placeholder="What does your startup do in one sentence?" onchange="setVentureField('pitch', this.value);render('venture')">${_ventureForm.pitch||''}</textarea>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:right">${(_ventureForm.pitch||'').length}/140</div>
         </div>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Detailed Description *</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:100px" placeholder="Tell us more about your idea..." onchange="_ventureForm.description=this.value;render('venture')">${_ventureForm.description||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:100px" placeholder="Tell us more about your idea..." onchange="setVentureField('description', this.value);render('venture')">${_ventureForm.description||''}</textarea>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:right">${(_ventureForm.description||'').length}/500</div>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Which AgTech Sector? *</label>
-        <select style="${inputStyle()}" onchange="_ventureForm.sector=this.value">
+        <select style="${inputStyle()}" onchange="setVentureField('sector', this.value)">
           <option value="">Select a sector...</option>
           ${agSectors.map(s=>`<option value="${s}" ${_ventureForm.sector===s?'selected':''}>${s}</option>`).join('')}
         </select>
@@ -5261,22 +5261,22 @@ function pgVenture(){
       <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px">Market & Problem</h2>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">What problem are you solving? *</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Describe the problem..." onchange="_ventureForm.problem=this.value">${_ventureForm.problem||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Describe the problem..." onchange="setVentureField('problem', this.value)">${_ventureForm.problem||''}</textarea>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Who are your target customers? *</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Describe your ideal customer..." onchange="_ventureForm.customers=this.value">${_ventureForm.customers||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Describe your ideal customer..." onchange="setVentureField('customers', this.value)">${_ventureForm.customers||''}</textarea>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">How big is the market opportunity?</label>
-        <select style="${inputStyle()}" onchange="_ventureForm.marketSize=this.value">
+        <select style="${inputStyle()}" onchange="setVentureField('marketSize', this.value)">
           <option value="">Select market size...</option>
           ${marketSizes.map(m=>`<option value="${m}" ${_ventureForm.marketSize===m?'selected':''}>${m}</option>`).join('')}
         </select>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Do you have any competitors? List them</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="List your competitors..." onchange="_ventureForm.competitors=this.value">${_ventureForm.competitors||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="List your competitors..." onchange="setVentureField('competitors', this.value)">${_ventureForm.competitors||''}</textarea>
       </div>
       <div style="display:flex;gap:12px;margin-top:24px">
         <button onclick="setVentureStep(0)" style="flex:1;padding:12px 18px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">← Back</button>
@@ -5290,31 +5290,31 @@ function pgVenture(){
       <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px">You & Your Team</h2>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your Name *</label>
-        <input type="text" style="${inputStyle()}" value="${_ventureForm.founderName || (currentUser?.name || '')}" oninput="_ventureForm.founderName=this.value" placeholder="Your full name">
+        <input type="text" style="${inputStyle()}" value="${_ventureForm.founderName || (currentUser?.name || '')}" oninput="setVentureField('founderName', this.value)" placeholder="Your full name">
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your Email *</label>
-        <input type="email" style="${inputStyle()}" value="${_ventureForm.founderEmail || (currentUser?.email || '')}" oninput="_ventureForm.founderEmail=this.value" onblur="ventureValidateField(this,'email')" placeholder="Your email">
+        <input type="email" style="${inputStyle()}" value="${_ventureForm.founderEmail || (currentUser?.email || '')}" oninput="setVentureField('founderEmail', this.value)" onblur="ventureValidateField(this,'email')" placeholder="Your email">
         <div id="venture-email-err" style="font-size:11px;color:#dc2626;margin-top:4px;display:none">Please enter a valid email address</div>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your Background/Experience</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Tell us about your background..." onchange="_ventureForm.background=this.value">${_ventureForm.background||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Tell us about your background..." onchange="setVentureField('background', this.value)">${_ventureForm.background||''}</textarea>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Do you have co-founders?</label>
         <div style="display:flex;gap:8px">
-          <button onclick="_ventureForm.hasCoFounders=true;render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.hasCoFounders?'#16a34a':'var(--hover)'};color:${_ventureForm.hasCoFounders?'white':'var(--text)'};border:1px solid ${_ventureForm.hasCoFounders?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Yes</button>
-          <button onclick="_ventureForm.hasCoFounders=false;render('venture')" style="flex:1;padding:10px 16px;background:${!_ventureForm.hasCoFounders?'#16a34a':'var(--hover)'};color:${!_ventureForm.hasCoFounders?'white':'var(--text)'};border:1px solid ${!_ventureForm.hasCoFounders?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">No</button>
+          <button onclick="setVentureField('hasCoFounders', true);render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.hasCoFounders?'#16a34a':'var(--hover)'};color:${_ventureForm.hasCoFounders?'white':'var(--text)'};border:1px solid ${_ventureForm.hasCoFounders?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Yes</button>
+          <button onclick="setVentureField('hasCoFounders', false);render('venture')" style="flex:1;padding:10px 16px;background:${!_ventureForm.hasCoFounders?'#16a34a':'var(--hover)'};color:${!_ventureForm.hasCoFounders?'white':'var(--text)'};border:1px solid ${!_ventureForm.hasCoFounders?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">No</button>
         </div>
       </div>
       ${_ventureForm.hasCoFounders ? `<div style="margin-bottom:18px;padding:14px;background:var(--hover);border-radius:8px">
         <label style="${labelStyle()}">Co-founder Names & Roles</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="e.g., John Smith (CTO), Jane Doe (Head of Sales)" onchange="_ventureForm.coFounders=this.value">${_ventureForm.coFounders||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="e.g., John Smith (CTO), Jane Doe (Head of Sales)" onchange="setVentureField('coFounders', this.value)">${_ventureForm.coFounders||''}</textarea>
       </div>` : ''}
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Your LinkedIn URL</label>
-        <input type="url" style="${inputStyle()}" value="${_ventureForm.linkedinUrl||''}" oninput="_ventureForm.linkedinUrl=this.value" onblur="ventureValidateField(this,'url')" placeholder="https://linkedin.com/in/yourprofile">
+        <input type="url" style="${inputStyle()}" value="${_ventureForm.linkedinUrl||''}" oninput="setVentureField('linkedinUrl', this.value)" onblur="ventureValidateField(this,'url')" placeholder="https://linkedin.com/in/yourprofile">
         <div id="venture-linkedin-err" style="font-size:11px;color:#dc2626;margin-top:4px;display:none">Please enter a valid URL starting with https://</div>
       </div>
       <div style="display:flex;gap:12px;margin-top:24px">
@@ -5329,7 +5329,7 @@ function pgVenture(){
       <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px">Goals & Needs</h2>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">What stage is your idea?</label>
-        <select style="${inputStyle()}" onchange="_ventureForm.stage=this.value">
+        <select style="${inputStyle()}" onchange="setVentureField('stage', this.value)">
           <option value="">Select a stage...</option>
           ${stageOptions.map(s=>`<option value="${s}" ${_ventureForm.stage===s?'selected':''}>${s}</option>`).join('')}
         </select>
@@ -5339,7 +5339,7 @@ function pgVenture(){
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${needsCheckboxes.map(n=>{
             const isSelected = (_ventureForm.needs||[]).includes(n);
-            return `<button onclick="const needs=_ventureForm.needs||[];const idx=needs.indexOf('${n}');if(idx>-1){needs.splice(idx,1)}else{needs.push('${n}')}_ventureForm.needs=needs;render('venture')" style="padding:8px 14px;background:${isSelected?'#16a34a':'var(--hover)'};color:${isSelected?'white':'var(--text)'};border:1px solid ${isSelected?'#16a34a':'var(--border)'};border-radius:20px;font-weight:600;cursor:pointer;font-size:12px">${n}</button>`;
+            return `<button onclick="toggleVentureArrayField('needs', '${n}')" style="padding:8px 14px;background:${isSelected?'#16a34a':'var(--hover)'};color:${isSelected?'white':'var(--text)'};border:1px solid ${isSelected?'#16a34a':'var(--border)'};border-radius:20px;font-weight:600;cursor:pointer;font-size:12px">${n}</button>`;
           }).join('')}
         </div>
       </div>
@@ -5348,28 +5348,28 @@ function pgVenture(){
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${geoCheckboxes.map(g=>{
             const isSelected = (_ventureForm.geos||[]).includes(g);
-            return `<button onclick="const geos=_ventureForm.geos||[];const idx=geos.indexOf('${g}');if(idx>-1){geos.splice(idx,1)}else{geos.push('${g}')}_ventureForm.geos=geos;render('venture')" style="padding:8px 14px;background:${isSelected?'#16a34a':'var(--hover)'};color:${isSelected?'white':'var(--text)'};border:1px solid ${isSelected?'#16a34a':'var(--border)'};border-radius:20px;font-weight:600;cursor:pointer;font-size:12px">${g}</button>`;
+            return `<button onclick="toggleVentureArrayField('geos', '${g}')" style="padding:8px 14px;background:${isSelected?'#16a34a':'var(--hover)'};color:${isSelected?'white':'var(--text)'};border:1px solid ${isSelected?'#16a34a':'var(--border)'};border-radius:20px;font-weight:600;cursor:pointer;font-size:12px">${g}</button>`;
           }).join('')}
         </div>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Interested in applying to accelerators?</label>
         <div style="display:flex;gap:8px">
-          <button onclick="_ventureForm.accelerator='Yes';render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.accelerator==='Yes'?'#16a34a':'var(--hover)'};color:${_ventureForm.accelerator==='Yes'?'white':'var(--text)'};border:1px solid ${_ventureForm.accelerator==='Yes'?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Yes</button>
-          <button onclick="_ventureForm.accelerator='Maybe';render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.accelerator==='Maybe'?'#16a34a':'var(--hover)'};color:${_ventureForm.accelerator==='Maybe'?'white':'var(--text)'};border:1px solid ${_ventureForm.accelerator==='Maybe'?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Maybe</button>
-          <button onclick="_ventureForm.accelerator='No';render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.accelerator==='No'?'#16a34a':'var(--hover)'};color:${_ventureForm.accelerator==='No'?'white':'var(--text)'};border:1px solid ${_ventureForm.accelerator==='No'?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">No</button>
+          <button onclick="setVentureField('accelerator', 'Yes');render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.accelerator==='Yes'?'#16a34a':'var(--hover)'};color:${_ventureForm.accelerator==='Yes'?'white':'var(--text)'};border:1px solid ${_ventureForm.accelerator==='Yes'?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Yes</button>
+          <button onclick="setVentureField('accelerator', 'Maybe');render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.accelerator==='Maybe'?'#16a34a':'var(--hover)'};color:${_ventureForm.accelerator==='Maybe'?'white':'var(--text)'};border:1px solid ${_ventureForm.accelerator==='Maybe'?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Maybe</button>
+          <button onclick="setVentureField('accelerator', 'No');render('venture')" style="flex:1;padding:10px 16px;background:${_ventureForm.accelerator==='No'?'#16a34a':'var(--hover)'};color:${_ventureForm.accelerator==='No'?'white':'var(--text)'};border:1px solid ${_ventureForm.accelerator==='No'?'#16a34a':'var(--border)'};border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">No</button>
         </div>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Timeline - when do you want to launch?</label>
-        <select style="${inputStyle()}" onchange="_ventureForm.timeline=this.value">
+        <select style="${inputStyle()}" onchange="setVentureField('timeline', this.value)">
           <option value="">Select timeline...</option>
           ${timelineOptions.map(t=>`<option value="${t}" ${_ventureForm.timeline===t?'selected':''}>${t}</option>`).join('')}
         </select>
       </div>
       <div style="margin-bottom:18px">
         <label style="${labelStyle()}">Anything else you want us to know?</label>
-        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Additional notes..." onchange="_ventureForm.notes=this.value">${_ventureForm.notes||''}</textarea>
+        <textarea style="${inputStyle()};resize:vertical;min-height:80px" placeholder="Additional notes..." onchange="setVentureField('notes', this.value)">${_ventureForm.notes||''}</textarea>
       </div>
       <div style="display:flex;gap:12px;margin-top:24px">
         <button onclick="setVentureStep(2)" style="flex:1;padding:12px 18px;background:var(--hover);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">← Back</button>
@@ -5951,13 +5951,13 @@ function pgAccelerators(){
 
     let html = '<div><div class="page-hdr"><h1>⚡ AgTech Accelerator Hub</h1><p>22 programs across 6 regions. Build your profile, then apply with one click.</p></div><div class="grid4" style="margin-bottom:20px"><div class="stat-card"><div class="stat-val">' + stats.total + '</div><div class="stat-lbl">Total Programs</div></div><div class="stat-card"><div class="stat-val">' + stats.regions + '</div><div class="stat-lbl">Active Regions</div></div><div class="stat-card"><div class="stat-val">' + stats.avgInv + '</div><div class="stat-lbl">Avg Investment</div></div><div class="stat-card"><div class="stat-val">' + stats.rolling + '</div><div class="stat-lbl">Rolling Deadlines</div></div></div>';
 
-    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px"><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Region</label><select onchange="_accelFilter.region=this.value;render(\'accelerators\')" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px"><option value="all">All Regions</option>';
+    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px"><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Region</label><select onchange="setAccelFilter(\'region\', this.value);render(\'accelerators\')" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px"><option value="all">All Regions</option>';
 
     getUniqueRegions().forEach(r => {
       html += '<option value="' + r + '" ' + (_accelFilter.region === r ? 'selected' : '') + '>' + (regionNames[r] || r) + '</option>';
     });
 
-    html += '</select></div><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Readiness</label><select onchange="_accelFilter.readiness=this.value;render(\'accelerators\')" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px"><option value="all">All Programs</option><option value="ready" ' + (_accelFilter.readiness === 'ready' ? 'selected' : '') + '>🟢 Ready to Apply</option><option value="almost" ' + (_accelFilter.readiness === 'almost' ? 'selected' : '') + '>🟡 Almost Ready</option><option value="build" ' + (_accelFilter.readiness === 'build' ? 'selected' : '') + '>🔴 Build Your Profile</option></select></div><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Investment</label><select onchange="_accelFilter.investmentRange=this.value;render(\'accelerators\')" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px"><option value="all">All Ranges</option><option value="under50" ' + (_accelFilter.investmentRange === 'under50' ? 'selected' : '') + '>&lt;$50K</option><option value="50to100" ' + (_accelFilter.investmentRange === '50to100' ? 'selected' : '') + '>$50K-$100K</option><option value="100to250" ' + (_accelFilter.investmentRange === '100to250' ? 'selected' : '') + '>$100K-$250K</option><option value="over250" ' + (_accelFilter.investmentRange === 'over250' ? 'selected' : '') + '>$250K+</option></select></div></div></div>';
+    html += '</select></div><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Readiness</label><select onchange="setAccelFilter(\'readiness\', this.value);render(\'accelerators\')" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px"><option value="all">All Programs</option><option value="ready" ' + (_accelFilter.readiness === 'ready' ? 'selected' : '') + '>🟢 Ready to Apply</option><option value="almost" ' + (_accelFilter.readiness === 'almost' ? 'selected' : '') + '>🟡 Almost Ready</option><option value="build" ' + (_accelFilter.readiness === 'build' ? 'selected' : '') + '>🔴 Build Your Profile</option></select></div><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Investment</label><select onchange="setAccelFilter(\'investmentRange\', this.value);render(\'accelerators\')" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:13px"><option value="all">All Ranges</option><option value="under50" ' + (_accelFilter.investmentRange === 'under50' ? 'selected' : '') + '>&lt;$50K</option><option value="50to100" ' + (_accelFilter.investmentRange === '50to100' ? 'selected' : '') + '>$50K-$100K</option><option value="100to250" ' + (_accelFilter.investmentRange === '100to250' ? 'selected' : '') + '>$100K-$250K</option><option value="over250" ' + (_accelFilter.investmentRange === 'over250' ? 'selected' : '') + '>$250K+</option></select></div></div></div>';
 
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px" class="accel-grid">';
 
@@ -5996,7 +5996,7 @@ function pgAccelerators(){
 
     let html = '<div style="max-width:900px"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px"><div style="text-align:center;margin-bottom:20px"><div style="display:inline-block;position:relative;width:140px;height:140px"><svg viewBox="0 0 140 140" style="width:100%;height:100%"><circle cx="70" cy="70" r="65" fill="none" stroke="#e5e7eb" stroke-width="8"/><circle cx="70" cy="70" r="65" fill="none" stroke="#16a34a" stroke-width="8" stroke-dasharray="' + (readinessPercent * 4.08) + ' 408" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:70px 70px"/></svg><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center"><div style="font-size:32px;font-weight:800;color:var(--green)">' + readinessPercent + '%</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">Complete</div></div></div></div><div style="text-align:center;margin-bottom:8px"><div style="font-size:16px;font-weight:700;color:var(--text)">Your Readiness Score</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:16px;text-align:center"><div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">You\'re eligible for</div><div style="font-size:18px;font-weight:700;color:var(--green)">' + eligiblePrograms + ' of 22 programs</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">Ready-to-apply programs</div></div><div style="padding:12px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:8px;text-align:center;font-size:12px;color:#166534">Complete ' + (totalArtifacts - readinessCount) + ' more artifact(s) to increase your eligible programs</div></div>';
 
-    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px"><h3 style="margin-top:0;margin-bottom:16px">Core Information</h3><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Startup Name</label><input type="text" value="' + (_founderProfile.startupName || '') + '" onchange="_founderProfile.startupName=this.value;render(\'accelerators\')" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px;box-sizing:border-box"><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">One-Line Pitch</label><input type="text" value="' + (_founderProfile.pitch || '') + '" onchange="_founderProfile.pitch=this.value;render(\'accelerators\')" placeholder="What does your startup do?" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px;box-sizing:border-box"><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Detailed Description</label><textarea style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;resize:vertical;min-height:100px;margin-bottom:12px;box-sizing:border-box" onchange="_founderProfile.description=this.value" placeholder="Tell us more about your startup...">' + (_founderProfile.description || '') + '</textarea><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Sector</label><select onchange="_founderProfile.sector=this.value;render(\'accelerators\')" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px"><option value="">Select a sector...</option><option value="Precision Agriculture" ' + (_founderProfile.sector === 'Precision Agriculture' ? 'selected' : '') + '>Precision Agriculture</option><option value="Crop Protection" ' + (_founderProfile.sector === 'Crop Protection' ? 'selected' : '') + '>Crop Protection</option><option value="Animal Health" ' + (_founderProfile.sector === 'Animal Health' ? 'selected' : '') + '>Animal Health</option><option value="Food Safety" ' + (_founderProfile.sector === 'Food Safety' ? 'selected' : '') + '>Food Safety</option><option value="Supply Chain" ' + (_founderProfile.sector === 'Supply Chain' ? 'selected' : '') + '>Supply Chain</option><option value="Water Management" ' + (_founderProfile.sector === 'Water Management' ? 'selected' : '') + '>Water Management</option><option value="Biological Inputs" ' + (_founderProfile.sector === 'Biological Inputs' ? 'selected' : '') + '>Biological Inputs</option><option value="Robotics & Automation" ' + (_founderProfile.sector === 'Robotics & Automation' ? 'selected' : '') + '>Robotics & Automation</option><option value="Data & Analytics" ' + (_founderProfile.sector === 'Data & Analytics' ? 'selected' : '') + '>Data & Analytics</option><option value="Marketplace/Platform" ' + (_founderProfile.sector === 'Marketplace/Platform' ? 'selected' : '') + '>Marketplace/Platform</option><option value="Climate & Sustainability" ' + (_founderProfile.sector === 'Climate & Sustainability' ? 'selected' : '') + '>Climate & Sustainability</option><option value="Other" ' + (_founderProfile.sector === 'Other' ? 'selected' : '') + '>Other</option></select></div></div>';
+    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px"><h3 style="margin-top:0;margin-bottom:16px">Core Information</h3><div><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Startup Name</label><input type="text" value="' + (_founderProfile.startupName || '') + '" onchange="setFounderProfile(\'startupName\', this.value);render(\'accelerators\')" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px;box-sizing:border-box"><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">One-Line Pitch</label><input type="text" value="' + (_founderProfile.pitch || '') + '" onchange="setFounderProfile(\'pitch\', this.value);render(\'accelerators\')" placeholder="What does your startup do?" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px;box-sizing:border-box"><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Detailed Description</label><textarea style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;resize:vertical;min-height:100px;margin-bottom:12px;box-sizing:border-box" onchange="setFounderProfile(\'description\', this.value)" placeholder="Tell us more about your startup...">' + (_founderProfile.description || '') + '</textarea><label style="display:block;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase">Sector</label><select onchange="setFounderProfile(\'sector\', this.value);render(\'accelerators\')" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px"><option value="">Select a sector...</option><option value="Precision Agriculture" ' + (_founderProfile.sector === 'Precision Agriculture' ? 'selected' : '') + '>Precision Agriculture</option><option value="Crop Protection" ' + (_founderProfile.sector === 'Crop Protection' ? 'selected' : '') + '>Crop Protection</option><option value="Animal Health" ' + (_founderProfile.sector === 'Animal Health' ? 'selected' : '') + '>Animal Health</option><option value="Food Safety" ' + (_founderProfile.sector === 'Food Safety' ? 'selected' : '') + '>Food Safety</option><option value="Supply Chain" ' + (_founderProfile.sector === 'Supply Chain' ? 'selected' : '') + '>Supply Chain</option><option value="Water Management" ' + (_founderProfile.sector === 'Water Management' ? 'selected' : '') + '>Water Management</option><option value="Biological Inputs" ' + (_founderProfile.sector === 'Biological Inputs' ? 'selected' : '') + '>Biological Inputs</option><option value="Robotics & Automation" ' + (_founderProfile.sector === 'Robotics & Automation' ? 'selected' : '') + '>Robotics & Automation</option><option value="Data & Analytics" ' + (_founderProfile.sector === 'Data & Analytics' ? 'selected' : '') + '>Data & Analytics</option><option value="Marketplace/Platform" ' + (_founderProfile.sector === 'Marketplace/Platform' ? 'selected' : '') + '>Marketplace/Platform</option><option value="Climate & Sustainability" ' + (_founderProfile.sector === 'Climate & Sustainability' ? 'selected' : '') + '>Climate & Sustainability</option><option value="Other" ' + (_founderProfile.sector === 'Other' ? 'selected' : '') + '>Other</option></select></div></div>';
 
     html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px"><h3 style="margin-top:0;margin-bottom:16px">Artifacts & Documents</h3><p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Mark each artifact as complete when you\'re ready. Click to cycle through states: Not Started → Done → Need Help → Not Started</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">';
 
@@ -6010,7 +6010,7 @@ function pgAccelerators(){
       const state = states[status];
       const nextStatus = status === 'not-started' ? 'done' : status === 'done' ? 'help' : 'not-started';
 
-      html += '<div style="background:' + state.bg + ';border:2px solid ' + state.border + ';border-radius:8px;padding:12px;cursor:pointer;transition:all .2s;text-align:center" onclick="_founderProfile[\'' + key + '\']=\'' + nextStatus + '\';render(\'accelerators\')" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><div style="font-size:14px;font-weight:600;color:' + state.color + ';margin-bottom:6px">' + state.icon + '</div><div style="font-size:13px;font-weight:600;color:' + state.color + ';margin-bottom:4px">' + label.substring(label.indexOf(' ') + 1) + '</div><div style="font-size:11px;color:' + state.color + ';opacity:0.8">' + (status === 'not-started' ? 'Click to complete' : status === 'done' ? 'Done' : 'Need Help') + '</div></div>';
+      html += '<div style="background:' + state.bg + ';border:2px solid ' + state.border + ';border-radius:8px;padding:12px;cursor:pointer;transition:all .2s;text-align:center" onclick="setFounderProfile(\'' + key + '\', \'' + nextStatus + '\');render(\'accelerators\')" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><div style="font-size:14px;font-weight:600;color:' + state.color + ';margin-bottom:6px">' + state.icon + '</div><div style="font-size:13px;font-weight:600;color:' + state.color + ';margin-bottom:4px">' + label.substring(label.indexOf(' ') + 1) + '</div><div style="font-size:11px;color:' + state.color + ';opacity:0.8">' + (status === 'not-started' ? 'Click to complete' : status === 'done' ? 'Done' : 'Need Help') + '</div></div>';
     });
 
     html += '</div></div>';
@@ -7809,79 +7809,79 @@ function wizRender() {
     </div>`;
   } else if (step === 'basics') {
     body = `<label class="wiz-label">Organization / Company</label>
-    <input class="wiz-input" id="wiz-org" value="${wizData.organization||''}" oninput="wizData.organization=this.value" placeholder="e.g. CropSense AI, University of Guelph">
+    <input class="wiz-input" id="wiz-org" value="${wizData.organization||''}" oninput="setWizField('organization', this.value)" placeholder="e.g. CropSense AI, University of Guelph">
     <label class="wiz-label">Your Title / Role</label>
-    <input class="wiz-input" id="wiz-title" value="${wizData.job_title||''}" oninput="wizData.job_title=this.value" placeholder="e.g. CEO & Co-Founder, Partner, Professor">
+    <input class="wiz-input" id="wiz-title" value="${wizData.job_title||''}" oninput="setWizField('job_title', this.value)" placeholder="e.g. CEO & Co-Founder, Partner, Professor">
     <label class="wiz-label">LinkedIn URL</label>
-    <input class="wiz-input" id="wiz-linkedin" value="${wizData.linkedin_url||''}" oninput="wizData.linkedin_url=this.value" placeholder="https://linkedin.com/in/yourname">
+    <input class="wiz-input" id="wiz-linkedin" value="${wizData.linkedin_url||''}" oninput="setWizField('linkedin_url', this.value)" placeholder="https://linkedin.com/in/yourname">
     <label class="wiz-label">Location</label>
-    <input class="wiz-input" id="wiz-location" value="${wizData.location||''}" oninput="wizData.location=this.value" placeholder="e.g. Toronto, ON, Canada">
+    <input class="wiz-input" id="wiz-location" value="${wizData.location||''}" oninput="setWizField('location', this.value)" placeholder="e.g. Toronto, ON, Canada">
     <label class="wiz-label">AgTech Focus Areas</label>
     <div class="chip-grid">${AGTECH_FOCUS.map(f => `<div class="chip ${wizData.agtech_focus.includes(f)?'selected':''}" onclick="wizToggleChip('agtech_focus','${f}')">${f}</div>`).join('')}</div>`;
   } else if (step === 'details') {
     if (wizData.persona === 'founder') {
       body = `<label class="wiz-label">Startup / Company Name</label>
-      <input class="wiz-input" id="wiz-company" value="${wizData.company_name||wizData.organization||''}" oninput="wizData.company_name=this.value" placeholder="Your startup name">
+      <input class="wiz-input" id="wiz-company" value="${wizData.company_name||wizData.organization||''}" oninput="setWizField('company_name', this.value)" placeholder="Your startup name">
       <label class="wiz-label">Stage</label>
-      <div class="chip-grid">${COMPANY_STAGES.map(s => `<div class="chip ${wizData.company_stage===s.id?'selected':''}" onclick="wizData.company_stage='${s.id}';wizRender()">${s.label}</div>`).join('')}</div>
+      <div class="chip-grid">${COMPANY_STAGES.map(s => `<div class="chip ${wizData.company_stage===s.id?'selected':''}" onclick="setWizField('company_stage', '${s.id}');wizRender()">${s.label}</div>`).join('')}</div>
       <label class="wiz-label">What are you building?</label>
-      <textarea class="wiz-textarea" id="wiz-building" oninput="wizData.what_building=this.value" placeholder="Brief description of your product or solution...">${wizData.what_building||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-building" oninput="setWizField('what_building', this.value)" placeholder="Brief description of your product or solution...">${wizData.what_building||''}</textarea>
       <label class="wiz-label">Funding Status</label>
-      <div class="chip-grid">${FUNDING_STATUSES.map(s => `<div class="chip ${wizData.funding_status===s.id?'selected':''}" onclick="wizData.funding_status='${s.id}';wizRender()">${s.label}</div>`).join('')}</div>
+      <div class="chip-grid">${FUNDING_STATUSES.map(s => `<div class="chip ${wizData.funding_status===s.id?'selected':''}" onclick="setWizField('funding_status', '${s.id}');wizRender()">${s.label}</div>`).join('')}</div>
       <label class="wiz-label">Team Size</label>
-      <input class="wiz-input" id="wiz-team" value="${wizData.team_size||''}" oninput="wizData.team_size=this.value" placeholder="e.g. 3, 10-15, Just me">
+      <input class="wiz-input" id="wiz-team" value="${wizData.team_size||''}" oninput="setWizField('team_size', this.value)" placeholder="e.g. 3, 10-15, Just me">
       <label class="wiz-label">What do you need most right now?</label>
       <div class="chip-grid">${FOUNDER_NEEDS.map(n => `<div class="chip ${wizData.biggest_needs.includes(n)?'selected':''}" onclick="wizToggleChip('biggest_needs','${n}')">${n}</div>`).join('')}</div>`;
     } else if (wizData.persona === 'investor') {
       body = `<label class="wiz-label">Investment Stage Preferences</label>
       <div class="chip-grid">${INVEST_STAGES.map(s => `<div class="chip ${wizData.investment_stages.includes(s)?'selected':''}" onclick="wizToggleChip('investment_stages','${s}')">${s}</div>`).join('')}</div>
       <label class="wiz-label">Typical Check Size</label>
-      <input class="wiz-input" id="wiz-check" value="${wizData.check_size||''}" oninput="wizData.check_size=this.value" placeholder="e.g. $50K-$250K, $1M+">
+      <input class="wiz-input" id="wiz-check" value="${wizData.check_size||''}" oninput="setWizField('check_size', this.value)" placeholder="e.g. $50K-$250K, $1M+">
       <label class="wiz-label">Current AgTech Portfolio</label>
-      <textarea class="wiz-textarea" id="wiz-portfolio" oninput="wizData.portfolio_agtech=this.value" placeholder="List any AgTech companies you've invested in...">${wizData.portfolio_agtech||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-portfolio" oninput="setWizField('portfolio_agtech', this.value)" placeholder="List any AgTech companies you've invested in...">${wizData.portfolio_agtech||''}</textarea>
       <label class="wiz-label">What types of deals are you looking for?</label>
-      <textarea class="wiz-textarea" id="wiz-deals" oninput="wizData.deal_interests=this.value" placeholder="Sectors, stages, geographies...">${wizData.deal_interests||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-deals" oninput="setWizField('deal_interests', this.value)" placeholder="Sectors, stages, geographies...">${wizData.deal_interests||''}</textarea>`;
     } else if (wizData.persona === 'advisor') {
       body = `<label class="wiz-label">Areas of Expertise</label>
       <div class="chip-grid">${EXPERTISE_LIST.map(e => `<div class="chip ${wizData.expertise_areas.includes(e)?'selected':''}" onclick="wizToggleChip('expertise_areas','${e}')">${e}</div>`).join('')}</div>
       <label class="wiz-label">How many startups are you currently advising?</label>
-      <input class="wiz-input" id="wiz-advcount" value="${wizData.advising_count||''}" oninput="wizData.advising_count=this.value" placeholder="e.g. 3, None yet">
+      <input class="wiz-input" id="wiz-advcount" value="${wizData.advising_count||''}" oninput="setWizField('advising_count', this.value)" placeholder="e.g. 3, None yet">
       <label class="wiz-label">What kind of startups do you want to help?</label>
-      <textarea class="wiz-textarea" id="wiz-advinterests" oninput="wizData.advisor_interests=this.value" placeholder="Stage, focus area, type of help...">${wizData.advisor_interests||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-advinterests" oninput="setWizField('advisor_interests', this.value)" placeholder="Stage, focus area, type of help...">${wizData.advisor_interests||''}</textarea>`;
     } else if (wizData.persona === 'ecosystem_manager') {
       const PROGRAM_TYPES = ['Accelerator','Incubator','Innovation Hub','University Program','Government Program','Corporate Venture','Tech Validator','Regional Hub'];
       const ECO_NEEDS = ['Startup Deal Flow','Mentor Network','Investor Connections','Program Metrics & Reporting','Cohort Management','Cross-Ecosystem Sharing','Pilot Matching with Farms','Grant & Funding Tracking'];
       body = `<label class="wiz-label">Program / Organization Name</label>
-      <input class="wiz-input" id="wiz-program-name" value="${wizData.company_name||wizData.organization||''}" oninput="wizData.company_name=this.value" placeholder="e.g. Grand Farm, WET Center, Plug and Play">
+      <input class="wiz-input" id="wiz-program-name" value="${wizData.company_name||wizData.organization||''}" oninput="setWizField('company_name', this.value)" placeholder="e.g. Grand Farm, WET Center, Plug and Play">
       <label class="wiz-label">Program Type</label>
       <div class="chip-grid">${PROGRAM_TYPES.map(t => `<div class="chip ${(wizData.agtech_focus||[]).includes(t)?'selected':''}" onclick="wizToggleChip('agtech_focus','${t}')">${t}</div>`).join('')}</div>
       <label class="wiz-label">How many startups are in your current cohort?</label>
-      <input class="wiz-input" id="wiz-cohort-size" value="${wizData.team_size||''}" oninput="wizData.team_size=this.value" placeholder="e.g. 12, 25, 50+">
+      <input class="wiz-input" id="wiz-cohort-size" value="${wizData.team_size||''}" oninput="setWizField('team_size', this.value)" placeholder="e.g. 12, 25, 50+">
       <label class="wiz-label">What does your program need most?</label>
       <div class="chip-grid">${ECO_NEEDS.map(n => `<div class="chip ${(wizData.biggest_needs||[]).includes(n)?'selected':''}" onclick="wizToggleChip('biggest_needs','${n}')">${n}</div>`).join('')}</div>
       <label class="wiz-label">Describe your ecosystem</label>
-      <textarea class="wiz-textarea" id="wiz-eco-desc" oninput="wizData.what_building=this.value" placeholder="What types of startups do you support? What's your geographic focus? What makes your program unique?">${wizData.what_building||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-eco-desc" oninput="setWizField('what_building', this.value)" placeholder="What types of startups do you support? What's your geographic focus? What makes your program unique?">${wizData.what_building||''}</textarea>`;
     } else if (wizData.persona === 'farmer') {
       body = `<label class="wiz-label">Farm Type</label>
       <div class="chip-grid">${FARM_TYPES.map(f => `<div class="chip ${(wizData.agtech_focus||[]).includes(f)?'selected':''}" onclick="wizToggleChip('agtech_focus','${f}')">${f}</div>`).join('')}</div>
       <label class="wiz-label">Farm Size (acres or description)</label>
-      <input class="wiz-input" id="wiz-farm-size" value="${wizData.team_size||''}" oninput="wizData.team_size=this.value" placeholder="e.g. 500 acres, Small family farm, 3 greenhouses">
+      <input class="wiz-input" id="wiz-farm-size" value="${wizData.team_size||''}" oninput="setWizField('team_size', this.value)" placeholder="e.g. 500 acres, Small family farm, 3 greenhouses">
       <label class="wiz-label">Location / Region</label>
-      <input class="wiz-input" id="wiz-farm-loc" value="${wizData.location||''}" oninput="wizData.location=this.value" placeholder="e.g. Southern Alberta, Fraser Valley, PEI">
+      <input class="wiz-input" id="wiz-farm-loc" value="${wizData.location||''}" oninput="setWizField('location', this.value)" placeholder="e.g. Southern Alberta, Fraser Valley, PEI">
       <label class="wiz-label">What technology are you currently using?</label>
-      <textarea class="wiz-textarea" id="wiz-farm-tech" oninput="wizData.what_building=this.value" placeholder="e.g. GPS guidance, soil sensors, drone imaging, manual scouting...">${wizData.what_building||''}</textarea>
+      <textarea class="wiz-textarea" id="wiz-farm-tech" oninput="setWizField('what_building', this.value)" placeholder="e.g. GPS guidance, soil sensors, drone imaging, manual scouting...">${wizData.what_building||''}</textarea>
       <label class="wiz-label">What are you most interested in?</label>
       <div class="chip-grid">${FARM_INTERESTS.map(f => `<div class="chip ${(wizData.biggest_needs||[]).includes(f)?'selected':''}" onclick="wizToggleChip('biggest_needs','${f}')">${f}</div>`).join('')}</div>
       <label class="wiz-label">Open to piloting new AgTech products on your farm?</label>
       <div class="chip-grid">
-        <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=true;wizRender()">Yes, actively looking</div>
-        <div class="chip ${!wizData.open_to_collab?'selected':''}" onclick="wizData.open_to_collab=false;wizRender()">Maybe, depends on the product</div>
+        <div class="chip ${wizData.open_to_collab?'selected':''}" onclick="setWizField('open_to_collab', true);wizRender()">Yes, actively looking</div>
+        <div class="chip ${!wizData.open_to_collab?'selected':''}" onclick="setWizField('open_to_collab', false);wizRender()">Maybe, depends on the product</div>
       </div>`;
     } else {
       body = `<label class="wiz-label">Your Role</label>
-      <input class="wiz-input" id="wiz-role-detail" value="${wizData.job_title||''}" oninput="wizData.job_title=this.value" placeholder="Describe your role and focus">
+      <input class="wiz-input" id="wiz-role-detail" value="${wizData.job_title||''}" oninput="setWizField('job_title', this.value)" placeholder="Describe your role and focus">
       <label class="wiz-label">How can you contribute to the ecosystem?</label>
-      <textarea class="wiz-textarea" id="wiz-contrib" oninput="wizData.goals_general=this.value" placeholder="What value do you bring to AgTech founders?">${wizData.goals_general||''}</textarea>`;
+      <textarea class="wiz-textarea" id="wiz-contrib" oninput="setWizField('goals_general', this.value)" placeholder="What value do you bring to AgTech founders?">${wizData.goals_general||''}</textarea>`;
     }
   } else if (step === 'goals') {
     body = `<div style="text-align:center;margin-bottom:14px">
@@ -7889,14 +7889,14 @@ function wizRender() {
       <h3 style="margin:0 0 4px;font-size:16px">Almost done!</h3>
     </div>
     <label class="wiz-label">What do you hope to get from Founder Ops Center?</label>
-    <textarea class="wiz-textarea" id="wiz-goals-platform" oninput="wizData.goals_platform=this.value" placeholder="e.g. Find investors, discover co-founders, access market data...">${wizData.goals_platform||''}</textarea>
+    <textarea class="wiz-textarea" id="wiz-goals-platform" oninput="setWizField('goals_platform', this.value)" placeholder="e.g. Find investors, discover co-founders, access market data...">${wizData.goals_platform||''}</textarea>
     <label class="wiz-label">What are your big-picture goals?</label>
-    <textarea class="wiz-textarea" id="wiz-goals-general" oninput="wizData.goals_general=this.value" placeholder="e.g. Launch MVP by Q3, raise $500K seed round, scale to 100 farms...">${wizData.goals_general||''}</textarea>
+    <textarea class="wiz-textarea" id="wiz-goals-general" oninput="setWizField('goals_general', this.value)" placeholder="e.g. Launch MVP by Q3, raise $500K seed round, scale to 100 farms...">${wizData.goals_general||''}</textarea>
     <label class="wiz-label">How did you hear about us?</label>
-    <input class="wiz-input" id="wiz-heard" value="${wizData.how_heard||''}" oninput="wizData.how_heard=this.value" placeholder="e.g. LinkedIn, friend referral, Google search">
+    <input class="wiz-input" id="wiz-heard" value="${wizData.how_heard||''}" oninput="setWizField('how_heard', this.value)" placeholder="e.g. LinkedIn, friend referral, Google search">
     <label class="wiz-label" style="margin-top:16px">Do you also identify as... <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label>
     <p style="font-size:11px;color:var(--text-muted);margin:0 0 8px">Select a secondary role to unlock additional features tailored to that persona.</p>
-    <div class="chip-grid">${PERSONAS.filter(p => p.id !== wizData.persona).map(p => `<div class="chip ${wizData.secondary_role===p.id?'selected':''}" onclick="wizData.secondary_role=wizData.secondary_role==='${p.id}'?'':'${p.id}';wizRender()">${p.icon} ${p.label}</div>`).join('')}</div>`;
+    <div class="chip-grid">${PERSONAS.filter(p => p.id !== wizData.persona).map(p => `<div class="chip ${wizData.secondary_role===p.id?'selected':''}" onclick="toggleWizSecondaryRole('${p.id}')">${p.icon} ${p.label}</div>`).join('')}</div>`;
   } else if (step === 'consent') {
     const personaValue = {
       founder: 'curated deal flow visibility, investor introductions at the right stage, a trusted network of advisors, and structured milestone tracking that proves your traction to the market',
@@ -7934,7 +7934,7 @@ function wizRender() {
       </div>
     </div>
 
-    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px;border:2px solid ${wizData.consent_accepted?'var(--green)':'var(--border)'};border-radius:10px;background:${wizData.consent_accepted?'var(--accent-bg)':'var(--hover)'};transition:all .2s" onclick="wizData.consent_accepted=!wizData.consent_accepted;wizRender()">
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px;border:2px solid ${wizData.consent_accepted?'var(--green)':'var(--border)'};border-radius:10px;background:${wizData.consent_accepted?'var(--accent-bg)':'var(--hover)'};transition:all .2s" onclick="toggleWizConsent()">
       <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${wizData.consent_accepted?'var(--green)':'var(--border)'};background:${wizData.consent_accepted?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:14px;color:#fff;transition:all .2s">${wizData.consent_accepted?'✓':''}</div>
       <span style="font-size:12px;color:var(--text);line-height:1.6"><strong>I agree</strong> to the Terms of Participation and understand that FounderOps Center is an evolving platform. I'm excited to contribute to the AgTech ecosystem.</span>
     </label>`;
@@ -8867,7 +8867,7 @@ function pgAdmin(){
     <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
       <div style="font-size:13px;font-weight:700;color:var(--text)">${_supabaseDeals.length ? '✅ Supabase connected' : '⚠️ Using hardcoded data'} — ${existingDeals.length} deals</div>
       ${!_supabaseDeals.length ? `<button onclick="seedDealsToSupabase()" class="ac-btn primary" style="font-size:11px">🚀 Seed Deals to Supabase</button>` : ''}
-      <button onclick="loadSupabaseDeals().then(d=>{_supabaseDeals=d;render('admin')})" class="ac-btn secondary" style="font-size:11px">🔄 Refresh</button>
+      <button onclick="loadSupabaseDeals().then(setSupabaseDeals)" class="ac-btn secondary" style="font-size:11px">🔄 Refresh</button>
     </div>
     <div class="hub-accordion open">
       <div class="ha-header" onclick="this.parentElement.classList.toggle('open')">
@@ -9130,7 +9130,7 @@ function pgAdmin(){
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
       <div><h3 style="margin:0 0 3px">👥 User Directory</h3><div class="sub">${filtered.length} of ${total} users shown</div></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input class="admin-search" placeholder="🔍 Search users..." value="${adminSearch}" oninput="adminSearch=this.value;render('admin')">
+        <input class="admin-search" placeholder="🔍 Search users..." value="${adminSearch}" oninput="setAdminSearch(this.value);render('admin')">
         <button onclick="adminExportCSV()" style="padding:7px 14px;background:var(--accent-bg);color:var(--green);border:1px solid var(--green-mid);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">↓ Export CSV</button>
         <button onclick="refreshAdminUsers()" style="padding:7px 14px;background:var(--hover);border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">↻ Refresh</button>
         <button onclick="resetMyAccount()" style="padding:7px 14px;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🔄 Reset My Account</button>
@@ -11373,12 +11373,12 @@ function hubMentorContent() {
     </div>
     <!-- Filters -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-      <input type="text" placeholder="🔍 Search by name, expertise, focus..." value="${mentorSearch}" oninput="mentorSearch=this.value;clearTimeout(window._mentorDebounce);window._mentorDebounce=setTimeout(()=>{render('hub');setTimeout(()=>{const i=document.querySelector('input[placeholder*=Search\\ by\\ name]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},20)},300)" style="flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
-      <select onchange="mentorFilter=this.value;render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
+      <input type="text" placeholder="🔍 Search by name, expertise, focus..." value="${mentorSearch}" oninput="setMentorSearch(this.value);clearTimeout(window._mentorDebounce);window._mentorDebounce=setTimeout(()=>{render('hub');setTimeout(()=>{const i=document.querySelector('input[placeholder*=Search\\ by\\ name]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},20)},300)" style="flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text)">
+      <select onchange="setMentorFilter(this.value);render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
         <option value="">All Ag Areas</option>
         ${agAreas.map(a => '<option value="'+a+'"'+(mentorFilter===a?' selected':'')+'>'+a+'</option>').join('')}
       </select>
-      <select onchange="mentorCountry=this.value;render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
+      <select onchange="setMentorCountry(this.value);render('hub')" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;background:var(--surface);color:var(--text)">
         <option value="">All Countries</option>
         ${countries.map(c => '<option value="'+c+'"'+(mentorCountry===c?' selected':'')+'>'+c+'</option>').join('')}
       </select>
@@ -12311,7 +12311,7 @@ function ecoRenderSearch() {
   html += '<button onclick="ecoToggleSearch()" style="background:none;border:none;color:var(--text-faint);font-size:18px;cursor:pointer">&times;</button></div>';
 
   html += '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">';
-  html += '<input id="eco-platform-filter" type="text" placeholder="Filter by name, company, email, persona..." oninput="_ecoPlatformFilter=this.value;render(\'ecosystem_ws\');setTimeout(()=>{const i=document.getElementById(\'eco-platform-filter\');if(i){i.focus();i.value=_ecoPlatformFilter;}},50)" value="' + (_ecoPlatformFilter || '') + '" style="flex:1;min-width:200px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none" />';
+  html += '<input id="eco-platform-filter" type="text" placeholder="Filter by name, company, email, persona..." oninput="const v=this.value;setEcoPlatformFilter(v);render(\'ecosystem_ws\');setTimeout(()=>{const i=document.getElementById(\'eco-platform-filter\');if(i){i.focus();i.value=v;}},50)" value="' + (_ecoPlatformFilter || '') + '" style="flex:1;min-width:200px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none" />';
   if (notAdded.length > 0) {
     html += '<button onclick="ecoAddAllFromPlatform()" style="padding:10px 16px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add All (' + notAdded.length + ')</button>';
   }
@@ -15584,7 +15584,7 @@ function pgEcosystemWorkspace() {
         <div>
           <h1 style="font-size:24px;font-weight:900;color:var(--text);margin:0">${programName} Workspace ${modeBadge}</h1>
           <div style="font-size:13px;color:var(--text-muted)">${ecoConfig.programType || 'Ecosystem'} · ${ecoConfig.features.length} features active
-            ${hasAirtable ? `<span onclick="wksSetRole(_wksRole==='manager'?'admin':'manager')" style="margin-left:8px;padding:2px 8px;background:var(--hover);border-radius:4px;font-size:10px;font-weight:700;color:var(--green);cursor:pointer;border:1px solid var(--border)">Switch to ${_wksRole==='manager'?'Admin':'Manager'} View</span>` : ''}
+            ${hasAirtable ? `<span onclick="toggleWksRole()" style="margin-left:8px;padding:2px 8px;background:var(--hover);border-radius:4px;font-size:10px;font-weight:700;color:var(--green);cursor:pointer;border:1px solid var(--border)">Switch to ${_wksRole==='manager'?'Admin':'Manager'} View</span>` : ''}
           </div>
         </div>
       </div>
@@ -15770,7 +15770,45 @@ function markVentureAfterSignIn() {
 }
 
 // Founding questions
-function setFqStep(n) { _fqStep = n; renderFoundingQ(); }
+function setFqStep(n) { _fqStep = n; }
+
+// ── PHASE 2 SETTERS (replace the Object.defineProperty proxy block) ──
+// Non-rendering setters: caller handles render (matches the setFqStep pattern).
+// Compose-and-render helpers exist only where the onclick must READ the
+// module-scope value to compute the next state (toggle semantics).
+
+// Primitive setters
+function setAdminSearch(v)        { adminSearch = v; }
+function setCiFilter(v)           { _ciFilter = v; }
+function setCiSearch(v)           { _ciSearch = v; }
+function setCiSort(v)             { _ciSort = v; }
+function setMentorSearch(v)       { mentorSearch = v; }
+function setMentorFilter(v)       { mentorFilter = v; }
+function setMentorCountry(v)      { mentorCountry = v; }
+function setEcoPlatformFilter(v)  { _ecoPlatformFilter = v; }
+
+// Object-property setters
+function setVentureField(key, value)    { _ventureForm[key] = value; }
+function setWizField(key, value)        { wizData[key] = value; }
+function setFounderProfile(key, value)  { _founderProfile[key] = value; }
+function setAccelFilter(key, value)     { _accelFilter[key] = value; }
+function setFqAnswer(key, value)        { _fqAnswers[key] = value; }
+
+// Compose-and-render helpers (encapsulate a READ of the module-scope value)
+function toggleVentureArrayField(key, value) {
+  const arr = _ventureForm[key] || [];
+  const idx = arr.indexOf(value);
+  if (idx > -1) arr.splice(idx, 1);
+  else arr.push(value);
+  _ventureForm[key] = arr;
+  render('venture');
+}
+function toggleWizSecondaryRole(id) { wizData.secondary_role = wizData.secondary_role === id ? '' : id; wizRender(); }
+function toggleWizConsent()         { wizData.consent_accepted = !wizData.consent_accepted; wizRender(); }
+function toggleWksRole()            { wksSetRole(_wksRole === 'manager' ? 'admin' : 'manager'); }
+function prevFqStep()               { setFqStep(Math.max(0, _fqStep - 1)); renderFoundingQ(); }
+function setSupabaseDeals(d)        { _supabaseDeals = d; render('admin'); }
+
 
 // ── WINDOW EXPOSURE (for inline HTML event handlers) ─────────────────
 // Generated from the onclick/oninput/etc audit. Do not remove names without
@@ -15985,35 +16023,25 @@ Object.assign(window, {
   toggleAccelOpen,
   toggleIntShowAirtable,
   toggleMiSector,
+  // ── phase 2 ──
+  prevFqStep,
+  setAccelFilter,
+  setAdminSearch,
+  setCiFilter,
+  setCiSearch,
+  setCiSort,
+  setEcoPlatformFilter,
+  setFounderProfile,
+  setFqAnswer,
+  setMentorCountry,
+  setMentorFilter,
+  setMentorSearch,
+  setSupabaseDeals,
+  setVentureField,
+  setWizField,
+  toggleVentureArrayField,
+  toggleWizConsent,
+  toggleWizSecondaryRole,
+  toggleWksRole,
 });
 
-// ── WINDOW STATE PROXIES (inline HTML handlers → module-scope vars) ──
-// ES modules isolate top-level let/var bindings from `window`. These proxies
-// expose read/write on each module-scope state variable referenced by an
-// inline onclick / onchange / oninput / onblur handler. A handler like
-// `onchange="_ventureForm.name=this.value"` resolves `_ventureForm` against
-// window (invoking the getter → returns the module binding) then sets `.name`
-// on that object. Bare writes like `_supabaseDeals = d` in a handler callback
-// invoke the setter, which assigns to the module binding.
-//
-// Add to this list when a new state variable is referenced from an inline
-// handler. Remove an entry when its last handler is gone or migrated to a
-// setter. Do not add names that are only read inside `${…}` template-literal
-// expressions — those run at template-expansion time (module scope) and are
-// not a proxy concern.
-Object.defineProperty(window, '_accelFilter',       { get: () => _accelFilter,       set: v => { _accelFilter = v; },       configurable: true });
-Object.defineProperty(window, '_ciFilter',          { get: () => _ciFilter,          set: v => { _ciFilter = v; },          configurable: true });
-Object.defineProperty(window, '_ciSearch',          { get: () => _ciSearch,          set: v => { _ciSearch = v; },          configurable: true });
-Object.defineProperty(window, '_ciSort',            { get: () => _ciSort,            set: v => { _ciSort = v; },            configurable: true });
-Object.defineProperty(window, '_ecoPlatformFilter', { get: () => _ecoPlatformFilter, set: v => { _ecoPlatformFilter = v; }, configurable: true });
-Object.defineProperty(window, '_founderProfile',    { get: () => _founderProfile,    set: v => { _founderProfile = v; },    configurable: true });
-Object.defineProperty(window, '_fqAnswers',         { get: () => _fqAnswers,         set: v => { _fqAnswers = v; },         configurable: true });
-Object.defineProperty(window, '_fqStep',            { get: () => _fqStep,            set: v => { _fqStep = v; },            configurable: true });
-Object.defineProperty(window, '_supabaseDeals',     { get: () => _supabaseDeals,     set: v => { _supabaseDeals = v; },     configurable: true });
-Object.defineProperty(window, '_ventureForm',       { get: () => _ventureForm,       set: v => { _ventureForm = v; },       configurable: true });
-Object.defineProperty(window, '_wksRole',           { get: () => _wksRole,           set: v => { _wksRole = v; },           configurable: true });
-Object.defineProperty(window, 'adminSearch',        { get: () => adminSearch,        set: v => { adminSearch = v; },        configurable: true });
-Object.defineProperty(window, 'mentorCountry',      { get: () => mentorCountry,      set: v => { mentorCountry = v; },      configurable: true });
-Object.defineProperty(window, 'mentorFilter',       { get: () => mentorFilter,       set: v => { mentorFilter = v; },       configurable: true });
-Object.defineProperty(window, 'mentorSearch',       { get: () => mentorSearch,       set: v => { mentorSearch = v; },       configurable: true });
-Object.defineProperty(window, 'wizData',            { get: () => wizData,            set: v => { wizData = v; },            configurable: true });
