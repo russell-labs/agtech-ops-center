@@ -5747,6 +5747,25 @@ async function loadVentureSubmissions() {
   return _ventureSubmissions;
 }
 
+// Called from the "Mark as Ready" button on accelerator application tiles.
+// Top-level because inline onclick handlers resolve against window, not the
+// lexical scope of pgAccelerators — see Issue #1 / commit ecbee30 context.
+function trackProgram(programId, status){
+  if(!_founderProfile.applications) _founderProfile.applications = [];
+  const existing = _founderProfile.applications.find(a => a.programId === programId);
+  if(existing){
+    existing.status = status;
+    existing.updatedAt = new Date().toISOString();
+  } else {
+    _founderProfile.applications.push({
+      programId: programId,
+      status: status,
+      addedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+}
+
 // ════════════════════════════════════════════════
 // PAGE: ACCELERATOR HUB
 // ════════════════════════════════════════════════
@@ -6053,22 +6072,6 @@ function pgAccelerators(){
 
     html += '</div>';
     return html;
-  }
-
-  function trackProgram(programId, status){
-    if(!_founderProfile.applications) _founderProfile.applications = [];
-    const existing = _founderProfile.applications.find(a => a.programId === programId);
-    if(existing){
-      existing.status = status;
-      existing.updatedAt = new Date().toISOString();
-    } else {
-      _founderProfile.applications.push({
-        programId: programId,
-        status: status,
-        addedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
-    }
   }
 
   if(!_accelFilter) _accelFilter = { region: 'all', readiness: 'all', investmentRange: 'all' };
@@ -15909,6 +15912,7 @@ Object.assign(window, {
   toggleStat,
   toggleTheme,
   trackEvent,
+  trackProgram,
   unblockUser,
   updateIntroTierPref,
   updateRegion,
