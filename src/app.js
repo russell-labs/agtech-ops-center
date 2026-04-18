@@ -258,7 +258,8 @@ function applyUser(user, isNew) {
   const email = user.email || '';
   const name = user.user_metadata?.full_name || email.split('@')[0];
   const avatar = user.user_metadata?.avatar_url || null;
-  currentUser = { id: user.id, email, name, avatar, method: 'google' };
+  const method = user.app_metadata?.provider === 'google' ? 'google' : 'email';
+  currentUser = { id: user.id, email, name, avatar, method };
   // isAdmin is determined from profiles.is_platform_admin, set after profile loads.
   isAdmin = false;
 
@@ -270,7 +271,7 @@ function applyUser(user, isNew) {
   if (btn) {
     btn.innerHTML = avatar
       ? `<img src="${avatar}" alt="${name}" style="width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid var(--green)" title="${email}" onclick="openSignOutMenu()">`
-      : avatarHtml(email, 'google');
+      : avatarHtml(email, method, 'openSignOutMenu()');
     btn.onclick = null;
   }
   closeModal('signin-modal');
@@ -309,7 +310,7 @@ function applyUser(user, isNew) {
   const logins = getLogins();
   const existing = logins.find(l => l.id === user.id);
   if (!existing) {
-    logins.unshift({ id: user.id, email, name, method: 'google', ts: new Date().toISOString(), pages: [] });
+    logins.unshift({ id: user.id, email, name, method, ts: new Date().toISOString(), pages: [] });
     saveLogins(logins);
   }
   const msg = isAdmin ? '✅ Welcome back, Admin!' : '✅ Welcome, ' + name + '!';
@@ -6627,11 +6628,15 @@ function getUserEcosystems(userIdOrEmail){
   return list.filter(m => m.userId === userIdOrEmail || m.email === userIdOrEmail);
 }
 
-function avatarHtml(email, method){
+function avatarHtml(email, method, onclickAction){
+  // onclickAction defaults to the signed-out path. Signed-in callers (applyUser)
+  // pass 'openSignOutMenu()' so clicking the avatar shows the user menu, not
+  // the sign-in modal. Bug fix for F-11.
+  const action = onclickAction || "openModal('signin-modal')";
   const initials = method==='google' ? 'G' : email.slice(0,2).toUpperCase();
   const bg = method==='google' ? '#4285f4' : 'var(--green)';
   const icon = method==='google' ? `<svg width="14" height="14" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>` : initials;
-  return `<div style="width:28px;height:28px;border-radius:50%;background:${bg};display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,.3);flex-shrink:0" title="${email}" onclick="openModal('signin-modal')">${icon}</div>`;
+  return `<div style="width:28px;height:28px;border-radius:50%;background:${bg};display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,.3);flex-shrink:0" title="${email}" onclick="${action}">${icon}</div>`;
 }
 
 async function signIn(method){
@@ -10296,6 +10301,7 @@ async function saveIntroLater(aId, bId, score, reasons) {
 // USER-FACING CONNECTIONS PAGE
 // ══════════════════════════════════════════════════════════════
 let _userIntros = []; // intros involving the current user
+let _connectionsLoadState = 'idle'; // idle | loading | loaded | error — gates the one-shot load in pgUserConnections (F-10 fix)
 let connTab = 'discover'; // 'discover' | 'active' | 'history'
 
 async function loadUserIntros() {
@@ -10418,15 +10424,32 @@ function pgUserConnections() {
   if (!p || !p.onboarding_complete) return `<div class="admin-lock"><h2>🤝 Complete Your Profile First</h2><p>Finish your profile to unlock connections and introductions.</p>
     <button onclick="showWizard()" style="padding:11px 24px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Set Up Profile →</button></div>`;
 
-  // Load data if needed
-  if (!_allProfiles.length || !_userIntros.length) {
-    const promises = [];
-    if (!_allProfiles.length) promises.push(loadAllProfiles().then(r => { _allProfiles = r; }));
-    promises.push(loadUserIntros().then(r => { _userIntros = r; }));
-    if (promises.length) {
-      Promise.all(promises).then(() => render('connections'));
-      return `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading your connections...</p></div>`;
-    }
+  // Load data if needed — F-10 fix. The prior guard checked `!_allProfiles.length`
+  // which can't distinguish "never loaded" from "loaded but empty". When the
+  // Supabase call returned [], every subsequent render re-entered the guard and
+  // kicked off another Promise.all, creating an infinite render loop. Use a
+  // load-state flag to gate exactly once.
+  if (_connectionsLoadState === 'idle') {
+    _connectionsLoadState = 'loading';
+    Promise.all([
+      loadAllProfiles().then(r => { _allProfiles = r || []; }),
+      loadUserIntros().then(r => { _userIntros = r || []; }),
+    ]).then(() => {
+      _connectionsLoadState = 'loaded';
+      render('connections');
+    }).catch(e => {
+      console.error('pgUserConnections load error:', e);
+      _connectionsLoadState = 'error';
+      toast('⚠️ Could not load connections — try refreshing');
+      render('connections');
+    });
+    return `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading your connections...</p></div>`;
+  }
+  if (_connectionsLoadState === 'loading') {
+    return `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Loading your connections...</p></div>`;
+  }
+  if (_connectionsLoadState === 'error') {
+    return `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">⚠️</div><p>Could not load connections.</p><button onclick="retryConnections()" style="margin-top:12px;padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Try Again</button></div>`;
   }
 
   const pauseStatus = getIntroPauseStatus(p);
@@ -15601,7 +15624,7 @@ function pgEcosystemWorkspace() {
 const pages = {
   overview: pgOverview, segments: pgSegments, journey: pgJourney, glossary: pgGlossary,
   documents: pgDocuments, media: pgMedia, ecosystem: pgEcosystem, market_intel: pgMarketIntel,
-  crops: pgCrops, mentors: function(){ go('hub'); return ''; }, accelerators: pgAccelerators, venture: pgVenture, resources: pgResources,
+  crops: pgCrops, mentors: pgMentors, accelerators: pgAccelerators, venture: pgVenture, resources: pgResources,
   admin: pgAdmin, profile: pgProfile, roadmap: pgRoadmapStandalone,
   connections: pgUserConnections, hub: pgCommunityHub, action: pgActionCenter,
   investor: pgInvestorDashboard, ecosystem_ws: pgEcosystemWorkspace
@@ -15772,6 +15795,9 @@ function markVentureAfterSignIn() {
 // Founding questions
 function setFqStep(n) { _fqStep = n; }
 
+// F-10 retry — resets load state and re-enters the one-shot load path.
+function retryConnections() { _connectionsLoadState = 'idle'; render('connections'); }
+
 // ── PHASE 2 SETTERS (replace the Object.defineProperty proxy block) ──
 // Non-rendering setters: caller handles render (matches the setFqStep pattern).
 // Compose-and-render helpers exist only where the onclick must READ the
@@ -15921,6 +15947,7 @@ Object.assign(window, {
   requestIntro,
   requestMentorIntro,
   resetMyAccount,
+  retryConnections,
   revokeInvestorAccess,
   revokeRoadmapAccess,
   saveNotes,
