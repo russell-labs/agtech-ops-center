@@ -251,7 +251,7 @@ Five BLOCKER-tier issues across the two personas. I-01 (LinkedIn-link-instead-of
 #### I-01 · "Request Intro" on Investor Dashboard pipeline is a LinkedIn href, not a platform intro request
 **Severity:** BLOCKER
 
-**Location:** [src/app.js:12043](src/app.js#L12043) in `pgInvestorDashboard()`'s `pipelineFounders` map.
+**Location:** [src/app.js:12137](src/app.js#L12137) in `pgInvestorDashboard()`'s `pipelineFounders` map.
 
 ```js
 const liLink = p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" rel="noopener" class="ac-btn primary" style="margin-top:8px;font-size:11px;padding:5px 10px">Request Intro →</a>` : '';
@@ -259,11 +259,11 @@ const liLink = p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" rel
 
 **What happens:** An investor lands on the dashboard, sees the "Live Deal Flow" pipeline with up to 12 founder cards, clicks "Request Intro →" on one. The button opens the founder's LinkedIn in a new tab. No record written. No email sent. No intro flow initiated. Platform exits.
 
-**Contrast:** The Community Hub's user cards at [src/app.js:10492](src/app.js#L10492) correctly wire `requestIntro(o.id, score, reasons)`, which inserts into `introductions` and walks the tier/limit gates. The investor dashboard — the *primary* surface for an investor browsing founders — does not.
+**Contrast:** The Community Hub's user cards at [src/app.js:10571](src/app.js#L10571) correctly wire `requestIntro(o.id, score, reasons)`, which inserts into `introductions` and walks the tier/limit gates. The investor dashboard — the *primary* surface for an investor browsing founders — does not.
 
 **User impact:** An investor's single most important action on the platform ("I want to meet this founder") routes off-platform. The platform captures no signal, no match score, no notification to Russell. An investor who uses LinkedIn for every "intro" effectively gets zero benefit from being on the platform.
 
-**Fix:** Replace the `<a href>` with `<button onclick="requestIntro('${p.id}', ${score}, ${JSON.stringify(reasons)})">`. Reuse the scoring function from `connDiscoverTab` (`scoreMatch(p, other)` at [src/app.js:10517](src/app.js#L10517)) to generate meaningful match reasons. Optionally keep the LinkedIn link as a secondary affordance for investors who want to check credentials before the intro.
+**Fix:** Replace the `<a href>` with `<button onclick="requestIntro('${p.id}', ${score}, ${JSON.stringify(reasons)})">`. Reuse the scoring function from `connDiscoverTab` (`scoreMatch(p, other)` at [src/app.js:10595](src/app.js#L10595)) to generate meaningful match reasons. Optionally keep the LinkedIn link as a secondary affordance for investors who want to check credentials before the intro.
 
 ---
 
@@ -271,7 +271,7 @@ const liLink = p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" rel
 **Severity:** BLOCKER
 **Shared with:** founder audit (same root — this is the platform-wide intro mechanism, not investor-specific).
 
-**Location:** [src/app.js:10369](src/app.js#L10369) — `sendIntroEmail()` uses `window.open('mailto:...')` instead of `sendAutoEmail()` (the working Resend Edge Function already wired for welcome + eco-approval emails at [src/app.js:205](src/app.js#L205)).
+**Location:** [src/app.js:10431](src/app.js#L10431) — `sendIntroEmail()` uses `window.open('mailto:...')` instead of `sendAutoEmail()` (the working Resend Edge Function already wired for welcome + eco-approval emails at [src/app.js:205](src/app.js#L205)).
 
 **What happens:** When an investor successfully requests an intro (via Community Hub, since I-01 blocks the Dashboard path), a row lands in `introductions` with `status='suggested'`. Nothing is emailed — not to the investor, not to the founder, not to Russell. Russell must manually notice the row in the admin panel and trigger `sendIntroEmail()`, which itself opens a `mailto:` link requiring Russell to manually send from his email client.
 
@@ -283,7 +283,7 @@ const liLink = p.linkedin_url ? `<a href="${p.linkedin_url}" target="_blank" rel
 
 #### I-03 · Investor Dashboard depends on `_allProfiles` population — empty DB means empty pipeline, no fallback
 **Severity:** WEAK
-**Location:** [src/app.js:11992](src/app.js#L11992)
+**Location:** [src/app.js:12086](src/app.js#L12086)
 
 ```js
 const pipelineFounders = _allProfiles.filter(p =>
@@ -292,7 +292,7 @@ const pipelineFounders = _allProfiles.filter(p =>
 );
 ```
 
-**What happens:** Pre-launch or during slow periods, `pipelineFounders.length === 0`. The Dashboard renders "Active Opportunities: 0" with no explanation and no call-to-action. Contrast with Community Hub's "You're one of the first here — invite someone..." messaging at [src/app.js:10497](src/app.js#L10497).
+**What happens:** Pre-launch or during slow periods, `pipelineFounders.length === 0`. The Dashboard renders "Active Opportunities: 0" with no explanation and no call-to-action. Contrast with Community Hub's "You're one of the first here — invite someone..." messaging at [src/app.js:10576](src/app.js#L10576).
 
 **User impact:** An investor who signs up early sees an empty platform and has no reason to return. No "we'll notify you when new founders join" hook.
 
@@ -302,7 +302,7 @@ const pipelineFounders = _allProfiles.filter(p =>
 
 #### I-04 · Company Intel and live founder profiles are two disjoint universes
 **Severity:** GAP
-**Location:** `pgMarketIntel`'s Company Intel tab at [src/app.js:3319](src/app.js#L3319) reads `AGTECH_COMPANIES` (static, ~200 curated entries from THRIVE Top 50 / Yield Lab / etc.). The investor's "Live Deal Flow" at [src/app.js:11992](src/app.js#L11992) reads `_allProfiles` filtered by `persona='founder'`.
+**Location:** `pgMarketIntel`'s Company Intel tab at [src/app.js:3325](src/app.js#L3325) reads `AGTECH_COMPANIES` (static, ~200 curated entries from THRIVE Top 50 / Yield Lab / etc.). The investor's "Live Deal Flow" at [src/app.js:12086](src/app.js#L12086) reads `_allProfiles` filtered by `persona='founder'`.
 
 **What happens:** Company Intel is a read-only curated database of industry companies. Live Deal Flow is the real founder pipeline on the platform. No crosswalk between them — a founder on the platform whose company is *also* in `AGTECH_COMPANIES` appears twice (once in each universe) with no indication of the match.
 
@@ -314,9 +314,9 @@ const pipelineFounders = _allProfiles.filter(p =>
 
 #### I-05 · No user-controlled sorting on the founder pipeline
 **Severity:** WEAK
-**Location:** [src/app.js:12039](src/app.js#L12039) — `.slice(0,12)` shows the first 12 in whatever order `_allProfiles` arrives.
+**Location:** [src/app.js:12133](src/app.js#L12133) — `.slice(0,12)` shows the first 12 in whatever order `_allProfiles` arrives.
 
-**What happens:** An investor with specific criteria (stage, sector, region) has filters for *some* of those (region filter at :11713), but no way to sort by company stage, funding status, profile completeness, or recency. Top 12 is the hard cap.
+**What happens:** An investor with specific criteria (stage, sector, region) has filters for *some* of those (region filter at :11808), but no way to sort by company stage, funding status, profile completeness, or recency. Top 12 is the hard cap.
 
 **User impact:** Investors filtering by seed-stage CEA startups in Canada can narrow by region, but the resulting 12 cards are in DB order, not match-score order. Power-users will ignore the Dashboard.
 
@@ -326,7 +326,7 @@ const pipelineFounders = _allProfiles.filter(p =>
 
 #### I-06 · Intro tier preference enforcement is inconsistent
 **Severity:** WEAK
-**Location:** [src/app.js:10515-10519](src/app.js#L10515-L10519) vs [src/app.js:10831](src/app.js#L10831).
+**Location:** [src/app.js:10595-10606](src/app.js#L10595-L10606) vs [src/app.js:10910](src/app.js#L10910).
 
 **What happens:** `connDiscoverTab()` computes `meetsOtherPref = myTier >= otherPref` and uses it to categorize matches (matched-and-requestable vs tier-gated). But `requestIntro()` itself — which an investor can invoke directly from the dashboard (post-I-01 fix) or via Community Hub — does *not* re-check the target's `intro_tier_pref` before inserting. An investor who hasn't earned enough badges can bypass the gate by calling `requestIntro` directly, or (more realistically) a future surface that calls it without the pre-filter.
 
@@ -342,7 +342,7 @@ const pipelineFounders = _allProfiles.filter(p =>
 
 **What happens:** Investor decides they want to connect with a founder, clicks Request Intro. An `introductions` row is created with match_reasons (auto-generated). No way for the investor to say *why* they want the intro or *what they can offer* (check size, sector fit, operational expertise). The founder sees an auto-generated request with no context.
 
-**User impact:** Founders receiving intro requests can't differentiate serious well-matched investors from casual clickers. The mentor intro request path at [src/app.js:4862](src/app.js#L4862) already has a textarea — Russell built this pattern correctly for mentor intros, but the investor-to-founder intro flow doesn't have the equivalent.
+**User impact:** Founders receiving intro requests can't differentiate serious well-matched investors from casual clickers. The mentor intro request path at [src/app.js:4868](src/app.js#L4868) already has a textarea — Russell built this pattern correctly for mentor intros, but the investor-to-founder intro flow doesn't have the equivalent.
 
 **Fix:** Match `requestMentorIntro`'s modal pattern — `requestIntro` opens a modal with a textarea ("Tell [founder] why you'd like to connect"), stores the text in `introductions.match_reasons` or a new `requester_note` column. When Russell reviews the request in the admin panel, the context is there.
 
@@ -362,14 +362,14 @@ const pipelineFounders = _allProfiles.filter(p =>
 #### I-09 · Investor Dashboard sections — real value, keep
 **Severity:** POSITIVE
 
-Specifically: Ecosystem Maturity Index at [src/app.js:11769](src/app.js#L11769), Capital Concentration / Money Flow at [src/app.js:11808](src/app.js#L11808), Sector Heatmap at [src/app.js:11865](src/app.js#L11865), Most Active VCs at [src/app.js:11929](src/app.js#L11929), Exits & M&A at [src/app.js:11950](src/app.js#L11950). These are structured content an investor could not easily reconstruct from public sources in an afternoon. Region filter at [:11713](src/app.js#L11713) works correctly. The surface is genuinely useful — I-01 and I-02 fix the intro pipe, not this content.
+Specifically: Ecosystem Maturity Index at [src/app.js:11868](src/app.js#L11868), Capital Concentration / Money Flow at [src/app.js:11915](src/app.js#L11915), Sector Heatmap at [src/app.js:11963](src/app.js#L11963), Most Active VCs at [src/app.js:12026](src/app.js#L12026), Exits & M&A at [src/app.js:12047](src/app.js#L12047). These are structured content an investor could not easily reconstruct from public sources in an afternoon. Region filter at [:11808](src/app.js#L11808) works correctly. The surface is genuinely useful — I-01 and I-02 fix the intro pipe, not this content.
 
 ---
 
 #### I-10 · Market Intel with chip-selectable sectors and Company Intel Directory filters — keep
 **Severity:** POSITIVE
 
-`pgMarketIntel()` at [src/app.js:3319](src/app.js#L3319) with its tabbed structure (sectors / trends / matrix / signals / personas / crosswalk / companies) and the Company Intel Directory's filter/search/sort controls at [src/app.js:3702](src/app.js#L3702) are good. The crosswalk question (I-04) is about connecting them to live founders, not about the content itself.
+`pgMarketIntel()` at [src/app.js:3325](src/app.js#L3325) with its tabbed structure (sectors / trends / matrix / signals / personas / crosswalk / companies) and the Company Intel Directory's filter/search/sort controls at [src/app.js:3708](src/app.js#L3708) are good. The crosswalk question (I-04) is about connecting them to live founders, not about the content itself.
 
 ---
 
@@ -378,7 +378,7 @@ Specifically: Ecosystem Maturity Index at [src/app.js:11769](src/app.js#L11769),
 #### M-01 · Signed-up advisors are invisible — no directory surfaces live advisor profiles
 **Severity:** BLOCKER
 
-**Location:** `pgMentors()` at [src/app.js:4961](src/app.js#L4961) reads `window.MENTORS` (static, 84 entries from `data/mentors.js`). `window.MENTORS` has no mechanism for platform-side advisor profiles to appear in it. Community Hub's mentor accordion at [src/app.js:11284](src/app.js#L11284) reads `window.HUB_MENTORS` (a different static set in `data/hub.js`).
+**Location:** `pgMentors()` at [src/app.js:4967](src/app.js#L4967) reads `window.MENTORS` (static, 84 entries from `data/mentors.js`). `window.MENTORS` has no mechanism for platform-side advisor profiles to appear in it. Community Hub's mentor accordion at [src/app.js:11363](src/app.js#L11363) reads `window.HUB_MENTORS` (a different static set in `data/hub.js`).
 
 **What happens:** An advisor completes onboarding (persona = `advisor`, fills `expertise_areas`, `advising_count`, `advisor_interests`). Their profile is saved. They sign out. They sign back in. They navigate the app. Nothing surfaces their profile to other users. The mentor directory shows 84 static entries; live advisor profiles are absent. The only place an advisor's profile can be reached is My Connections → Discover tab (the intro-matching surface), which — per the founder audit's F-10 — was broken until `2d945b0`.
 
@@ -394,7 +394,7 @@ Also depends on founder audit's F-15 (no Mentors nav item — fixed in the upcom
 
 #### M-02 · Onboarding wizard has no Step-2 validation for `advisor` persona
 **Severity:** BLOCKER
-**Location:** [src/app.js:8062-8076](src/app.js#L8062-L8076) — `wizNext()`'s step-2 validation has `else if` branches for founder / investor / farmer / researcher, none for advisor (also none for ecosystem_manager / service_provider / industry_pro).
+**Location:** [src/app.js:8083-8097](src/app.js#L8083-L8097) — `wizNext()`'s step-2 validation has `else if` branches for founder / investor / farmer / researcher, none for advisor (also none for ecosystem_manager / service_provider / industry_pro).
 
 **What happens:** An advisor reaches Step 2 of onboarding, the "Details" step. This step is supposed to collect `expertise_areas`, `advising_count`, `advisor_interests`. Step-2 validation checks none of these. User clicks Next with empty fields, advances to Step 3. Wizard completes. Profile saved with empty `expertise_areas`, empty `advising_count`, empty `advisor_interests`.
 
@@ -408,7 +408,7 @@ Also depends on founder audit's F-15 (no Mentors nav item — fixed in the upcom
 **Severity:** BLOCKER (for this persona's stated goal)
 **Location:** Nowhere. This surface doesn't exist.
 
-**What happens:** An advisor signs in. Action Center at [src/app.js:11482](src/app.js#L11482) renders persona-specific recommendations from `PERSONA_RECS` — but `PERSONA_RECS` is keyed by `early-stage` / `growth-stage` / `investor` / `ecosystem_mgr` / `researcher` / `farmer`. No `advisor` key. The fallback is `early-stage` (founder). So an advisor lands on an Action Center pitched at founders.
+**What happens:** An advisor signs in. Action Center at [src/app.js:11561](src/app.js#L11561) renders persona-specific recommendations from `PERSONA_RECS` — but `PERSONA_RECS` is keyed by `early-stage` / `growth-stage` / `investor` / `ecosystem_mgr` / `researcher` / `farmer`. No `advisor` key. The fallback is `early-stage` (founder). So an advisor lands on an Action Center pitched at founders.
 
 More broadly, there's no page that says "here are founders with `biggest_needs` matching your `expertise_areas`, who would benefit from your help." Advisors can't find founders who need them. Founders can (post-M-01-fix) find advisors in the mentor directory. The discovery is one-way.
 
@@ -420,9 +420,9 @@ More broadly, there's no page that says "here are founders with `biggest_needs` 
 
 #### M-04 · Two separate static "mentor" datasets with overlapping but different content
 **Severity:** WEAK
-**Location:** `window.MENTORS` ([data/mentors.js](data/mentors.js), 84 entries) vs `window.HUB_MENTORS` ([data/hub.js](data/hub.js), 14 entries at last count — though Phase 3 audit flagged this as having zero references from src/app.js, which now turns out to be wrong — it's read by `hubMentorContent()` at [src/app.js:11284](src/app.js#L11284)).
+**Location:** `window.MENTORS` ([data/mentors.js](data/mentors.js), 84 entries) vs `window.HUB_MENTORS` ([data/hub.js](data/hub.js), 14 entries at last count — though Phase 3 audit flagged this as having zero references from src/app.js, which now turns out to be wrong — it's read by `hubMentorContent()` at [src/app.js:11363](src/app.js#L11363)).
 
-**What happens:** Two static mentor lists. `MENTORS` has 84 AgTech-specific names sourced from Western Growers Center for Innovation & Technology (per the footer at [src/app.js:11362](src/app.js#L11362)). `HUB_MENTORS` has a different, smaller curated set. They overlap partially. A user browsing Community Hub sees HUB_MENTORS; a user navigating to `/#mentors` sees MENTORS. Neither list links to the other.
+**What happens:** Two static mentor lists. `MENTORS` has 84 AgTech-specific names sourced from Western Growers Center for Innovation & Technology (per the footer at [src/app.js:11441](src/app.js#L11441)). `HUB_MENTORS` has a different, smaller curated set. They overlap partially. A user browsing Community Hub sees HUB_MENTORS; a user navigating to `/#mentors` sees MENTORS. Neither list links to the other.
 
 **User impact:** Inconsistent discovery — a mentor appears in one surface but not the other. Data maintenance doubles.
 
@@ -433,7 +433,7 @@ More broadly, there's no page that says "here are founders with `biggest_needs` 
 #### M-05 · Mentor intro request creates row but sends no notification
 **Severity:** WEAK
 **Shared with:** founder audit (same class as I-02).
-**Location:** `submitMentorIntroRequest()` at [src/app.js:4885](src/app.js#L4885).
+**Location:** `submitMentorIntroRequest()` at [src/app.js:4891](src/app.js#L4891).
 
 **What happens:** Founder (or investor) requests an intro to a static mentor. A row is inserted into `introductions` with `person_b = null` (because static mentors aren't Supabase users) and `admin_notes = 'MENTOR INTRO REQUEST — [name] ([firm]) — Note: [user text]'`. No email to Russell. The in-app notif bell (`updateNotifBell()`) updates — but only if Russell has the tab open.
 
@@ -445,7 +445,7 @@ More broadly, there's no page that says "here are founders with `biggest_needs` 
 
 #### M-06 · `person_b: null` for static mentor intros creates half-formed Supabase rows
 **Severity:** WEAK
-**Location:** [src/app.js:4893](src/app.js#L4893)
+**Location:** [src/app.js:4899](src/app.js#L4899)
 
 **What happens:** `introductions` table has columns `person_a` (uuid → profiles.id) and `person_b` (uuid → profiles.id). Static mentors aren't Supabase users, so inserts set `person_b = null` and stuff the mentor's name into `admin_notes`. Queries like "show all intros involving mentor X" can't run — there's no foreign key to match on. Admin dashboards that group by `person_b` miss these rows entirely.
 
@@ -461,7 +461,7 @@ More broadly, there's no page that says "here are founders with `biggest_needs` 
 **Severity:** GAP
 **Location:** `profiles.advising_count` exists (text field, collected in wizard) — but it's a free-text field ("2-3 per month") with no structured value. No way for advisor to say "I'm full, not accepting intros right now."
 
-**What happens:** Static `MENTORS` entries have an `available` field (values: `'Yes'`, `'Limited'`, `'No'`) with visible UI indicators (green/yellow/red dot badges in the mentor card — see [src/app.js:4943](src/app.js#L4943)). Advisor profiles have no equivalent. An advisor at capacity has no way to pause intros without going fully offline.
+**What happens:** Static `MENTORS` entries have an `available` field (values: `'Yes'`, `'Limited'`, `'No'`) with visible UI indicators (green/yellow/red dot badges in the mentor card — see [src/app.js:4949](src/app.js#L4949)). Advisor profiles have no equivalent. An advisor at capacity has no way to pause intros without going fully offline.
 
 **User impact:** Advisors either get flooded or disengage entirely. No middle ground.
 
@@ -487,7 +487,7 @@ More broadly, there's no page that says "here are founders with `biggest_needs` 
 
 #### M-10 · Mentor detail view UX — keep, replicate for advisors
 **Severity:** POSITIVE
-**Location:** `hubMentorContent()` at [src/app.js:11311](src/app.js#L11311) when a mentor is selected.
+**Location:** `hubMentorContent()` at [src/app.js:11391](src/app.js#L11391) when a mentor is selected.
 
 Avatar with initials + colored hash, availability badge (green/yellow/red), compensation chip, country flag, expertise paragraph + chip tags, "Startups Worked With" section, LinkedIn button + "🤝 Request Introduction" button with sign-in gate fallback. Clean pattern. When M-01's live-advisor surface ships, it should replicate this layout for consistency.
 
