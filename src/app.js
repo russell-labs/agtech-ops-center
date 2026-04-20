@@ -7797,9 +7797,20 @@ function editWizard() {
 }
 
 function wizRender() {
-  // Always save text inputs before re-rendering so nothing is lost
+  // F-02/F-13/wizard-Back-button root cause: the prior `wizCollectInputs()`
+  // call here fired AFTER callers had already changed wizStep (wizNext/wizBack
+  // increment/decrement before calling wizRender). Result: it read DOM input
+  // values for the NEW step from a DOM still showing the OLD step, returned
+  // '' for every id that wasn't in the old DOM, and wiped freshly-seeded
+  // wizData fields before the template could render them back into inputs.
+  // Confirmed by 2026-04-20 runtime probe (commit d33c22d): editWizard seeded
+  // organization="test", then wizNext→wizRender wiped it to "" before the
+  // basics step's <input id="wiz-org" value="${wizData.organization||''}">
+  // got a chance to render with the seeded value. Every caller
+  // (wizNext/wizBack/wizToggleChip/wizSelectPersona/wizSave/wizSavePreCreated)
+  // already calls wizCollectInputs before mutating wizStep, so this internal
+  // call was both redundant AND wrong. Deleted.
   const wizRoot = document.getElementById('wiz-root');
-  if (wizRoot && wizRoot.innerHTML) wizCollectInputs();
   const root = wizRoot;
   const step = WIZ_STEPS[wizStep];
   const total = WIZ_STEPS.length;
@@ -8178,10 +8189,13 @@ async function wizSave() {
       toast('❌ Save failed: ' + msg);
       return;
     }
-    // Minimal save worked — log which columns caused the issue
+    // Minimal save worked — log the original error in full and surface a
+    // toast that reflects what actually happened (the prior "saved with core
+    // fields" message read as success and silently swallowed the fact that
+    // the full upsert was rejected — see the 2026-04-20 audit).
     console.warn('Minimal save succeeded! Full save had extra columns that failed. Error was:', error.message, error.code, error.details);
     data = retry.data;
-    toast('⚠️ Profile saved with core fields — some details may need re-entry');
+    toast(`⚠️ Save partial — server rejected some fields (${error.code || 'unknown'}). Details may need re-entry. Contact Russell if this persists.`);
   }
   _userProfile = data || profile;
   // Sync badges and tier for newly created profile
