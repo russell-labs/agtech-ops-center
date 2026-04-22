@@ -42,6 +42,25 @@ These are project-specific guardrails. Don't relax them without asking Russell.
 8. **Don't touch `CNAME`.** It's what keeps `www.founderopscenter.com` pointing at this repo. Removing it breaks the custom domain.
 9. **Secrets.** The Supabase anon key is fine in client JS (it's designed to be public). The service role key is NOT — it should never appear anywhere in the repo. The Edge Function's Resend API key lives in Supabase project env vars, not here.
 
+## Live data
+
+The Supabase backend is real and in production use. Table state as of 2026-04-22:
+
+- `agtech_deals` — 24 rows (main deal-flow dataset)
+- `profiles` — 5 rows
+- `eco_activity_log` — 2 rows
+- `introductions` — 1 row
+- `pre_created_profiles` — 1 row
+- `venture_submissions` — 1 row
+- `eco_applications`, `eco_program_settings`, `eco_startups`, `workspaces`, `workspace_members`, `workspace_invites`, `ws_airtable_records`, `ws_sync_log` — all 0 rows (scaffolded, not yet in use)
+- View: `client_overview` — has a SECURITY DEFINER warning in the security advisor; worth fixing eventually.
+
+Dashboard: `https://supabase.com/dashboard/project/odvwxgxhacotiuyjyqtk`. Region: us-east-1, Nano tier (**no automated backups** — see insurance dump below).
+
+The DB password was rotated on 2026-04-22 when the insurance backup was taken. The Supabase anon key used by the client JS was not changed. If any deployed service was using a direct-postgres connection with the old password, it is now broken and needs the new password.
+
+**Insurance backup.** A one-shot logical dump (schema + data + per-table CSVs + manifest.json) lives OUTSIDE this repo at `~/venture-ops/backups/agtech-ops-center/` on Russell's Mac. It was taken via the session pooler using `venture-ops/dump_supabase.py`; re-run that script to refresh. Never commit the backup into this repo — it's operational data, not source.
+
 ## Where the non-code context lives
 
 - Google Drive: `Russell Labs/01_Active_Projects/agtech-ops-center/` (to be created — see studio runbook).
